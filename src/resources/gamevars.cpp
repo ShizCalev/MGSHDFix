@@ -112,6 +112,13 @@ void GameVars::Initialize()
         // system/libdg/frame.cpp -> DG_StartFrame() loads both globals before its undraw test.
         p_DG_UnDrawFrameCount32 = reinterpret_cast<int32_t*>(Memory::GetRipRelativeAddress(Memory::PatternScan(baseModule, "8B 0D ?? ?? ?? ?? BB ?? ?? ?? ?? 8B 05", "MGS3: DG_UnDrawFrameCount32"), 2, 6));
         p_DG_LastWhich = reinterpret_cast<int*>(Memory::GetRipRelativeAddress(Memory::PatternScan(baseModule, "8B 05 ?? ?? ?? ?? 8B FB", "MGS3: DG_LastWhich"), 2, 6));
+#if defined(MGS3_FPS_DEV)
+        if (uint8_t* FirstPersonCameraEnableMovement_Scan = Memory::PatternScan(baseModule, "83 3D ?? ?? ?? ?? 00 75 ?? B9 BB 00 00 00 E8 ?? ?? ?? ?? 85 C0 0F 84", "MGS 3: GameVars: bp\\shared\\BP_Camera.cpp | gBP_1stPersonCamera_EnableMovement | @ L1086"))
+        {
+            p_gBP_1stPersonCamera_EnableMovement = reinterpret_cast<int32_t*>(Memory::GetRipRelativeAddress(FirstPersonCameraEnableMovement_Scan, 2, 7));
+        }
+        spdlog::info("GameVars: gBP_1stPersonCamera_EnableMovement address is {:s}+{:X}", sExeName.c_str(), (uintptr_t)p_gBP_1stPersonCamera_EnableMovement - (uintptr_t)baseModule);
+#endif
 
         spdlog::info("GameVars: cutsceneFlag address is {:s}+{:X}", sExeName.c_str(), (uintptr_t)cutsceneFlag - (uintptr_t)baseModule);
         spdlog::info("GameVars: scriptedSequenceFlag address is {:s}+{:X}", sExeName.c_str(), (uintptr_t)scriptedSequenceFlag - (uintptr_t)baseModule);

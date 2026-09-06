@@ -102,6 +102,9 @@
 #include "color_correction.hpp"
 #include "custom_player_name.hpp"
 #include "mgs2_first_person_view_mode.hpp"
+#if defined(MGS3_FPS_DEV)
+#include "mgs3_first_person_view_mode.hpp"
+#endif
 #include "cutscene_pausing.hpp"
 #include "d3d11_text_overlay.hpp"
 #include "mg1_display_scaling.hpp"
@@ -670,6 +673,9 @@ static void InitializeSubsystems()
         INITIALIZE(MGS3GlowOverbright::Initialize());
         INITIALIZE(MGS3MapRelight::Initialize());
         INITIALIZE(MGS3_CrossfadeCapture::Initialize());
+#if defined(MGS3_FPS_DEV)
+        INITIALIZE(MGS3_First_Person_View::Activate());
+#endif
         INITIALIZE(MGS3FixCameraOffset::Activate());
         INITIALIZE(g_DepthOfFieldFixes.Initialize());
         INITIALIZE(CaptionReplacements::Setup());
