@@ -338,6 +338,9 @@
     <ClCompile Include="src\fixes\mgs2_hair_layering.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_thermal_heat.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_rotor_procession.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -770,6 +773,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_hair_layering.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_thermal_heat.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\resources\mgs3_status_flags.hpp">

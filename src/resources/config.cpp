@@ -92,6 +92,7 @@
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
+#include "mgs2_thermal_heat.hpp"
 #include "mgs_smaa.hpp"
 #include "mgs3_film_grain.hpp"
 #include "mgs3_glow_overbright.hpp"
@@ -496,7 +497,6 @@ void Config::Read()
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_SoftParticles_Section, ConfigKeys::MGS2_SoftParticles_Setting, MGS2SoftParticles::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_SoftParticles_Section, ConfigKeys::MGS2_SoftParticles_Setting, MGS2SoftParticles::bEnabled);
 
-
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
     LOG_CONFIG(ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
 
@@ -777,6 +777,7 @@ void Config::Read()
                 &MGS2CodecBand::bEnabled,
                 &MGS2FixedAlpha::bEnabled,
                 &MGS2TankerFog::bEnabled,
+                &MGS2ThermalHeat::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)

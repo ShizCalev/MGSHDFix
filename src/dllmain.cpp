@@ -125,6 +125,7 @@
 #include "playtime_fixes.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
+#include "mgs2_thermal_heat.hpp"
 #include "mgs2_bandana_mass.hpp"
 #include "mgs_smaa.hpp"
 #include "caption_replacements.hpp"
@@ -653,6 +654,7 @@ static void InitializeSubsystems()
         INITIALIZE(FixReverbWetLevel::Initialize());
         INITIALIZE(MGS2DemoBlur::Initialize());
         INITIALIZE(MGS2FlareOcclusion::Initialize());
+        INITIALIZE(MGS2ThermalHeat::Initialize());
         INITIALIZE(CoolantMirrorFix::ApplyFix());
         INITIALIZE(ResolutionScalingFixes::ApplyFixes()); // Always load after custom resolution
         INITIALIZE(TextureLiveSwaps::ApplyFixes());
