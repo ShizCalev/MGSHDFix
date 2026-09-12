@@ -155,7 +155,7 @@ namespace
     bool g_msSeenThisFrame = false;
     bool g_propagatedThisFrame = false;
     bool g_inPropagate = false;
-    bool g_fillFailed = false;
+    bool bFillReady = false;
     ComPtr<ID3D11VertexShader>       g_fillVS;
     ComPtr<ID3D11PixelShader>        g_fillPS;
     ComPtr<ID3D11DepthStencilState>  g_fillDSS;
@@ -174,11 +174,14 @@ namespace
     }
     )";
 
-    bool EnsureFill(ID3D11Device* dev)
+    bool CompileAndCreateFill(ID3D11Device* dev)
     {
-        if (g_fillVS && g_fillPS && g_fillDSS && g_fillRS) return true;
-        if (g_fillFailed) return false;
-        if (!g_D3D11Hooks.D3DCompileFunc) { g_fillFailed = true; return false; }
+        if (!g_D3D11Hooks.D3DCompileFunc)
+        {
+            spdlog::error("SceneDepth: D3DCompile not found.");
+            return false;
+        }
+        const ULONGLONG started = GetTickCount64();
         ComPtr<ID3DBlob> vsb, psb, err;
         bool ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kFillShader, strlen(kFillShader), nullptr, nullptr, nullptr,
                       "VS", "vs_5_0", 0, 0, vsb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
@@ -187,13 +190,12 @@ namespace
         if (!ok)
         {
             spdlog::error("SceneDepth: depth-propagate shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-            g_fillFailed = true;
             return false;
         }
+        spdlog::info("SceneDepth: depth-propagate shaders compiled in {} ms.", GetTickCount64() - started);
         if (FAILED(dev->CreateVertexShader(vsb->GetBufferPointer(), vsb->GetBufferSize(), nullptr, g_fillVS.GetAddressOf())) ||
             FAILED(dev->CreatePixelShader(psb->GetBufferPointer(), psb->GetBufferSize(), nullptr, g_fillPS.GetAddressOf())))
         {
-            g_fillFailed = true;
             return false;
         }
         D3D11_DEPTH_STENCIL_DESC ds {};
@@ -202,14 +204,20 @@ namespace
         D3D11_RASTERIZER_DESC rs {};
         rs.FillMode = D3D11_FILL_SOLID; rs.CullMode = D3D11_CULL_NONE; rs.DepthClipEnable = FALSE;
         dev->CreateRasterizerState(&rs, g_fillRS.GetAddressOf());
-        if (!g_fillDSS || !g_fillRS) { g_fillFailed = true; return false; }
-        return true;
+        return g_fillVS && g_fillPS && g_fillDSS && g_fillRS;
     }
 
     void PropagateDepth(ID3D11DeviceContext* ctx, ID3D11DepthStencilView* dsv, UINT w, UINT h)
     {
+        if (!bFillReady)
+        {
+            return;
+        }
         auto* dev = g_D3D11Hooks.d3dDevice.Get();
-        if (!dev || !EnsureFill(dev)) return;
+        if (!dev)
+        {
+            return;
+        }
 
         // SRV over the game's MSAA depth (created with SHADER_RESOURCE bind).
         if (g_msSRV && g_msSRVFor != g_msDepthTex.Get()) g_msSRV.Reset();
@@ -387,6 +395,15 @@ void SceneDepth::Initialize()
     void** vtable = *reinterpret_cast<void***>(ctx);
     g_omSetRTHook = safetyhook::create_inline(vtable[33], reinterpret_cast<void*>(HookedOMSetRenderTargets));
     LOG_HOOK(g_omSetRTHook, "SceneDepth: OMSetRenderTargets");
+
+    if (ID3D11Device* dev = g_D3D11Hooks.d3dDevice.Get())
+    {
+        bFillReady = CompileAndCreateFill(dev);
+        if (!bFillReady)
+        {
+            spdlog::error("SceneDepth: failed to initialise depth-propagate resources.");
+        }
+    }
 }
 
 void SceneDepth::OnPreMenuRender()

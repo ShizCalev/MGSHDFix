@@ -63,7 +63,10 @@ namespace
         if (copyArmed.exchange(false, std::memory_order_relaxed) && needCopy == 0)
         {
             needCopy = 1;
-            spdlog::info("MGS2_CodecBackground: backdrop snapshot was dropped by an undrawn frame, asked again.");
+            if (g_Logging.bVerboseLogging)
+            {
+                spdlog::info("MGS2_CodecBackground: backdrop snapshot was dropped by an undrawn frame, asked again.");
+            }
         }
 
         void* compiledShader = grayShaderSlotAddress ? *reinterpret_cast<void**>(grayShaderSlotAddress) : nullptr;

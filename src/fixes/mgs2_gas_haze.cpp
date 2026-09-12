@@ -123,8 +123,9 @@ namespace
     uint64_t g_lastCapFrame = UINT64_MAX;
     uint64_t g_drawnFrame = UINT64_MAX;
     uint64_t g_attemptedFrame = UINT64_MAX;
-    bool g_d3dInit = false, g_d3dFailed = false;
-    ID3D11Device* g_boundDevice = nullptr;
+    bool bD3DInit = false;
+
+    ComPtr<ID3DBlob> pVSBlob, pPSBlob;
 
     bool IsSmokeRenderPacket(const void* packet)
     {
@@ -324,111 +325,27 @@ namespace
         }
     }
 
-    bool EnsureD3D(ID3D11Device* dev)
+    bool CompileShaders()
     {
-        if (dev != g_boundDevice)
-        {
-            g_vs.Reset(); g_ps.Reset(); g_layout.Reset(); g_cb.Reset(); g_vb.Reset();
-            g_blend.Reset(); g_rs.Reset(); g_dss.Reset(); g_sampLin.Reset(); g_sampPt.Reset();
-            g_capSRV.Reset(); g_capTex.Reset();
-            g_vbCap = g_capW = g_capH = 0;
-            g_capFormat = g_capSrvFormat = DXGI_FORMAT_UNKNOWN;
-            g_lastCapFrame = g_drawnFrame = UINT64_MAX;
-            g_d3dInit = g_d3dFailed = false;
-            g_boundDevice = dev;
-        }
-        if (g_d3dInit) return true;
-        if (g_d3dFailed) return false;
-        if (!dev) return false;
-
         if (!g_D3D11Hooks.D3DCompileFunc)
         {
-            g_d3dFailed = true;
             spdlog::error("MGS 2: Gas Haze: d3dcompiler_43.dll is unavailable.");
             return false;
         }
 
-        ComPtr<ID3DBlob> vsb, psb, err;
-        bool ok = g_D3D11Hooks.D3DCompileFunc && SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, nullptr, nullptr,
-                        "VS", "vs_5_0", 0, 0, vsb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
-        if (ok) 
+        const ULONGLONG started = GetTickCount64();
+        ComPtr<ID3DBlob> err;
+        bool ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, nullptr, nullptr,
+                        "VS", "vs_5_0", 0, 0, pVSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf()));
+        if (ok)
             ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, nullptr, nullptr,
-                        "PS", "ps_5_0", 0, 0, psb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
+                        "PS", "ps_5_0", 0, 0, pPSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf()));
         if (!ok)
         {
             spdlog::error("MGS 2: Gas Haze: shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-            g_d3dFailed = true; 
             return false;
         }
-
-        if (FAILED(dev->CreateVertexShader(vsb->GetBufferPointer(), vsb->GetBufferSize(), nullptr, g_vs.GetAddressOf())) ||
-            FAILED(dev->CreatePixelShader(psb->GetBufferPointer(), psb->GetBufferSize(), nullptr, g_ps.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_INPUT_ELEMENT_DESC il[] = {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        };
-        if (FAILED(dev->CreateInputLayout(il, 3, vsb->GetBufferPointer(), vsb->GetBufferSize(), g_layout.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_BUFFER_DESC cbd = {}; cbd.ByteWidth = 32; cbd.Usage = D3D11_USAGE_DYNAMIC;
-        cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        if (FAILED(dev->CreateBuffer(&cbd, nullptr, g_cb.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_BLEND_DESC bd = {}; auto& rt = bd.RenderTarget[0];
-        rt.BlendEnable = TRUE;
-        rt.SrcBlend = D3D11_BLEND_SRC_ALPHA;  rt.DestBlend = D3D11_BLEND_INV_SRC_ALPHA; rt.BlendOp = D3D11_BLEND_OP_ADD;
-        rt.SrcBlendAlpha = D3D11_BLEND_ZERO;  rt.DestBlendAlpha = D3D11_BLEND_ONE;       rt.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        rt.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        if (FAILED(dev->CreateBlendState(&bd, g_blend.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_RASTERIZER_DESC rd = {}; rd.FillMode = D3D11_FILL_SOLID; rd.CullMode = D3D11_CULL_NONE;
-        rd.DepthClipEnable = TRUE;
-        if (FAILED(dev->CreateRasterizerState(&rd, g_rs.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_DEPTH_STENCIL_DESC dsd = {}; dsd.DepthEnable = FALSE; dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-        if (FAILED(dev->CreateDepthStencilState(&dsd, g_dss.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_SAMPLER_DESC sd = {}; sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; sd.MaxLOD = D3D11_FLOAT32_MAX;
-        if (FAILED(dev->CreateSamplerState(&sd, g_sampLin.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-        sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-        if (FAILED(dev->CreateSamplerState(&sd, g_sampPt.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        g_d3dInit = true;
-        spdlog::info("MGS 2: Gas Haze: D3D11 pass initialized.");
+        spdlog::info("MGS 2: Gas Haze: shaders compiled in {} ms.", GetTickCount64() - started);
         return true;
     }
 }
@@ -470,7 +387,10 @@ void MGS2GasHaze::DrawInto(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResou
 
     auto* dev = g_D3D11Hooks.d3dDevice.Get();
     auto* ctx = g_D3D11Hooks.d3dDeviceContext.Get();
-    if (!dev || !ctx || !EnsureD3D(dev)) return;
+    if (!dev || !ctx || !bD3DInit)
+    {
+        return;
+    }
 
     // The scene colour RT (3D rendered, no UI yet) is both our draw target and the warp source.
     ComPtr<ID3D11Resource> colorRes;
@@ -617,7 +537,10 @@ void MGS2GasHaze::OnFeedbackCapture(ID3D11RenderTargetView* sceneColor, ID3D11Sh
 
     auto* dev = g_D3D11Hooks.d3dDevice.Get();
     auto* ctx = g_D3D11Hooks.d3dDeviceContext.Get();
-    if (!dev || !ctx || !EnsureD3D(dev)) return;
+    if (!dev || !ctx || !bD3DInit)
+    {
+        return;
+    }
 
     ComPtr<ID3D11Resource> colorRes;
     sceneColor->GetResource(colorRes.GetAddressOf());
@@ -661,6 +584,12 @@ void MGS2GasHaze::Initialize()
         return;
     }
 
+    if (!CompileShaders())
+    {
+        spdlog::error("MGS 2: Gas Haze: shader compilation failed; effect will be disabled.");
+        return;
+    }
+
     if (uint8_t* address = Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 20 8B 7C 24 ?? 41 8B E8 41 8B F1 44 8B F2 45 33 C9 4C 8B F9 BA 00 20 00 00", "MGS 2: Gas Haze - NewSmokeBlurEffect"))
     {
         g_hook = safetyhook::create_inline(address, reinterpret_cast<void*>(NewSmokeBlur_Detour));
@@ -699,4 +628,80 @@ void MGS2GasHaze::Initialize()
     SceneDepth::SetEndOf3DCallback(&MGS2GasHaze::OnPreMenuRender, SceneDepth::PRIORITY_HAZE_CAPTURE);
     SceneDepth::SetEndOf3DCallback(&MGS2GasHaze::OnFeedbackCapture, SceneDepth::PRIORITY_FEEDBACK_CAPTURE);
     spdlog::info("MGS 2: Gas Haze: initialized.");
+}
+
+void MGS2GasHaze::Init()
+{
+    if (!(eGameType & MGS2) || !bEnabled)
+    {
+        return;
+    }
+
+    ID3D11Device* dev = g_D3D11Hooks.d3dDevice.Get();
+    if (!dev)
+    {
+        spdlog::error("MGS 2: Gas Haze: D3D11 device is not initialized.");
+        return;
+    }
+
+    if (!pVSBlob || !pPSBlob)
+    {
+        spdlog::error("MGS 2: Gas Haze: shader bytecode was not compiled.");
+        return;
+    }
+
+    if (FAILED(dev->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, g_vs.GetAddressOf())) ||
+        FAILED(dev->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, g_ps.GetAddressOf())))
+    {
+        spdlog::error("MGS 2: Gas Haze: failed to create shaders.");
+        return;
+    }
+
+    D3D11_INPUT_ELEMENT_DESC il[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+    if (FAILED(dev->CreateInputLayout(il, 3, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), g_layout.GetAddressOf())))
+    {
+        spdlog::error("MGS 2: Gas Haze: failed to create input layout.");
+        return;
+    }
+
+    D3D11_BUFFER_DESC cbd = {}; cbd.ByteWidth = 32; cbd.Usage = D3D11_USAGE_DYNAMIC;
+    cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    dev->CreateBuffer(&cbd, nullptr, g_cb.GetAddressOf());
+
+    D3D11_BLEND_DESC bd = {}; auto& rt = bd.RenderTarget[0];
+    rt.BlendEnable = TRUE;
+    rt.SrcBlend = D3D11_BLEND_SRC_ALPHA;  rt.DestBlend = D3D11_BLEND_INV_SRC_ALPHA; rt.BlendOp = D3D11_BLEND_OP_ADD;
+    rt.SrcBlendAlpha = D3D11_BLEND_ZERO;  rt.DestBlendAlpha = D3D11_BLEND_ONE;       rt.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    rt.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    dev->CreateBlendState(&bd, g_blend.GetAddressOf());
+
+    D3D11_RASTERIZER_DESC rd = {}; rd.FillMode = D3D11_FILL_SOLID; rd.CullMode = D3D11_CULL_NONE;
+    rd.DepthClipEnable = TRUE;
+    dev->CreateRasterizerState(&rd, g_rs.GetAddressOf());
+
+    D3D11_DEPTH_STENCIL_DESC dsd = {}; dsd.DepthEnable = FALSE; dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    dev->CreateDepthStencilState(&dsd, g_dss.GetAddressOf());
+
+    D3D11_SAMPLER_DESC sd = {}; sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; sd.MaxLOD = D3D11_FLOAT32_MAX;
+    dev->CreateSamplerState(&sd, g_sampLin.GetAddressOf());
+    sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    dev->CreateSamplerState(&sd, g_sampPt.GetAddressOf());
+
+    pVSBlob.Reset();
+    pPSBlob.Reset();
+
+    bD3DInit = g_vs && g_ps && g_layout && g_cb && g_blend && g_rs && g_dss && g_sampLin && g_sampPt;
+    if (bD3DInit)
+    {
+        spdlog::info("MGS 2: Gas Haze: D3D11 pass initialized.");
+    }
+    else
+    {
+        spdlog::error("MGS 2: Gas Haze: failed to initialise D3D11 resources.");
+    }
 }
