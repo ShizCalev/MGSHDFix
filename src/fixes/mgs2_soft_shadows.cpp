@@ -18,7 +18,9 @@ namespace
     ComPtr<ID3D11DepthStencilState> g_dss;
     ComPtr<ID3D11RasterizerState>   g_rs;
     ComPtr<ID3D11Buffer>            g_cb;
-    bool g_failed = false;
+    bool bResourcesReady = false;
+
+    ComPtr<ID3DBlob> pVSBlob, pPSBlob;
 
     struct Level
     {
@@ -67,55 +69,26 @@ namespace
     }
     )";
 
-    bool EnsureResources(ID3D11Device* dev)
+    bool CompileShaders()
     {
-        if (g_failed) return false;
-        if (g_vs && g_ps) return true;
-        if (!g_D3D11Hooks.D3DCompileFunc) { g_failed = true; return false; }
+        if (!g_D3D11Hooks.D3DCompileFunc)
+        {
+            spdlog::error("MGS2: Soft Shadows - D3DCompile not found.");
+            return false;
+        }
 
-        ComPtr<ID3DBlob> vsb, psb, err;
+        const ULONGLONG started = GetTickCount64();
+        ComPtr<ID3DBlob> err;
         bool ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kBlurShader, strlen(kBlurShader), nullptr, nullptr, nullptr,
-                      "VS", "vs_5_0", 0, 0, vsb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
+                      "VS", "vs_5_0", 0, 0, pVSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf()));
         if (ok) ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kBlurShader, strlen(kBlurShader), nullptr, nullptr, nullptr,
-                      "PS", "ps_5_0", 0, 0, psb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
+                      "PS", "ps_5_0", 0, 0, pPSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf()));
         if (!ok)
         {
             spdlog::error("MGS2: Soft Shadows - blur shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-            g_failed = true;
             return false;
         }
-        if (FAILED(dev->CreateVertexShader(vsb->GetBufferPointer(), vsb->GetBufferSize(), nullptr, g_vs.GetAddressOf())) ||
-            FAILED(dev->CreatePixelShader(psb->GetBufferPointer(), psb->GetBufferSize(), nullptr, g_ps.GetAddressOf())))
-        {
-            g_failed = true;
-            return false;
-        }
-
-        D3D11_SAMPLER_DESC sd {};
-        sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-        sd.MaxLOD = D3D11_FLOAT32_MAX;
-        dev->CreateSamplerState(&sd, g_sampler.GetAddressOf());
-
-        D3D11_BLEND_DESC bd {};
-        bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        dev->CreateBlendState(&bd, g_blend.GetAddressOf());
-
-        D3D11_DEPTH_STENCIL_DESC dd {};
-        dev->CreateDepthStencilState(&dd, g_dss.GetAddressOf());
-
-        D3D11_RASTERIZER_DESC rd {};
-        rd.FillMode = D3D11_FILL_SOLID; rd.CullMode = D3D11_CULL_NONE; rd.DepthClipEnable = FALSE;
-        dev->CreateRasterizerState(&rd, g_rs.GetAddressOf());
-
-        D3D11_BUFFER_DESC cbd {};
-        cbd.ByteWidth = 16;
-        cbd.Usage = D3D11_USAGE_DYNAMIC;
-        cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        dev->CreateBuffer(&cbd, nullptr, g_cb.GetAddressOf());
-
-        if (!g_sampler || !g_blend || !g_dss || !g_rs || !g_cb) { g_failed = true; return false; }
+        spdlog::info("MGS2: Soft Shadows - shaders compiled in {} ms.", GetTickCount64() - started);
         return true;
     }
 
@@ -189,7 +162,10 @@ namespace
     void Blur(ID3D11DeviceContext* ctx, ID3D11Texture2D* target)
     {
         auto* dev = g_D3D11Hooks.d3dDevice.Get();
-        if (!dev || !EnsureResources(dev) || !EnsureViews(dev, target)) return;
+        if (!dev || !bResourcesReady || !EnsureViews(dev, target))
+        {
+            return;
+        }
 
         ComPtr<ID3D11RenderTargetView> oRTV; ComPtr<ID3D11DepthStencilView> oDSV;
         ctx->OMGetRenderTargets(1, oRTV.GetAddressOf(), oDSV.GetAddressOf());
@@ -255,6 +231,84 @@ namespace
         ctx->OMSetDepthStencilState(oDSS.Get(), oSR);
         ctx->RSSetState(oRS.Get());
         if (oNVP) ctx->RSSetViewports(oNVP, oVP);
+    }
+}
+
+void MGS2SoftShadows::Initialize()
+{
+    if (!bEnabled)
+    {
+        return;
+    }
+
+    if (!CompileShaders())
+    {
+        spdlog::error("MGS2: Soft Shadows - shader compilation failed; effect will be disabled.");
+    }
+}
+
+void MGS2SoftShadows::Init()
+{
+    if (!bEnabled)
+    {
+        return;
+    }
+
+    ID3D11Device* dev = g_D3D11Hooks.d3dDevice.Get();
+    if (!dev)
+    {
+        spdlog::error("MGS2: Soft Shadows - D3D11 device is not initialized.");
+        return;
+    }
+
+    if (!pVSBlob || !pPSBlob)
+    {
+        spdlog::error("MGS2: Soft Shadows - shader bytecode was not compiled.");
+        return;
+    }
+
+    if (FAILED(dev->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, g_vs.GetAddressOf())) ||
+        FAILED(dev->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, g_ps.GetAddressOf())))
+    {
+        spdlog::error("MGS2: Soft Shadows - failed to create shaders.");
+        return;
+    }
+
+    D3D11_SAMPLER_DESC sd {};
+    sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    sd.MaxLOD = D3D11_FLOAT32_MAX;
+    dev->CreateSamplerState(&sd, g_sampler.GetAddressOf());
+
+    D3D11_BLEND_DESC bd {};
+    bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    dev->CreateBlendState(&bd, g_blend.GetAddressOf());
+
+    D3D11_DEPTH_STENCIL_DESC dd {};
+    dev->CreateDepthStencilState(&dd, g_dss.GetAddressOf());
+
+    D3D11_RASTERIZER_DESC rd {};
+    rd.FillMode = D3D11_FILL_SOLID; rd.CullMode = D3D11_CULL_NONE; rd.DepthClipEnable = FALSE;
+    dev->CreateRasterizerState(&rd, g_rs.GetAddressOf());
+
+    D3D11_BUFFER_DESC cbd {};
+    cbd.ByteWidth = 16;
+    cbd.Usage = D3D11_USAGE_DYNAMIC;
+    cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    dev->CreateBuffer(&cbd, nullptr, g_cb.GetAddressOf());
+
+    pVSBlob.Reset();
+    pPSBlob.Reset();
+
+    bResourcesReady = g_vs && g_ps && g_sampler && g_blend && g_dss && g_rs && g_cb;
+    if (bResourcesReady)
+    {
+        spdlog::info("MGS2: Soft Shadows - render resources initialised.");
+    }
+    else
+    {
+        spdlog::error("MGS2: Soft Shadows - failed to initialise render resources.");
     }
 }
 

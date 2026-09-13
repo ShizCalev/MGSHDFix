@@ -384,8 +384,10 @@ namespace {
 			memcpy(*buffer, merged.data(), merged.size());
 			(*buffer)[merged.size()] = '\0';
 			state->currentFileSize = merged.size();
-			spdlog::info("{}: merged {} supplementary entries ({} replaced, {} added)",
-						 std::filesystem::path(filePath).filename().string(), replaced + added, replaced, added);
+			if (g_Logging.bVerboseLogging)
+			{
+			    spdlog::info("{}: merged {} supplementary entries ({} replaced, {} added)", std::filesystem::path(filePath).filename().string(), replaced + added, replaced, added);
+			}
 		}
 
 		return state->currentFileHandle;

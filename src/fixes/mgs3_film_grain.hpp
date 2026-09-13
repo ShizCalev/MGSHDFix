@@ -18,6 +18,7 @@ namespace MGS3FilmGrain
     inline Mode mode = Mode::On;
 
     void Initialize();
+    void Init();
     void BeginPresent();
     void EndPresent();
     void OnAfterGameDraw(ID3D11DeviceContext* context, unsigned int vertexCount);

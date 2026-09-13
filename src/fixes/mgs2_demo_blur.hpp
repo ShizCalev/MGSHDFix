@@ -7,6 +7,7 @@ struct ID3D11ShaderResourceView;
 namespace MGS2DemoBlur
 {
     void Initialize();
+    void Init();
     void DrawInto(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView* depth);
     void InvalidateCapture();
     void CaptureFrame(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView* depth);

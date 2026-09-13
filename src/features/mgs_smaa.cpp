@@ -166,6 +166,7 @@ bool SMAA_AA::CompileShaders()
     }
 
     FileInclude inc;
+    const ULONGLONG started = GetTickCount64();
 
     auto compile = [&](const char* entry, const char* target, ComPtr<ID3DBlob>& out) -> bool
         {
@@ -188,7 +189,7 @@ bool SMAA_AA::CompileShaders()
     if (!compile("NeighborhoodPS", "ps_5_0", psNeighborBlob)) return false;
 
     bShadersCompiled = true;
-    spdlog::info("SMAA shaders compiled.");
+    spdlog::info("SMAA: shaders compiled in {} ms.", GetTickCount64() - started);
     return true;
 }
 

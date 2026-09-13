@@ -6,6 +6,7 @@ struct ID3D11ShaderResourceView;
 namespace MGS2GasHaze
 {
     void Initialize();
+    void Init();
     void DrawIntoCurrentTarget();
     void DrawInto(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView* depth);
     void OnPreMenuRender(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView* depth);

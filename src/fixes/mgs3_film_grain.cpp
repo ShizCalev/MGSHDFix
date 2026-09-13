@@ -61,8 +61,8 @@ namespace
     std::atomic<bool> gNativeSignalActive = false;
     std::atomic<uintptr_t> gNativeWork = 0;
 
-    ComPtr<ID3DBlob> vsBlob;
-    ComPtr<ID3DBlob> psBlob;
+    ComPtr<ID3DBlob> pVSBlob;
+    ComPtr<ID3DBlob> pPSBlob;
     ComPtr<ID3D11VertexShader> vs;
     ComPtr<ID3D11PixelShader> ps;
     ComPtr<ID3D11SamplerState> sceneSampler;
@@ -75,8 +75,8 @@ namespace
     ComPtr<ID3D11Texture2D> sceneCopy;
     ComPtr<ID3D11ShaderResourceView> sceneCopySRV;
     D3D11_TEXTURE2D_DESC sceneCopyDesc = {};
-    bool initialized = false;
-    bool initFailed = false;
+    bool bInitialized = false;
+    bool bInitFailed = false;
     uint32_t frameIndex = 0;
     bool drawingGrain = false;
     std::atomic<bool> drewBackbufferThisFrame = false;
@@ -636,45 +636,63 @@ namespace
         return std::clamp(std::max(normalized * 1.7f, 0.1f), 0.0f, 0.25f);
     }
 
-    bool EnsureResources(ID3D11Device* device)
+    bool CompileShaders()
     {
-        if (initialized)
+        if (!g_D3D11Hooks.D3DCompileFunc)
         {
-            return true;
-        }
-
-        if (initFailed || !device || !g_D3D11Hooks.D3DCompileFunc)
-        {
+            spdlog::warn("MGS 3: Film Grain: D3DCompile not found.");
             return false;
         }
 
+        const ULONGLONG started = GetTickCount64();
         ComPtr<ID3DBlob> err;
         HRESULT hr = g_D3D11Hooks.D3DCompileFunc(kFilmGrainShader, strlen(kFilmGrainShader),
             nullptr, nullptr, nullptr, "VS", "vs_5_0", 0, 0,
-            vsBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf());
+            pVSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf());
         if (FAILED(hr))
         {
             spdlog::warn("MGS 3: Film Grain: VS compile failed: {}", err ? static_cast<const char*>(err->GetBufferPointer()) : "unknown");
-            initFailed = true;
             return false;
         }
 
         err.Reset();
         hr = g_D3D11Hooks.D3DCompileFunc(kFilmGrainShader, strlen(kFilmGrainShader),
             nullptr, nullptr, nullptr, "PS", "ps_5_0", 0, 0,
-            psBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf());
+            pPSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf());
         if (FAILED(hr))
         {
             spdlog::warn("MGS 3: Film Grain: PS compile failed: {}", err ? static_cast<const char*>(err->GetBufferPointer()) : "unknown");
-            initFailed = true;
             return false;
         }
 
-        if (FAILED(device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, vs.GetAddressOf())) ||
-            FAILED(device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, ps.GetAddressOf())))
+        spdlog::info("MGS 3: Film Grain: shaders compiled in {} ms.", GetTickCount64() - started);
+        return true;
+    }
+
+    bool CreateResources(ID3D11Device* device)
+    {
+        if (bInitialized)
+        {
+            return true;
+        }
+
+        if (bInitFailed || !device)
+        {
+            return false;
+        }
+
+        if (!pVSBlob || !pPSBlob)
+        {
+            spdlog::warn("MGS 3: Film Grain: shader bytecode was not compiled.");
+            bInitFailed = true;
+            return false;
+        }
+
+        if (FAILED(device->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, vs.GetAddressOf())) ||
+            FAILED(device->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, ps.GetAddressOf())))
         {
             spdlog::warn("MGS 3: Film Grain: failed to create shaders.");
-            initFailed = true;
+            bInitFailed = true;
             return false;
         }
 
@@ -782,7 +800,7 @@ namespace
         if (FAILED(device->CreateTexture2D(&grainDesc, subresources.data(), grainTexture.GetAddressOf())))
         {
             spdlog::warn("MGS 3: Film Grain: failed to create blue-noise texture.");
-            initFailed = true;
+            bInitFailed = true;
             return false;
         }
 
@@ -795,20 +813,20 @@ namespace
         if (FAILED(device->CreateShaderResourceView(grainTexture.Get(), &grainSrvDesc, grainSRV.GetAddressOf())))
         {
             spdlog::warn("MGS 3: Film Grain: failed to create blue-noise view.");
-            initFailed = true;
+            bInitFailed = true;
             return false;
         }
 
-        initialized = static_cast<bool>(vs && ps && sceneSampler && grainSampler && rasterizer && depthStencil && constantBuffer && grainSRV);
-        if (!initialized)
+        bInitialized = static_cast<bool>(vs && ps && sceneSampler && grainSampler && rasterizer && depthStencil && constantBuffer && grainSRV);
+        if (!bInitialized)
         {
             spdlog::warn("MGS 3: Film Grain: failed to initialize D3D resources.");
-            initFailed = true;
+            bInitFailed = true;
             return false;
         }
 
-        vsBlob.Reset();
-        psBlob.Reset();
+        pVSBlob.Reset();
+        pPSBlob.Reset();
         spdlog::info("MGS 3: Film Grain: D3D grain pass initialized.");
         return true;
     }
@@ -927,6 +945,11 @@ void MGS3FilmGrain::Initialize()
         return;
     }
 
+    if (!CompileShaders())
+    {
+        spdlog::warn("MGS 3: Film Grain: shader compilation failed; effect will be disabled.");
+    }
+
     MAKE_HOOK_MID(baseModule,
         "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 41 58",
         "MGS 3: Film Grain: noise1 alpha",
@@ -987,6 +1010,26 @@ void MGS3FilmGrain::Initialize()
         });
 }
 
+void MGS3FilmGrain::Init()
+{
+    if (!(eGameType & MGS3) || mode == Mode::Off)
+    {
+        return;
+    }
+
+    ID3D11Device* device = g_D3D11Hooks.d3dDevice.Get();
+    if (!device)
+    {
+        spdlog::warn("MGS 3: Film Grain: D3D11 device is not initialized.");
+        return;
+    }
+
+    if (!CreateResources(device))
+    {
+        spdlog::warn("MGS 3: Film Grain: failed to initialise D3D resources.");
+    }
+}
+
 void MGS3FilmGrain::OnPreMenuRender(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView*)
 {
     if (!(eGameType & MGS3) || mode == Mode::Off || !sceneColor || !NativeAllowsFilmGrain())
@@ -1013,7 +1056,7 @@ void MGS3FilmGrain::OnPreMenuRender(ID3D11RenderTargetView* sceneColor, ID3D11Sh
 
     auto* device = g_D3D11Hooks.d3dDevice.Get();
     auto* context = g_D3D11Hooks.d3dDeviceContext.Get();
-    if (!EnsureResources(device) || !context)
+    if (!bInitialized || !device || !context)
     {
         return;
     }

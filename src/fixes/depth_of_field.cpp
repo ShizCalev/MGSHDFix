@@ -20,6 +20,7 @@ namespace
     constexpr uint64_t kMGS3PendingNearFocusMaxFrameAge = 2;
     constexpr size_t kTrackedNearFocusPacketCount = 16;
     constexpr size_t kTrackedNearFocusWorkCount = 16;
+    constexpr size_t kTrackedCodecFocusWorkCount = 4;
     constexpr size_t kTrackedMGS3FocusPacketCount = 32;
     constexpr unsigned int kCmdPostFxFarFocus = 0x3F;
     constexpr unsigned int kMGS3CmdPostFxFarFocus = 0x31;
@@ -33,8 +34,20 @@ namespace
     constexpr ptrdiff_t kFocusWorkDmapackOffset = 0x80;
     constexpr ptrdiff_t kDmapackBpCallbackParamOffset = 0x28;
     constexpr ptrdiff_t kDmapackBpRenderCallbackOffset = 0x30;
+    constexpr ptrdiff_t kCodecFocusWorkChannelOffset = 0x5C;
+    constexpr ptrdiff_t kCodecFocusWorkDisableOffset = 0x68;
+    constexpr ptrdiff_t kCodecFocusWorkMaxPlaneOffset = 0x6C;
+    constexpr ptrdiff_t kCodecFocusWorkFocusNearOffset = 0x78;
+    constexpr ptrdiff_t kCodecFocusWorkFocusFarOffset = 0x7C;
+    constexpr ptrdiff_t kCodecFocusWorkDmapackOffset = 0x88;
     constexpr uint32_t kNearFocusSetId = 0x00BBAD24;
     constexpr uint32_t kNearFocusDemoId = 0x01000002;
+    constexpr int kCodecPortraitWidth = 145;
+    constexpr int kCodecPortraitHeight = 203;
+    constexpr int kCodecPortraitOffsetX = 193;
+    constexpr int kCodecPortraitOffsetY = -101;
+    constexpr int kPs2GsDepthMin = 0x001000;
+    constexpr int kPs2GsDepthMax = 0xFFF000;
     // The PS2 blurred by drawing the frame over itself up to eight times, each copy nudged a little.
     // These numbers describe those copies.
     constexpr int kPs2MaxDrawPlanes = 8;
@@ -49,9 +62,8 @@ namespace
     using BpRbAddCommandFn = void(__fastcall*)(unsigned int, void*);
     using DmapackRenderCallbackFn = void(__fastcall*)(void*);
 
-    bool bCutsceneNeedsSpecialHandling = false; //for per-cutscene effect skip handling.
-    bool bIsD12T3 = false;
-    int iNearEffectCount = 0;
+   // bool bIsD12T3 = false;
+   // int iNearEffectCount = 0;
 
 
     struct FocusSourcePacket
@@ -100,12 +112,24 @@ namespace
     {
         uintptr_t address = 0;
         FocusSourcePacket packet {};
+        FocusSide side = FocusSide::Near;
+        bool hasNativeRect = false;
+        FocusRect nativeRect {};
     };
 
     struct TrackedNearFocusWork
     {
         uintptr_t work = 0;
         uintptr_t dmapack = 0;
+        uintptr_t originalParam = 0;
+        DmapackRenderCallbackFn originalRender = nullptr;
+    };
+
+    struct TrackedCodecFocusWork
+    {
+        uintptr_t work = 0;
+        uintptr_t dmapack = 0;
+        FocusSide side = FocusSide::Far;
         uintptr_t originalParam = 0;
         DmapackRenderCallbackFn originalRender = nullptr;
     };
@@ -131,15 +155,19 @@ namespace
     SafetyHookMid MGS3NearFocusWorkLinkHook {};
     SafetyHookInline NearFocusSetHook {};
     SafetyHookInline NearFocusDemoHook {};
+    SafetyHookInline CodecNearFocusCreateHook {};
+    SafetyHookInline CodecFarFocusCreateHook {};
     SafetyHookInline BpRbAddCommandHook {};
     SafetyHookInline FarFocusCommandHook {};
     std::array<TrackedFocusPacket, kTrackedNearFocusPacketCount> gNearFocusPackets {};
     std::array<TrackedNearFocusWork, kTrackedNearFocusWorkCount> gNearFocusWorks {};
+    std::array<TrackedCodecFocusWork, kTrackedCodecFocusWorkCount> gCodecFocusWorks {};
     std::array<TrackedMGS3FocusPacket, kTrackedMGS3FocusPacketCount> gMGS3FocusPackets {};
     std::array<TrackedMGS3NearFocusWork, kTrackedMGS3FocusPacketCount> gMGS3NearFocusWorks {};
     PendingMGS3FocusPacket gMGS3PendingNearFocusPacket {};
     size_t gNearFocusPacketWriteIndex = 0;
     size_t gNearFocusWorkWriteIndex = 0;
+    size_t gCodecFocusWorkWriteIndex = 0;
     size_t gMGS3FocusPacketWriteIndex = 0;
     size_t gMGS3NearFocusWorkWriteIndex = 0;
     BpRbAllocFn gBpRbAlloc = nullptr;
@@ -234,6 +262,8 @@ namespace
 
     bool QueueNearFocusPacket(void* work);
     bool QueueNearFocusPacketFromSource(FocusSourcePacket source);
+    bool QueueMGS2FocusPacketFromSource(FocusSourcePacket source, FocusSide side, const FocusRect* nativeRect = nullptr);
+    bool QueueCodecFocusPacket(void* work, FocusSide side);
     bool BuildNearFocusSourceFromParam(uintptr_t paramAddress, FocusSourcePacket& source);
     bool StoreMGS3NearFocusPacketFromWork(uintptr_t work, int alpha);
     void __fastcall MGS3NearFocusCallback_Hook(void* param);
@@ -2578,6 +2608,129 @@ namespace
         InstallNearFocusDmapackCallback(work);
     }
 
+    bool LooksLikeCodecFocusDmapack(uintptr_t dmapack)
+    {
+        if (!dmapack ||
+            !Memory::IsReadable(reinterpret_cast<void*>(dmapack), kDmapackBpRenderCallbackOffset + sizeof(uintptr_t)))
+        {
+            return false;
+        }
+
+        const int flag = Memory::ReadField<int>(dmapack, 0x00);
+        const int16_t phase = Memory::ReadField<int16_t>(dmapack, 0x04);
+        const int16_t priority = Memory::ReadField<int16_t>(dmapack, 0x06);
+        return (flag & kDmapackNormal) != 0 &&
+               phase == kDmapackPhaseAfter &&
+               priority >= 0 &&
+               priority <= 255 &&
+               Memory::IsWritable(reinterpret_cast<void*>(dmapack + kDmapackBpCallbackParamOffset), sizeof(uintptr_t)) &&
+               Memory::IsWritable(reinterpret_cast<void*>(dmapack + kDmapackBpRenderCallbackOffset), sizeof(uintptr_t));
+    }
+
+    bool LooksLikeCodecFocusWork(uintptr_t work)
+    {
+        if (!work ||
+            !Memory::IsReadable(reinterpret_cast<void*>(work), kCodecFocusWorkDmapackOffset + sizeof(uintptr_t)))
+        {
+            return false;
+        }
+
+        const int channel = Memory::ReadField<int>(work, kCodecFocusWorkChannelOffset);
+        const int disable = Memory::ReadField<int>(work, kCodecFocusWorkDisableOffset);
+        const int maxPlane = Memory::ReadField<int>(work, kCodecFocusWorkMaxPlaneOffset);
+        const int focusNear = Memory::ReadField<int>(work, kCodecFocusWorkFocusNearOffset);
+        const int focusFar = Memory::ReadField<int>(work, kCodecFocusWorkFocusFarOffset);
+        if ((channel != 2 && channel != 3) ||
+            (disable != 0 && disable != 1) ||
+            maxPlane < 2 ||
+            maxPlane > kPs2MaxDrawPlanes ||
+            focusNear < kPs2GsDepthMin ||
+            focusNear > kPs2GsDepthMax ||
+            focusFar < kPs2GsDepthMin ||
+            focusFar > kPs2GsDepthMax)
+        {
+            return false;
+        }
+
+        return LooksLikeCodecFocusDmapack(Memory::ReadField<uintptr_t>(work, kCodecFocusWorkDmapackOffset));
+    }
+
+    TrackedCodecFocusWork* FindTrackedCodecFocusWork(uintptr_t work)
+    {
+        for (TrackedCodecFocusWork& tracked : gCodecFocusWorks)
+        {
+            if (tracked.work == work)
+            {
+                return &tracked;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void CodecFocusRenderCallback(void* work)
+    {
+        TrackedCodecFocusWork* tracked = FindTrackedCodecFocusWork(reinterpret_cast<uintptr_t>(work));
+        if (!tracked)
+        {
+            return;
+        }
+
+        if (tracked->originalRender)
+        {
+            tracked->originalRender(reinterpret_cast<void*>(tracked->originalParam));
+        }
+
+        QueueCodecFocusPacket(reinterpret_cast<void*>(tracked->work), tracked->side);
+    }
+
+    void InstallCodecFocusDmapackCallback(void* work, FocusSide side)
+    {
+        const uintptr_t workAddress = reinterpret_cast<uintptr_t>(work);
+        if (!LooksLikeCodecFocusWork(workAddress))
+        {
+            return;
+        }
+
+        const uintptr_t dmapack = Memory::ReadField<uintptr_t>(workAddress, kCodecFocusWorkDmapackOffset);
+        TrackedCodecFocusWork* tracked = FindTrackedCodecFocusWork(workAddress);
+        if (!tracked)
+        {
+            tracked = &gCodecFocusWorks[gCodecFocusWorkWriteIndex++ % gCodecFocusWorks.size()];
+            *tracked = {};
+        }
+
+        const uintptr_t originalParam = Memory::ReadField<uintptr_t>(dmapack, kDmapackBpCallbackParamOffset);
+        const uintptr_t originalRender = Memory::ReadField<uintptr_t>(dmapack, kDmapackBpRenderCallbackOffset);
+        tracked->work = workAddress;
+        tracked->dmapack = dmapack;
+        tracked->side = side;
+        if (originalRender != reinterpret_cast<uintptr_t>(CodecFocusRenderCallback))
+        {
+            tracked->originalParam = originalParam;
+            tracked->originalRender = Memory::IsExecutable(reinterpret_cast<void*>(originalRender))
+                ? reinterpret_cast<DmapackRenderCallbackFn>(originalRender)
+                : nullptr;
+        }
+
+        *reinterpret_cast<uintptr_t*>(dmapack + kDmapackBpCallbackParamOffset) = workAddress;
+        *reinterpret_cast<uintptr_t*>(dmapack + kDmapackBpRenderCallbackOffset) = reinterpret_cast<uintptr_t>(CodecFocusRenderCallback);
+    }
+
+    void* __fastcall CodecNearFocusCreate_Hook(int name, int channel, int maxPlane, int focusNear, int focusFar)
+    {
+        void* work = CodecNearFocusCreateHook.fastcall<void*>(name, channel, maxPlane, focusNear, focusFar);
+        InstallCodecFocusDmapackCallback(work, FocusSide::Near);
+        return work;
+    }
+
+    void* __fastcall CodecFarFocusCreate_Hook(int name, int channel, int maxPlane, int focusNear, int focusFar)
+    {
+        void* work = CodecFarFocusCreateHook.fastcall<void*>(name, channel, maxPlane, focusNear, focusFar);
+        InstallCodecFocusDmapackCallback(work, FocusSide::Far);
+        return work;
+    }
+
     // MGS2 depth of field. The PS2 blurred by drawing up to eight copies of the frame, each sitting
     // at a depth across the focus range. We work out where those planes are, count how many each
     // pixel sits behind, and blur it that much, measured in the PS2's own 448-line pixels.
@@ -2586,6 +2739,29 @@ namespace
     float NearWorkDepth(float depth)
     {
         return (std::isfinite(depth) && depth < 0.0f) ? (depth + 1.0f) * 0.5f : depth;
+    }
+
+    float CodecGsDepthToNormalized(int depth)
+    {
+        return static_cast<float>(depth - kPs2GsDepthMin) /
+            static_cast<float>(kPs2GsDepthMax - kPs2GsDepthMin);
+    }
+
+    FocusRect GetCodecPortraitRect(int channel)
+    {
+        return channel == 2 ? FocusRect { 0, 21, 156, 224 } : FocusRect { 358, 21, 512, 224 }; //this may need further adjustment for ultrawide if the codec screen gets expanded in the future.
+    }
+
+    FocusRect ScaleMGS2NativeRect(const FocusRect& nativeRect)
+    {
+        const float scaleX = static_cast<float>(gDofFocusLogicalWidth) / f_PS2_Width;
+        const float scaleY = static_cast<float>(gDofFocusLogicalHeight) / f_PS2_Height;
+        return {
+            static_cast<int>(std::lround(nativeRect.x1 * scaleX)),
+            static_cast<int>(std::lround(nativeRect.y1 * scaleY)),
+            static_cast<int>(std::lround(nativeRect.x2 * scaleX)),
+            static_cast<int>(std::lround(nativeRect.y2 * scaleY)),
+        };
     }
 
     struct Ps2PlaneStack
@@ -2679,17 +2855,19 @@ namespace
         const DofPassState& passState,
         const Ps2PlaneStack* farStack,
         const Ps2PlaneStack* nearStack,
-        ID3D11ShaderResourceView* depthSRV)
+        ID3D11ShaderResourceView* depthSRV,
+        const FocusRect* drawRect = nullptr)
     {
         ID3D11DeviceContext* context = g_D3D11Hooks.d3dDeviceContext.Get();
         const FocusRect fullRect { 0, 0, static_cast<int>(gDofFocusLogicalWidth), static_cast<int>(gDofFocusLogicalHeight) };
+        const FocusRect& rect = drawRect ? *drawRect : fullRect;
         if (!context ||
             !gDofDepthPS ||
             !gDofFocusConstants ||
             !gDofFocusDepthDisabledState ||
             !gDofFocusSourceSRV ||
             !depthSRV ||
-            !IsReasonableFocusRect(fullRect))
+            !IsReasonableFocusRect(rect))
         {
             return false;
         }
@@ -2704,8 +2882,10 @@ namespace
         ID3D11ShaderResourceView* directSRV = (halfResGather && gDofFocusLodBias == 1.0f) ? gDofFocusDirectSRV.Get() : nullptr;
 
         DofFocusConstants constants {};
-        constants.sourceRect[2] = static_cast<float>(fullRect.x2);
-        constants.sourceRect[3] = static_cast<float>(fullRect.y2);
+        constants.sourceRect[0] = static_cast<float>(rect.x1);
+        constants.sourceRect[1] = static_cast<float>(rect.y1);
+        constants.sourceRect[2] = static_cast<float>(rect.x2 - rect.x1);
+        constants.sourceRect[3] = static_cast<float>(rect.y2 - rect.y1);
         constants.sourceSizeAndSpread[0] = static_cast<float>(gDofFocusLogicalWidth);
         constants.sourceSizeAndSpread[1] = static_cast<float>(gDofFocusLogicalHeight);
         constants.sourceSizeAndSpread[2] = static_cast<float>(gDofFocusLogicalHeight) / kPs2DrawLines * g_DepthOfFieldFixes.fBlurUvMultiplier / 10.0f;
@@ -2774,7 +2954,15 @@ namespace
         ID3D11RenderTargetView* targetRTV = passState.oldRTV[0];
         context->PSSetShaderResources(0, 6, nullSRVs);
         context->OMSetRenderTargets(1, &targetRTV, passState.oldDSV);
-        context->RSSetViewports(1, passState.oldViewports);
+        const D3D11_VIEWPORT rectViewport {
+            static_cast<float>(rect.x1),
+            static_cast<float>(rect.y1),
+            static_cast<float>(rect.x2 - rect.x1),
+            static_cast<float>(rect.y2 - rect.y1),
+            0.0f,
+            1.0f,
+        };
+        context->RSSetViewports(1, drawRect ? &rectViewport : passState.oldViewports);
         context->OMSetBlendState(halfResGather ? gDofFocusPremultBlendState.Get() : gDofFocusBlendState.Get(), nullptr, 0xFFFFFFFF);
         context->OMSetDepthStencilState(gDofFocusDepthDisabledState.Get(), 0);
 
@@ -2814,7 +3002,7 @@ namespace
         return IsReasonableFocusSourcePacket(&source);
     }
 
-    void TrackNearFocusPacket(const FocusSourcePacket* packet)
+    void TrackMGS2FocusPacket(const FocusSourcePacket* packet, FocusSide side, const FocusRect* nativeRect = nullptr)
     {
         if (!IsReasonableFocusSourcePacket(packet))
         {
@@ -2822,15 +3010,27 @@ namespace
         }
 
         TrackedFocusPacket& tracked = gNearFocusPackets[gNearFocusPacketWriteIndex++ % gNearFocusPackets.size()];
+        tracked = {};
         tracked.address = reinterpret_cast<uintptr_t>(packet);
         tracked.packet = *packet;
+        tracked.side = side;
+        if (nativeRect)
+        {
+            tracked.hasNativeRect = true;
+            tracked.nativeRect = *nativeRect;
+        }
     }
 
-    bool ConsumeNearFocusPacket(const FocusSourcePacket* packet)
+    void TrackNearFocusPacket(const FocusSourcePacket* packet)
+    {
+        TrackMGS2FocusPacket(packet, FocusSide::Near);
+    }
+
+    TrackedFocusPacket* FindTrackedMGS2FocusPacket(const FocusSourcePacket* packet)
     {
         if (!IsReasonableFocusSourcePacket(packet))
         {
-            return false;
+            return nullptr;
         }
 
         const uintptr_t address = reinterpret_cast<uintptr_t>(packet);
@@ -2838,28 +3038,19 @@ namespace
         {
             if (tracked.address == address && SameFocusPacket(tracked.packet, *packet))
             {
-                tracked.address = 0;
-                return true;
+                return &tracked;
             }
         }
 
-        return false;
+        return nullptr;
     }
 
-    bool IsTrackedNearFocusPacket(const FocusSourcePacket* packet)
+    bool ConsumeNearFocusPacket(const FocusSourcePacket* packet)
     {
-        if (!IsReasonableFocusSourcePacket(packet))
+        if (TrackedFocusPacket* tracked = FindTrackedMGS2FocusPacket(packet))
         {
-            return false;
-        }
-
-        const uintptr_t address = reinterpret_cast<uintptr_t>(packet);
-        for (const TrackedFocusPacket& tracked : gNearFocusPackets)
-        {
-            if (tracked.address == address && SameFocusPacket(tracked.packet, *packet))
-            {
-                return true;
-            }
+            tracked->address = 0;
+            return true;
         }
 
         return false;
@@ -2867,7 +3058,7 @@ namespace
 
     // One draw per focus packet. A second packet in the same frame blurs on top of the first, the
     // way the PS2's planes piled up.
-    bool DrawMGS2DepthFocus(const FocusSourcePacket* packet, bool nearSide)
+    bool DrawMGS2DepthFocus(const FocusSourcePacket* packet, bool nearSide, const FocusRect* nativeRect = nullptr)
     {
         if (!Memory::IsReadable(packet, sizeof(FocusSourcePacket)) || g_DepthOfFieldFixes.fBlurUvMultiplier <= 0.0f)
         {
@@ -2888,8 +3079,15 @@ namespace
 
         ID3D11DeviceContext* context = g_D3D11Hooks.d3dDeviceContext.Get();
         ID3D11ShaderResourceView* depthSRV = CaptureMGS2FrameDepth(passState.oldDSV);
+        FocusRect scaledRect {};
+        const FocusRect* drawRect = nullptr;
+        if (nativeRect)
+        {
+            scaledRect = ScaleMGS2NativeRect(*nativeRect);
+            drawRect = &scaledRect;
+        }
         const bool drawn = depthSRV &&
-            DrawMGS2PlaneStack(passState, nearSide ? nullptr : &stack, nearSide ? &stack : nullptr, depthSRV);
+            DrawMGS2PlaneStack(passState, nearSide ? nullptr : &stack, nearSide ? &stack : nullptr, depthSRV, drawRect);
         RestoreDofPass(context, passState);
         if (!drawn)
         {
@@ -2909,11 +3107,13 @@ namespace
     void __fastcall FarFocusCommand_Hook(void* packet)
     {
         auto* focusPacket = static_cast<FocusSourcePacket*>(packet);
-        const bool isNearFocusPacket = IsTrackedNearFocusPacket(focusPacket);
-        const bool drawn = DrawMGS2DepthFocus(focusPacket, isNearFocusPacket);
-        if (isNearFocusPacket)
+        TrackedFocusPacket* tracked = FindTrackedMGS2FocusPacket(focusPacket);
+        const bool isNearFocusPacket = tracked && tracked->side == FocusSide::Near;
+        const FocusRect* nativeRect = tracked && tracked->hasNativeRect ? &tracked->nativeRect : nullptr;
+        const bool drawn = DrawMGS2DepthFocus(focusPacket, isNearFocusPacket, nativeRect);
+        if (tracked)
         {
-            // The game only knows far packets; near ones end here.
+            // near packets and the codec's near/far packets end here. 
             ConsumeNearFocusPacket(focusPacket);
             return;
         }
@@ -2923,29 +3123,15 @@ namespace
         }
     }
 
-    bool QueueNearFocusPacketFromSource(FocusSourcePacket source)
+    bool QueueMGS2FocusPacketFromSource(FocusSourcePacket source, FocusSide side, const FocusRect* nativeRect)
     {
         if (!gBpRbAlloc || !gBpRbAddCommand || gInsideNearFocusAddCommand)
         {
             return false;
         }
-    //    if (bCutsceneNeedsSpecialHandling)
-        {
-            if (bIsD12T3)
-            {
-                iNearEffectCount++;
-                if (iNearEffectCount >= 80 && iNearEffectCount < 440)
-                {
-#ifndef RELEASE_BUILD
-                    spdlog::info("MGS 2: Depth of Field: skipping near focus packet {:d} for cutscene special handling.", iNearEffectCount);
-#endif
-                    return false;
-                }
-            }
-        }
 
         Ps2PlaneStack stack {};
-        if (!BuildPs2PlaneStack(source, FocusSide::Near, stack))
+        if (!BuildPs2PlaneStack(source, side, stack))
         {
             return false;
         }
@@ -2957,13 +3143,30 @@ namespace
         }
 
         *packet = source;
-        TrackNearFocusPacket(packet);
+        TrackMGS2FocusPacket(packet, side, nativeRect);
 
         gInsideNearFocusAddCommand = true;
         gBpRbAddCommand(kCmdPostFxFarFocus, packet);
         gInsideNearFocusAddCommand = false;
 
         return true;
+    }
+
+    bool QueueNearFocusPacketFromSource(FocusSourcePacket source)
+    {
+      //  {                                     //new dof seems to fix this overexaggerated plane.
+      //      if (bIsD12T3)
+      //      {
+      //          iNearEffectCount++;
+      //          if (iNearEffectCount >= 80 && iNearEffectCount < 440)
+      //          {
+      //              spdlog::info("MGS 2: Depth of Field: skipping near focus packet {:d}.", iNearEffectCount);
+      //              return false;
+      //          }
+      //      }
+      //  }
+
+        return QueueMGS2FocusPacketFromSource(source, FocusSide::Near);
     }
 
     bool QueueNearFocusPacket(void* work)
@@ -2975,6 +3178,28 @@ namespace
         }
 
         return QueueNearFocusPacketFromSource(source);
+    }
+
+    bool QueueCodecFocusPacket(void* work, FocusSide side)
+    {
+        const uintptr_t workAddress = reinterpret_cast<uintptr_t>(work);
+        if (!LooksLikeCodecFocusWork(workAddress) ||
+            Memory::ReadField<int>(workAddress, kCodecFocusWorkDisableOffset) != 0)
+        {
+            return false;
+        }
+
+        FocusSourcePacket source {};
+        source.maxPlane = Memory::ReadField<int>(workAddress, kCodecFocusWorkMaxPlaneOffset);
+        source.focusNear = CodecGsDepthToNormalized(Memory::ReadField<int>(workAddress, kCodecFocusWorkFocusNearOffset));
+        source.focusFar = CodecGsDepthToNormalized(Memory::ReadField<int>(workAddress, kCodecFocusWorkFocusFarOffset));
+        if (!IsReasonableFocusSourcePacket(&source))
+        {
+            return false;
+        }
+
+        const FocusRect nativeRect = GetCodecPortraitRect(Memory::ReadField<int>(workAddress, kCodecFocusWorkChannelOffset));
+        return QueueMGS2FocusPacketFromSource(source, side, &nativeRect);
     }
 
     bool PrepareOriginalNearFocusCommand(FocusSourcePacket* packet)
@@ -3084,6 +3309,23 @@ namespace
         else
         {
             spdlog::warn("MGS 2: Depth of Field: near focus demo stage entry was not found.");
+        }
+    }
+
+    void InstallCodecFocusCreationHooks()
+    {
+        uint8_t* nearCreate = Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 8B DA 41 8B E8", "MGS 2: Depth of Field: user\\mode\\codec\\c_nfocus.c -> NewCodecNearFocusEffect() | @l756: ");
+        if (nearCreate)
+        {
+            CodecNearFocusCreateHook = safetyhook::create_inline(nearCreate, reinterpret_cast<void*>(CodecNearFocusCreate_Hook));
+            LOG_HOOK(CodecNearFocusCreateHook, "MGS 2: Depth of Field: user\\mode\\codec\\c_nfocus.c -> NewCodecNearFocusEffect() | @l756: ")
+        }
+
+        uint8_t* farCreate = Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 8B EA 41 8B F0", "MGS 2: Depth of Field: user\\mode\\codec\\c_ffocus.c -> NewCodecFarFocusEffect() | @l726: ");
+        if (farCreate)
+        {
+            CodecFarFocusCreateHook = safetyhook::create_inline(farCreate, reinterpret_cast<void*>(CodecFarFocusCreate_Hook));
+            LOG_HOOK(CodecFarFocusCreateHook, "MGS 2: Depth of Field: user\\mode\\codec\\c_ffocus.c -> NewCodecFarFocusEffect() | @l726: ")
         }
     }
 
@@ -3297,15 +3539,15 @@ namespace
 
 }
 
-void DepthOfFieldFixes::HandleLevelTransition() const
-{
-    if (!bEnabled)
-    {
-        return;
-    }
-    iNearEffectCount = 0;
-    bIsD12T3 = (eGameType & MGS2) && g_GameVars.IsStage(MGS2Stages::D12T3);
-}
+//void DepthOfFieldFixes::HandleLevelTransition() const
+//{
+//    if (!bEnabled)
+//    {
+//        return;
+//    }
+//    iNearEffectCount = 0;
+//    bIsD12T3 = (eGameType & MGS2) && g_GameVars.IsStage(MGS2Stages::D12T3);
+//}
 
 void DepthOfFieldFixes::OnDeviceReady()
 {
@@ -3376,6 +3618,7 @@ void DepthOfFieldFixes::Initialize()
         if (InstallFarFocusCommandHook() && ResolveRenderBufferHelpers())
         {
             InstallNearFocusCreationHooks();
+            InstallCodecFocusCreationHooks();
         }
         else
         {
@@ -3383,11 +3626,10 @@ void DepthOfFieldFixes::Initialize()
         }
 
 #ifndef RELEASE_BUILD
-        g_InputHandler.RegisterHotkey(VK_ADD, "print iNearEffectCount", []
-                                      {
-                                          spdlog::info("iNearEffectCount = {}, bIsD12T3 = {}", iNearEffectCount, bIsD12T3);
-                                      });
-
+     //   g_InputHandler.RegisterHotkey(VK_ADD, "print iNearEffectCount", []
+     //                                  {
+     //                                      spdlog::info("iNearEffectCount = {}, bIsD12T3 = {}", iNearEffectCount, bIsD12T3);
+     //                                  });
         /*
         MAKE_HOOK_MID(baseModule, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 41 8B F9 41 8B F0 45 33 C9 8B EA 44 8B F1 BA ?? ?? ?? ?? 41 B8 ?? ?? ?? ?? 41 8D 49 ?? E8 A4 1C B2 FF", "NewNearFocusEffect -> Focal Points", {
         spdlog::info("ctx.r8 = {}, ctx.r9 = {}", ctx.r8, ctx.r9);

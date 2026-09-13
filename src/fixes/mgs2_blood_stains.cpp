@@ -40,8 +40,10 @@ namespace
     thread_local uintptr_t g_curMesh  = 0;
     thread_local uintptr_t g_lpObjs   = 0;
 
-    std::once_flag           g_initOnce;
-    bool                     g_ready    = false;
+    bool                     bD3DReady   = false;
+    ComPtr<ID3DBlob>         pBloodVSBlob;
+    ComPtr<ID3DBlob>         pBloodSkinnedVSBlob;
+    ComPtr<ID3DBlob>         pBloodPSBlob;
     ID3D11VertexShader*      g_bloodVS  = nullptr;   // rigid: float4 @ slot0
     ID3D11VertexShader*      g_bloodVS_S = nullptr;  // skinned: int16 @ slot2
     ID3D11PixelShader*       g_bloodPS  = nullptr;
@@ -115,89 +117,73 @@ namespace
         "  return float4(c, 1.0);\n"
         "}\n";
 
-    void EnsureD3D()
+    void InitializeD3D()
     {
-        std::call_once(g_initOnce, []
+        ID3D11Device* pDevice = g_D3D11Hooks.d3dDevice.Get();
+        ID3D11DeviceContext* pContext = g_D3D11Hooks.d3dDeviceContext.Get();
+        if (!pDevice || !pContext)
         {
-            ID3D11Device* dev = g_D3D11Hooks.d3dDevice.Get();
-            ID3D11DeviceContext* ctx = g_D3D11Hooks.d3dDeviceContext.Get();
-            if (!dev || !ctx) { spdlog::error("MGS 2: Blood Stains: D3D device not ready."); return; }
+            spdlog::error("MGS 2: Blood Stains: D3D device not ready.");
+            return;
+        }
 
-            if (!g_D3D11Hooks.D3DCompileFunc) { spdlog::error("MGS 2: Blood Stains: D3DCompile not found."); return; }
+        if (!pBloodVSBlob || !pBloodSkinnedVSBlob || !pBloodPSBlob)
+        {
+            spdlog::error("MGS 2: Blood Stains: shader bytecode was not compiled.");
+            return;
+        }
 
-            ID3DBlob *vsb = nullptr, *vsbS = nullptr, *psb = nullptr, *err = nullptr;
-            if (FAILED(g_D3D11Hooks.D3DCompileFunc(kVS, strlen(kVS), "blood_vs", nullptr, nullptr, "main", "vs_4_0", 0, 0, &vsb, &err)))
-            {
-                spdlog::error("MGS 2: Blood Stains: vertex shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-                if (err) err->Release();
-                return;
-            }
-            if (err) { err->Release(); err = nullptr; }
-            if (FAILED(g_D3D11Hooks.D3DCompileFunc(kVS_S, strlen(kVS_S), "blood_vs_s", nullptr, nullptr, "main", "vs_4_0", 0, 0, &vsbS, &err)))
-            {
-                spdlog::error("MGS 2: Blood Stains: skinned vertex shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-                if (err) err->Release();
-                vsb->Release();
-                return;
-            }
-            if (err) { err->Release(); err = nullptr; }
-            if (FAILED(g_D3D11Hooks.D3DCompileFunc(kPS, strlen(kPS), "blood_ps", nullptr, nullptr, "main", "ps_4_0", 0, 0, &psb, &err)))
-            {
-                spdlog::error("MGS 2: Blood Stains: pixel shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-                if (err) err->Release();
-                vsb->Release(); vsbS->Release();
-                return;
-            }
-            if (err) { err->Release(); err = nullptr; }
+        pDevice->CreateVertexShader(pBloodVSBlob->GetBufferPointer(), pBloodVSBlob->GetBufferSize(), nullptr, &g_bloodVS);
+        pDevice->CreateVertexShader(pBloodSkinnedVSBlob->GetBufferPointer(), pBloodSkinnedVSBlob->GetBufferSize(), nullptr, &g_bloodVS_S);
+        pDevice->CreatePixelShader(pBloodPSBlob->GetBufferPointer(), pBloodPSBlob->GetBufferSize(), nullptr, &g_bloodPS);
 
-            dev->CreateVertexShader(vsb->GetBufferPointer(), vsb->GetBufferSize(), nullptr, &g_bloodVS);
-            dev->CreateVertexShader(vsbS->GetBufferPointer(), vsbS->GetBufferSize(), nullptr, &g_bloodVS_S);
-            dev->CreatePixelShader(psb->GetBufferPointer(), psb->GetBufferSize(), nullptr, &g_bloodPS);
+        const D3D11_INPUT_ELEMENT_DESC inputElementsF[] = {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,          0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 7, DXGI_FORMAT_R32G32B32A32_FLOAT, kBloodSlot, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        pDevice->CreateInputLayout(inputElementsF, 2, pBloodVSBlob->GetBufferPointer(), pBloodVSBlob->GetBufferSize(), &g_layoutF);
 
-            const D3D11_INPUT_ELEMENT_DESC ilF[] = {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,         0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                { "TEXCOORD", 7, DXGI_FORMAT_R32G32B32A32_FLOAT, kBloodSlot, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            };
-            dev->CreateInputLayout(ilF, 2, vsb->GetBufferPointer(), vsb->GetBufferSize(), &g_layoutF);
+        const D3D11_INPUT_ELEMENT_DESC inputElementsS[] = {
+            { "POSITION", 0, DXGI_FORMAT_R16G16B16A16_SINT,  2,          0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 7, DXGI_FORMAT_R32G32B32A32_FLOAT, kBloodSlot, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        pDevice->CreateInputLayout(inputElementsS, 2, pBloodSkinnedVSBlob->GetBufferPointer(), pBloodSkinnedVSBlob->GetBufferSize(), &g_layoutS);
+        pBloodVSBlob.Reset();
+        pBloodSkinnedVSBlob.Reset();
+        pBloodPSBlob.Reset();
 
-            const D3D11_INPUT_ELEMENT_DESC ilS[] = {
-                { "POSITION", 0, DXGI_FORMAT_R16G16B16A16_SINT,  2,         0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-                { "TEXCOORD", 7, DXGI_FORMAT_R32G32B32A32_FLOAT, kBloodSlot, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            };
-            dev->CreateInputLayout(ilS, 2, vsbS->GetBufferPointer(), vsbS->GetBufferSize(), &g_layoutS);
-            vsb->Release();
-            vsbS->Release();
-            psb->Release();
+        D3D11_BLEND_DESC blendDesc = {};
+        blendDesc.RenderTarget[0].BlendEnable = TRUE;
+        blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_DEST_COLOR;
+        blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        pDevice->CreateBlendState(&blendDesc, &g_blendMul);
 
-            D3D11_BLEND_DESC bd = {};
-            bd.RenderTarget[0].BlendEnable = TRUE;
-            bd.RenderTarget[0].SrcBlend = D3D11_BLEND_DEST_COLOR;
-            bd.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-            bd.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-            bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-            bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-            bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-            bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-            dev->CreateBlendState(&bd, &g_blendMul);
+        D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+        depthStencilDesc.DepthEnable = TRUE;
+        depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+        depthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+        pDevice->CreateDepthStencilState(&depthStencilDesc, &g_depthState);
 
-            D3D11_DEPTH_STENCIL_DESC dd = {};
-            dd.DepthEnable = TRUE;
-            dd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-            dd.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
-            dev->CreateDepthStencilState(&dd, &g_depthState);
+        void** ppContextVTable = *reinterpret_cast<void***>(pContext);
+        g_drawIndexedHook = safetyhook::create_inline(ppContextVTable[12], reinterpret_cast<void*>(DrawIndexed_Detour));
 
-            void** vtable = *reinterpret_cast<void***>(ctx);
-            g_drawIndexedHook = safetyhook::create_inline(vtable[12], reinterpret_cast<void*>(DrawIndexed_Detour));
+        void** ppDeviceVTable = *reinterpret_cast<void***>(pDevice);
+        g_createILHook = safetyhook::create_inline(ppDeviceVTable[11], reinterpret_cast<void*>(CreateInputLayout_Detour));
 
-            void** dvt = *reinterpret_cast<void***>(dev);
-            g_createILHook = safetyhook::create_inline(dvt[11], reinterpret_cast<void*>(CreateInputLayout_Detour));
-
-            g_ready = g_bloodVS && g_bloodVS_S && g_bloodPS && g_layoutF && g_layoutS && g_blendMul && g_depthState && g_drawIndexedHook;
-            if (g_ready)
-                spdlog::info("MGS 2: Blood Stains: render resources initialised.");
-            else
-                spdlog::error("MGS 2: Blood Stains: failed to initialise render resources.");
-        });
+        bD3DReady = g_bloodVS && g_bloodVS_S && g_bloodPS && g_layoutF && g_layoutS && g_blendMul && g_depthState && g_drawIndexedHook;
+        if (bD3DReady)
+        {
+            spdlog::info("MGS 2: Blood Stains: render resources initialised.");
+        }
+        else
+        {
+            spdlog::error("MGS 2: Blood Stains: failed to initialise render resources.");
+        }
     }
 
     constexpr uint32_t kMaxVerts = 65536;
@@ -374,7 +360,7 @@ namespace
     {
         g_drawIndexedHook.stdcall<void>(ctx, indexCount, startIndex, baseVertex);
 
-        if (g_inMyDraw || !g_active || !g_ready || !ctx || !g_curObjs || !g_curMesh) return;
+        if (g_inMyDraw || !g_active || !bD3DReady || !ctx || !g_curObjs || !g_curMesh) return;
 
         MeshBlood& mb = g_meshBlood[g_curObjs];
         const uint64_t now = GetTickCount64();
@@ -415,9 +401,8 @@ namespace
 
     void EnterDispatch(uintptr_t param1)
     {
-        EnsureD3D();
         g_active = false; g_curObjs = 0; g_curMesh = 0;
-        if (!g_ready) return;
+        if (!bD3DReady) return;
         const uintptr_t objs = g_lpObjs;
         if (!IsBloodObjs(objs)) return;
         const uintptr_t mesh = Memory::ReadField<uintptr_t>(param1, kParam_Mesh, 0);
@@ -458,6 +443,16 @@ namespace
     }
 }
 
+void MGS2BloodStains::Init()
+{
+    if (!(eGameType & MGS2) || !bEnabled)
+    {
+        return;
+    }
+
+    InitializeD3D();
+}
+
 void MGS2BloodStains::Initialize()
 {
     if (!(eGameType & MGS2) || !bEnabled)
@@ -466,6 +461,45 @@ void MGS2BloodStains::Initialize()
     }
 
     spdlog::info("MGS 2 - Blood stain fixes: Initializing...");
+
+    if (!g_D3D11Hooks.D3DCompileFunc)
+    {
+        spdlog::error("MGS 2: Blood Stains: D3DCompile not found.");
+        return;
+    }
+
+    ComPtr<ID3DBlob> pErrorBlob;
+    const ULONGLONG started = GetTickCount64();
+
+    HRESULT hr = g_D3D11Hooks.D3DCompileFunc(kVS, strlen(kVS), "blood_vs", nullptr, nullptr, "main", "vs_4_0", 0, 0, pBloodVSBlob.ReleaseAndGetAddressOf(), pErrorBlob.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+    {
+        spdlog::error("MGS 2: Blood Stains: vertex shader compile failed: {}", pErrorBlob ? static_cast<const char*>(pErrorBlob->GetBufferPointer()) : "?");
+        return;
+    }
+
+    pErrorBlob.Reset();
+
+    hr = g_D3D11Hooks.D3DCompileFunc(kVS_S, strlen(kVS_S), "blood_vs_s", nullptr, nullptr, "main", "vs_4_0", 0, 0, pBloodSkinnedVSBlob.ReleaseAndGetAddressOf(), pErrorBlob.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+    {
+        spdlog::error("MGS 2: Blood Stains: skinned vertex shader compile failed: {}", pErrorBlob ? static_cast<const char*>(pErrorBlob->GetBufferPointer()) : "?");
+        pBloodVSBlob.Reset();
+        return;
+    }
+
+    pErrorBlob.Reset();
+
+    hr = g_D3D11Hooks.D3DCompileFunc(kPS, strlen(kPS), "blood_ps", nullptr, nullptr, "main", "ps_4_0", 0, 0, pBloodPSBlob.ReleaseAndGetAddressOf(), pErrorBlob.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+    {
+        spdlog::error("MGS 2: Blood Stains: pixel shader compile failed: {}", pErrorBlob ? static_cast<const char*>(pErrorBlob->GetBufferPointer()) : "?");
+        pBloodVSBlob.Reset();
+        pBloodSkinnedVSBlob.Reset();
+        return;
+    }
+
+    spdlog::info("MGS 2: Blood Stains: shaders compiled in {} ms.", GetTickCount64() - started);
 
     if (uint8_t* address = Memory::PatternScan(baseModule, "4C 8B DC 55 57 41 57 48 8D 6C 24 ?? 48 81 EC ?? ?? 00 00 45 0F 29 BB ?? ?? FF FF", "MGS 2: Blood Stains - OozeAdd"))
     {
