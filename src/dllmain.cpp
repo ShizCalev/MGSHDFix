@@ -50,6 +50,7 @@
 #include "mgs2_demo_effect_blacklist.hpp"
 #include "mgs2_lens_droplets.hpp"
 #include "mgs2_gas_haze.hpp"
+#include "mgs2_soft_shadows.hpp"
 #include "mgs2_demo_camera_judder.hpp"
 #include "mgs2_hair_layering.hpp"
 #include "mgs2_rotor_procession.hpp"
@@ -533,14 +534,22 @@ void afterPresent()
     {
         MGS2_CodecBackground::Init();
         MGS2_ContrastShader::Init();
+        MGS2BloodStains::Init();
         MGS2_ShimmerEffect::Init();
         MGS2_Crossfade::Initialize();
         g_MGS2UnderwaterFilterFix.InstallD3D11StateHooks();
         MGS2_AiRayVision::Init();
+        MGS2DemoBlur::Init();
+        MGS2GasHaze::Init();
+        MGS2SoftShadows::Init();
     }
     else if (eGameType & MG)
     {
         MG1_DisplayScaling::Init();
+    }
+    if (eGameType & MGS3)
+    {
+        MGS3FilmGrain::Init();
     }
     ColorCorrection::Init();
     if (!(eGameType & MG))
@@ -630,6 +639,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_RestorePhotosensitiveEffects::Initialize());
         INITIALIZE(MGS2LensDroplets::Initialize());
         INITIALIZE(MGS2GasHaze::Initialize());
+        INITIALIZE(MGS2SoftShadows::Initialize());
         INITIALIZE(MGS2DemoCameraJudder::Initialize());
         INITIALIZE(MGS2HairLayering::Initialize());
         INITIALIZE(MGS2RotorProcession::Initialize());

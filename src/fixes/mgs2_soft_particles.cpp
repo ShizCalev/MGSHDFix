@@ -167,7 +167,7 @@ namespace
     ComPtr<ID3D11PixelShader> gPS;
     ComPtr<ID3D11Buffer> gFade[kSoftTextureCount];
     ComPtr<ID3D11DepthStencilState> gNoDepthTest;
-    bool gShaderFailed = false;
+    bool bShadersReady = false;
     uint64_t gDepthFrame = UINT64_MAX;
 
     int SoftTextureEntry(const D3D11_TEXTURE2D_DESC& desc, const void* data, UINT rowPitch)
@@ -236,11 +236,16 @@ namespace
         return -1;
     }
 
+    ULONGLONG gCompileMs = 0;
+
     bool Compile(const char* entry, const char* target, const D3D_SHADER_MACRO* defines, ComPtr<ID3DBlob>& blob)
     {
+        const ULONGLONG started = GetTickCount64();
         ComPtr<ID3DBlob> err;
-        if (FAILED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, defines, nullptr, entry, target,
-            0, 0, blob.GetAddressOf(), err.GetAddressOf())))
+        const bool ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, defines, nullptr, entry, target,
+            0, 0, blob.GetAddressOf(), err.GetAddressOf()));
+        gCompileMs += GetTickCount64() - started;
+        if (!ok)
         {
             spdlog::error("MGS2SoftParticles: {} compile failed: {}", entry,
                 err ? static_cast<const char*>(err->GetBufferPointer()) : "?");
@@ -251,15 +256,10 @@ namespace
 
     bool EnsureShaders()
     {
-        if (gPS)
+        if (bShadersReady)
         {
             return true;
         }
-        if (gShaderFailed)
-        {
-            return false;
-        }
-        gShaderFailed = true;
 
         auto* dev = g_D3D11Hooks.d3dDevice.Get();
         if (!dev || !g_D3D11Hooks.D3DCompileFunc)
@@ -306,7 +306,8 @@ namespace
         {
             return false;
         }
-        gShaderFailed = false;
+        spdlog::info("MGS2SoftParticles: shaders compiled in {} ms.", gCompileMs);
+        bShadersReady = true;
         return true;
     }
 
@@ -340,7 +341,7 @@ namespace
             entry = -1;
         }
         ID3D11ShaderResourceView* depth = entry >= 0 ? SceneDepthForFrame(ctx) : nullptr;
-        if (!depth || !EnsureShaders())
+        if (!depth || !bShadersReady)
         {
             gDrawIndexedHook.stdcall<void>(ctx, indexCount, startIndex, baseVertex);
             return;
@@ -404,6 +405,12 @@ void MGS2SoftParticles::OnDeviceReady()
     }
 
     PopulateSoftTextureHashes();
+
+    if (!EnsureShaders())
+    {
+        spdlog::error("MGS2SoftParticles: shader/resource setup failed; effect will be disabled.");
+        return;
+    }
 
     void** vtable = *reinterpret_cast<void***>(ctx);
     gDrawIndexedHook = safetyhook::create_inline(vtable[12], reinterpret_cast<void*>(HookedDrawIndexed));

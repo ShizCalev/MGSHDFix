@@ -248,7 +248,7 @@ void GameVars::OnLevelTransition()
         MGS2_First_Person_View::HandleLevelTransition();
         MGS2_ThirdPersonFreecam::HandleLevelTransition();
         MGS2Sunglasses::CheckOnTransition();
-        g_DepthOfFieldFixes.HandleLevelTransition();
+        //g_DepthOfFieldFixes.HandleLevelTransition();
         MGS2VampFPVPunch::HandleLevelTransition();
         ResolutionScalingFixes::HandleLevelTransition();
         D3D11TextOverlay::HandleLevelTransition();

@@ -135,6 +135,7 @@ void MGS2_ContrastShader::Setup()
     }
 
     ComPtr<ID3DBlob> err;
+    const ULONGLONG started = GetTickCount64();
 
     HRESULT hr = g_D3D11Hooks.D3DCompileFunc(kContrastShader, strlen(kContrastShader), nullptr, nullptr, nullptr, "VS", "vs_5_0", 0, 0, vsBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf());
     if (FAILED(hr))
@@ -153,7 +154,7 @@ void MGS2_ContrastShader::Setup()
         return;
     }
 
-    spdlog::info("MGS2_ContrastShader: Compiled contrast shader successfully");
+    spdlog::info("MGS2_ContrastShader: shaders compiled in {} ms.", GetTickCount64() - started);
 
       /*
     MAKE_HOOK_MID(baseModule, "48 83 EC ?? 48 8B 05 ?? ?? ?? ?? 48 85 C0 75 ?? B8", "L2D_ReleaseLayout", {

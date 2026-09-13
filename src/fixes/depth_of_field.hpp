@@ -9,7 +9,7 @@ public:
     void Initialize();
     void OnDeviceReady();
     void OnPresent();
-    void HandleLevelTransition() const;
+    //void HandleLevelTransition() const;
 };
 
 inline DepthOfFieldFixes g_DepthOfFieldFixes;

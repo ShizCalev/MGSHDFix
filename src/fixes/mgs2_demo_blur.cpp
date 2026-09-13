@@ -139,75 +139,31 @@ namespace
     DXGI_FORMAT g_prevFormat = DXGI_FORMAT_UNKNOWN;
     DXGI_FORMAT g_prevViewFormat = DXGI_FORMAT_UNKNOWN;
     bool g_havePrev = false;
-    bool g_d3dInit = false, g_d3dFailed = false;
+    bool bD3DInit = false;
 
-    ID3D11Device* g_boundDevice = nullptr;
+    ComPtr<ID3DBlob> pVSBlob, pPSBlob;
 
-    bool EnsureD3D(ID3D11Device* dev)
+    bool CompileShaders()
     {
-        // The game recreates its device on some scene transitions - rebuild on change.
-        if (dev != g_boundDevice)
+        if (!g_D3D11Hooks.D3DCompileFunc)
         {
-            g_d3dInit = false; g_d3dFailed = false; g_havePrev = false;
-            g_prevSRV.Reset(); g_prevTex.Reset(); g_prevW = g_prevH = 0;
-            g_prevFormat = g_prevViewFormat = DXGI_FORMAT_UNKNOWN;
-            g_cb.Reset(); g_blend.Reset(); g_rs.Reset(); g_dss.Reset(); g_samp.Reset();
-            g_vs.Reset(); g_ps.Reset();
-            g_boundDevice = dev;
+            spdlog::error("MGS 2: Demo Blur: D3DCompile not found.");
+            return false;
         }
-        if (g_d3dInit) return true;
-        if (g_d3dFailed) return false;
-        if (!g_D3D11Hooks.D3DCompileFunc) { g_d3dFailed = true; return false; }
 
-        ComPtr<ID3DBlob> vsb, psb, err;
+        const ULONGLONG started = GetTickCount64();
+        ComPtr<ID3DBlob> err;
         bool ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, nullptr, nullptr,
-                        "VS", "vs_5_0", 0, 0, vsb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
+                        "VS", "vs_5_0", 0, 0, pVSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf()));
         if (ok) ok = SUCCEEDED(g_D3D11Hooks.D3DCompileFunc(kShader, strlen(kShader), nullptr, nullptr, nullptr,
-                        "PS", "ps_5_0", 0, 0, psb.GetAddressOf(), err.ReleaseAndGetAddressOf()));
+                        "PS", "ps_5_0", 0, 0, pPSBlob.ReleaseAndGetAddressOf(), err.ReleaseAndGetAddressOf()));
         if (!ok)
         {
             spdlog::error("MGS 2: Demo Blur: shader compile failed: {}", err ? (const char*)err->GetBufferPointer() : "?");
-            g_d3dFailed = true;
             return false;
         }
-        if (FAILED(dev->CreateVertexShader(vsb->GetBufferPointer(), vsb->GetBufferSize(), nullptr, g_vs.GetAddressOf())) ||
-            FAILED(dev->CreatePixelShader(psb->GetBufferPointer(), psb->GetBufferSize(), nullptr, g_ps.GetAddressOf())))
-        {
-            g_d3dFailed = true;
-            return false;
-        }
-
-        D3D11_BUFFER_DESC bd {};
-        bd.ByteWidth = 16; bd.Usage = D3D11_USAGE_DYNAMIC;
-        bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        dev->CreateBuffer(&bd, nullptr, g_cb.GetAddressOf());
-
-        D3D11_BLEND_DESC bl {};
-        bl.RenderTarget[0].BlendEnable = TRUE;
-        bl.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-        bl.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        bl.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-        bl.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-        bl.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-        bl.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-        bl.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        dev->CreateBlendState(&bl, g_blend.GetAddressOf());
-
-        D3D11_RASTERIZER_DESC rs {};
-        rs.FillMode = D3D11_FILL_SOLID; rs.CullMode = D3D11_CULL_NONE;
-        dev->CreateRasterizerState(&rs, g_rs.GetAddressOf());
-
-        D3D11_DEPTH_STENCIL_DESC ds {};
-        ds.DepthEnable = FALSE;
-        dev->CreateDepthStencilState(&ds, g_dss.GetAddressOf());
-
-        D3D11_SAMPLER_DESC sp {};
-        sp.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        sp.AddressU = sp.AddressV = sp.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-        dev->CreateSamplerState(&sp, g_samp.GetAddressOf());
-
-        g_d3dInit = g_cb && g_blend && g_rs && g_dss && g_samp;
-        return g_d3dInit;
+        spdlog::info("MGS 2: Demo Blur: shaders compiled in {} ms.", GetTickCount64() - started);
+        return true;
     }
 
     bool EnsurePrevTexture(ID3D11Device* dev, DXGI_FORMAT viewFormat, const D3D11_TEXTURE2D_DESC& sceneDesc)
@@ -287,7 +243,10 @@ void MGS2DemoBlur::DrawInto(ID3D11RenderTargetView* sceneColor, ID3D11ShaderReso
 
     auto* dev = g_D3D11Hooks.d3dDevice.Get();
     auto* ctx = g_D3D11Hooks.d3dDeviceContext.Get();
-    if (!dev || !ctx || !EnsureD3D(dev)) return;
+    if (!dev || !ctx || !bD3DInit)
+    {
+        return;
+    }
 
     ComPtr<ID3D11Resource> colorRes;
     sceneColor->GetResource(colorRes.GetAddressOf());
@@ -395,7 +354,10 @@ void MGS2DemoBlur::CaptureComposited(IDXGISwapChain* swapChain)
 
     auto* dev = g_D3D11Hooks.d3dDevice.Get();
     auto* ctx = g_D3D11Hooks.d3dDeviceContext.Get();
-    if (!dev || !ctx || !EnsureD3D(dev)) return;
+    if (!dev || !ctx || !bD3DInit)
+    {
+        return;
+    }
 
     ComPtr<ID3D11Texture2D> backbuf;
     if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
@@ -421,6 +383,11 @@ void MGS2DemoBlur::Initialize()
 {
     if (!(eGameType & MGS2) || !bEnabled) return;
 
+    if (!CompileShaders())
+    {
+        spdlog::error("MGS 2: Demo Blur: shader compilation failed; effect will be disabled.");
+    }
+
     if (uint8_t* act = Memory::PatternScan(baseModule, kActSig, "MGS 2: Demo Blur -> Act()"))
     {
         g_actHook = safetyhook::create_inline(act, reinterpret_cast<void*>(Act_Detour));
@@ -443,5 +410,75 @@ void MGS2DemoBlur::Initialize()
     if (g_actHook || g_timerActHook)
     {
         SceneDepth::SetEndOf3DCallback(&MGS2DemoBlur::DrawInto, SceneDepth::PRIORITY_DEMO_BLUR);
+    }
+}
+
+void MGS2DemoBlur::Init()
+{
+    if (!(eGameType & MGS2) || !bEnabled)
+    {
+        return;
+    }
+
+    ID3D11Device* dev = g_D3D11Hooks.d3dDevice.Get();
+    if (!dev)
+    {
+        spdlog::error("MGS 2: Demo Blur: D3D11 device is not initialized.");
+        return;
+    }
+
+    if (!pVSBlob || !pPSBlob)
+    {
+        spdlog::error("MGS 2: Demo Blur: shader bytecode was not compiled.");
+        return;
+    }
+
+    if (FAILED(dev->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, g_vs.GetAddressOf())) ||
+        FAILED(dev->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, g_ps.GetAddressOf())))
+    {
+        spdlog::error("MGS 2: Demo Blur: failed to create shaders.");
+        return;
+    }
+
+    D3D11_BUFFER_DESC bd {};
+    bd.ByteWidth = 16; bd.Usage = D3D11_USAGE_DYNAMIC;
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    dev->CreateBuffer(&bd, nullptr, g_cb.GetAddressOf());
+
+    D3D11_BLEND_DESC bl {};
+    bl.RenderTarget[0].BlendEnable = TRUE;
+    bl.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    bl.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    bl.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    bl.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+    bl.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+    bl.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    bl.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    dev->CreateBlendState(&bl, g_blend.GetAddressOf());
+
+    D3D11_RASTERIZER_DESC rs {};
+    rs.FillMode = D3D11_FILL_SOLID; rs.CullMode = D3D11_CULL_NONE;
+    dev->CreateRasterizerState(&rs, g_rs.GetAddressOf());
+
+    D3D11_DEPTH_STENCIL_DESC ds {};
+    ds.DepthEnable = FALSE;
+    dev->CreateDepthStencilState(&ds, g_dss.GetAddressOf());
+
+    D3D11_SAMPLER_DESC sp {};
+    sp.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    sp.AddressU = sp.AddressV = sp.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    dev->CreateSamplerState(&sp, g_samp.GetAddressOf());
+
+    pVSBlob.Reset();
+    pPSBlob.Reset();
+
+    bD3DInit = g_vs && g_ps && g_cb && g_blend && g_rs && g_dss && g_samp;
+    if (bD3DInit)
+    {
+        spdlog::info("MGS 2: Demo Blur: render resources initialised.");
+    }
+    else
+    {
+        spdlog::error("MGS 2: Demo Blur: failed to initialise render resources.");
     }
 }

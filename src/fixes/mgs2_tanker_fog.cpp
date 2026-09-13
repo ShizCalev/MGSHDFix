@@ -5,6 +5,7 @@
 #include "gamevars.hpp"
 #include "logging.hpp"
 #include "d3d11_api.hpp"
+#include "expand_bp_assets.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -77,12 +78,41 @@ namespace
     SafetyHookInline gUpdateSubHook{};
     SafetyHookInline gDrawIndexedHook{};
 
-    // w00_fog_fader_alp hash
-    constexpr uint64_t kFogMaskHash = 0xb766ba4ac57cd459ull;
+    constexpr const char* kFogMaskPath = "textures/flatlist/_win/w00_fog_fader_alp.bmp.ctxr";
+
+    uint64_t gFogMaskHash = 0;
+    UINT gFogMaskWidth = 0;
+    UINT gFogMaskHeight = 0;
+    std::atomic<bool> gHashReady{ false };
+
+    void PopulateFogMaskHash()
+    {
+        const std::filesystem::path path = BP_FileSys::GetActiveAssetPath(kFogMaskPath);
+        if (!std::filesystem::exists(path))
+        {
+            spdlog::warn("MGS2TankerFog: {} does not exist.", path.string());
+            return;
+        }
+
+        const auto header = BP_FileSys::ReadCTXRHeader(path);
+        const auto hash = BP_FileSys::HashCTXRTexture(path);
+        if (!header || !hash)
+        {
+            spdlog::warn("MGS2TankerFog: failed to read {}.", path.string());
+            return;
+        }
+
+        gFogMaskWidth = header->width;
+        gFogMaskHeight = header->height;
+        gFogMaskHash = *hash;
+        spdlog::info("MGS2TankerFog: {} -> {}x{} hash={:#x}", path.string(), header->width, header->height, *hash);
+        gHashReady.store(true, std::memory_order_release);
+    }
 
     bool LooksLikeFogMask(const D3D11_TEXTURE2D_DESC& desc, const void* data, const UINT rowPitch)
     {
-        if (desc.Width != 64 || desc.Height != 32 || !data || rowPitch < desc.Width * 4)
+        if (!gHashReady.load(std::memory_order_acquire) || desc.Width != gFogMaskWidth || desc.Height != gFogMaskHeight
+            || !data || rowPitch < desc.Width * 4)
         {
             return false;
         }
@@ -91,7 +121,7 @@ namespace
             return false;
         }
 
-        return Util::HashTexels(data, rowPitch, desc.Width, desc.Height) == kFogMaskHash;
+        return Util::HashTexels(data, rowPitch, desc.Width, desc.Height) == gFogMaskHash;
     }
 
     bool LooksAcrossWall(const FogVertex (&strip)[6])
@@ -486,6 +516,8 @@ void MGS2TankerFog::OnDeviceReady()
         spdlog::error("MGS2TankerFog: no device context.");
         return;
     }
+
+    PopulateFogMaskHash();
 
     void** vtable = *reinterpret_cast<void***>(ctx);
     gDrawIndexedHook = safetyhook::create_inline(vtable[12], reinterpret_cast<void*>(HookedDrawIndexed));
