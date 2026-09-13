@@ -107,6 +107,9 @@ std::nullopt, false, Field::Bool, false},
         { (MGS2 | MGS3), ConfigKeys::SuppressAlternativeActions_Section, ConfigKeys::SuppressAlternativeActions_Setting, ConfigKeys::SuppressAlternativeActions_Help, ConfigKeys::SuppressAlternativeActions_Tooltip,
         std::make_pair(ConfigKeys::PressureSensitiveFacebuttons_Section, ConfigKeys::PressureSensitiveFacebuttons_Setting), false, Field::Bool, false },
 
+        { (MGS2 | MGS3), ConfigKeys::ReducePressureSensitivity_Section, ConfigKeys::ReducePressureSensitivity_Setting, ConfigKeys::ReducePressureSensitivity_Help, ConfigKeys::ReducePressureSensitivity_Tooltip,
+        std::make_pair(ConfigKeys::PressureSensitiveFacebuttons_Section, ConfigKeys::PressureSensitiveFacebuttons_Setting), false, Field::Bool, false },
+
     }},
     { wxString("Graphics"), {
         
