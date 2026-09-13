@@ -417,6 +417,7 @@ namespace
             MGS2_First_Person_View::Tick();
             MGS2ThermalGoggles::Tick();
 
+            MGS2DemoBlur::CaptureComposited(pSwapChain);   // before our post: the contrast flash would compound through the blur
             if (auto* work = MGS2_ContrastShader::GetActiveWork(); MGS2_ContrastShader::bShaderLoaded && work)
             {
                 MGS2_ContrastShader::Draw(pSwapChain, work->keep_r_plus, work->keep_g_plus, work->keep_b_plus, work->keep_a_plus, work->nega_posi_flag);

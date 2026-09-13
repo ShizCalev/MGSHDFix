@@ -1,5 +1,6 @@
 #pragma once
 
+struct IDXGISwapChain;
 struct ID3D11RenderTargetView;
 struct ID3D11ShaderResourceView;
 
@@ -10,7 +11,7 @@ namespace MGS2DemoBlur
     void Init();
     void DrawInto(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView* depth);
     void InvalidateCapture();
-    void CaptureFrame(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView* depth);
+    void CaptureComposited(IDXGISwapChain* swapChain);
     bool IsFeedbackActive();
 
     inline bool bEnabled = true;
