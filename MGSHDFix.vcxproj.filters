@@ -320,6 +320,9 @@
     <ClCompile Include="src\fixes\mgs2_flare_occlusion.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_stillman_skip.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_demo_blur.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -740,6 +743,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_flare_occlusion.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_stillman_skip.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_blur.hpp">
