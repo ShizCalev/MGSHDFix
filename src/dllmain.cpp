@@ -79,6 +79,7 @@
 #include "mgs2_restore_dogtag_viewer.hpp"
 #include "mgs2_underwater_filter.hpp"
 #include "mgs2_hostage_model.hpp"
+#include "mgs2_jp_d001p01_staffroll_position.hpp"
 #include "mgs2_ray_photo_voice.hpp"
 
 //Warnings
@@ -660,6 +661,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_ShimmerEffect::SetupHooks());
         INITIALIZE(MGS2_ParrotRadarFix::Apply());
         INITIALIZE(HostageModel::ApplyFix());
+        INITIALIZE(MGS2_JpStaffrollPosition::ApplyFix());
         INITIALIZE(MGS2RayPhotoVoice::Initialize());
         INITIALIZE(MGS2_CodecBackground::Setup());
         INITIALIZE(MGS2_ContrastShader::Setup());
