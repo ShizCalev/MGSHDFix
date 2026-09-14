@@ -811,6 +811,10 @@ namespace ConfigKeys
                                                                "\n"
                                                                "Substance gated elevator operation to standing/squat to patch this out. Off by default.";
 
+    constexpr const char* MGS2_StillmanSkip_Section = "Speedrunner Settings";
+    constexpr const char* MGS2_StillmanSkip_Setting = "NG Stillman Cutscene Skips";
+    constexpr const char* MGS2_StillmanSkip_Help = "";
+    constexpr const char* MGS2_StillmanSkip_Tooltip = "Makes Stillman cutscenes skippable in New Game playthroughs.";
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";
     constexpr const char* ShowSpeedrunnerOverlay_Help = "";
