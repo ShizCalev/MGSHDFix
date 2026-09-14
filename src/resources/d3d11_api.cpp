@@ -11,7 +11,7 @@
 #pragma comment(lib, "dxgi.lib")
 
 #include "color_correction.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "input_handler.hpp"
 #include "mgs2_3rd_person_freecam.hpp"
 #include "mgs2_contrast_fix.hpp"

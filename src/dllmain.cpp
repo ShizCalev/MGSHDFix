@@ -16,7 +16,7 @@
 ///Features
 #include "custom_resolution_and_borderless.hpp"
 #include "distance_culling.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "intro_skip.hpp"
 #include "keep_aiming_after_firing.hpp"
 #include "pause_on_focus_loss.hpp"

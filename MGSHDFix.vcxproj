@@ -144,7 +144,7 @@
     <ClCompile Include="src\warnings\reshade_compatibility_checks.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\features\intro_skip.cpp" />
-    <ClCompile Include="src\fixes\effect_speeds.cpp" />
+    <ClCompile Include="src\fixes\mgs2_effect_speeds.cpp" />
     <ClCompile Include="src\fixes\line_scaling.cpp" />
     <ClCompile Include="src\warnings\mute_warning.cpp" />
     <ClCompile Include="src\fixes\pause_on_focus_loss.cpp" />
@@ -291,7 +291,7 @@
     <ClInclude Include="src\resources\gamevars.hpp" />
     <ClInclude Include="src\resources\common.hpp" />
     <ClInclude Include="src\features\intro_skip.hpp" />
-    <ClInclude Include="src\fixes\effect_speeds.hpp" />
+    <ClInclude Include="src\fixes\mgs2_effect_speeds.hpp" />
     <ClInclude Include="src\fixes\line_scaling.hpp" />
     <ClInclude Include="src\fixes\pause_on_focus_loss.hpp" />
     <ClInclude Include="src\fixes\stereo_audio.hpp" />

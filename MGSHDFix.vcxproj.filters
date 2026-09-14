@@ -95,7 +95,7 @@
     <ClCompile Include="src\fixes\aiming_after_equip.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
-    <ClCompile Include="src\fixes\effect_speeds.cpp">
+    <ClCompile Include="src\fixes\mgs2_effect_speeds.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\aiming_full_tilt.cpp">
@@ -415,7 +415,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\fixes\effect_speeds.hpp">
+    <ClInclude Include="src\fixes\mgs2_effect_speeds.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\stereo_audio.hpp">

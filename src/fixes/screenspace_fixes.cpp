@@ -5,7 +5,7 @@
 #include "gamevars.hpp"
 
 #include "screenspace_fixes.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "mgs2_flare_occlusion.hpp"
 
 

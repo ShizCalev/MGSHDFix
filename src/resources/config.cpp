@@ -50,7 +50,7 @@
 #include "mgs2_sunglasses.hpp"
 #include "config_keys.hpp"
 #include "corrupt_save_message.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "mgs2_restore_dogtags.hpp"
 #include "windows_fullscreen_optimization.hpp"
 #include "custom_resolution_and_borderless.hpp"

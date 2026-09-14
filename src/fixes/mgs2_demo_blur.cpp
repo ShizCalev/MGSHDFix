@@ -5,7 +5,7 @@
 #include "common.hpp"
 #include "d3d11_api.hpp"
 #include "scene_depth.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "gamevars.hpp"
 #include "mgs2_status_flags.hpp"
 #include "logging.hpp"
