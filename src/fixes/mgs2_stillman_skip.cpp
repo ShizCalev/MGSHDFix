@@ -47,9 +47,9 @@ namespace
                 off += sizeof(kClearedGate) - 1;
             }
         }
-        if (opened)
+        if (opened && g_Logging.bVerboseLogging)
         {
-            spdlog::info("MGS 2: Stillman Skip - {} cutscene gate(s) opened in the loaded script.", opened);
+            spdlog::info("MGS 2: Stillman Skip - {} gcx instructions patched to allow ng skipping.", opened);
         }
         return result;
     }
@@ -63,7 +63,7 @@ void MGS2StillmanSkip::Initialize()
     }
 
     uint8_t* load = Memory::PatternScan(baseModule,
-        "0F B6 41 ?? 0F B6 51 ?? C1 E2 ?? 0B D0 0F B6 41 ?? C1 E2 ?? 0B D0 0F B6 01 C1 E2 ?? 0B D0",
+        "0F B6 41 ?? 0F B6 51 ?? C1 E2 ?? 0B D0 0F B6 41 ?? C1 E2 ?? 0B D0 ?? ?? ?? C1 E2 ?? 0B D0",
         "MGS 2: Stillman Skip - system\\libgcl\\command.c -> GCL_LoadScript()");
     if (!load)
     {

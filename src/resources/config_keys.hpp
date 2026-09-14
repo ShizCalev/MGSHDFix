@@ -812,12 +812,9 @@ namespace ConfigKeys
                                                                "Substance gated elevator operation to standing/squat to patch this out. Off by default.";
 
     constexpr const char* MGS2_StillmanSkip_Section = "Speedrunner Settings";
-    constexpr const char* MGS2_StillmanSkip_Setting = "Skippable Stillman Cutscenes";
+    constexpr const char* MGS2_StillmanSkip_Setting = "NG Stillman Cutscene Skips";
     constexpr const char* MGS2_StillmanSkip_Help = "";
-    constexpr const char* MGS2_StillmanSkip_Tooltip = "The two Peter Stillman cutscenes in the Shell 1 Core, the first-person briefing and the demo after the movie, only take Start to skip on a cleared save.\n"
-        "\n"
-        "This lets a first playthrough skip them as well. Off by default.";
-
+    constexpr const char* MGS2_StillmanSkip_Tooltip = "Makes Stillman cutscenes skippable in New Game playthroughs.";
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";
     constexpr const char* ShowSpeedrunnerOverlay_Help = "";
