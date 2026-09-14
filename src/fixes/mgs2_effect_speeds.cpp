@@ -4,7 +4,7 @@
 
 #include "common.hpp"
 
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 
 #include "game_funcs.hpp"
 #include "gamevars.hpp"
@@ -1018,11 +1018,11 @@ int64_t __fastcall MGS2_solidusFireDashAct(int64_t work)
     }
 
     std::chrono::time_point<std::chrono::high_resolution_clock> current_time = std::chrono::high_resolution_clock::now();
-    if (current_time >= g_EffectSpeedFix.solidusDashAct_NextUpdate)
+    if (current_time >= MGS2_EffectSpeedFix.solidusDashAct_NextUpdate)
     {
-        if (current_time >= g_EffectSpeedFix.solidusDashAct_NextUpdate + std::chrono::seconds(2)) // Reset the next update timer if we're in a new cutscene.
+        if (current_time >= MGS2_EffectSpeedFix.solidusDashAct_NextUpdate + std::chrono::seconds(2)) // Reset the next update timer if we're in a new cutscene.
         {
-            g_EffectSpeedFix.solidusDashAct_NextUpdate = current_time;
+            MGS2_EffectSpeedFix.solidusDashAct_NextUpdate = current_time;
         }
 
         constexpr double duration = (PS2_IOP_CLOCKSPEED - 1);
@@ -1030,7 +1030,7 @@ int64_t __fastcall MGS2_solidusFireDashAct(int64_t work)
         {
             duration -= 1; // Slightly slower than PS2_IOP_CLOCKSPEED to account for particle related performance slowdown on PS2 hardware had during closeup shots.
         }*/
-        g_EffectSpeedFix.solidusDashAct_NextUpdate += std::chrono::microseconds(static_cast<int64_t>(std::chrono::microseconds::period::den / duration));
+        MGS2_EffectSpeedFix.solidusDashAct_NextUpdate += std::chrono::microseconds(static_cast<int64_t>(std::chrono::microseconds::period::den / duration));
         return solidusFireDashAct_hook.fastcall<int64_t>(work);
     }
 
@@ -1098,7 +1098,7 @@ void EffectSpeedFix::Initialize()
         return;
     }
 
-    if (!g_EffectSpeedFix.isEnabled)
+    if (!MGS2_EffectSpeedFix.isEnabled)
     {
         SPDLOG_INFO("MGS 2: Effect Speed Fix: Config disabled. Skipping");
         return;

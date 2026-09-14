@@ -668,6 +668,8 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2ConcentrateBlur::Initialize());
         INITIALIZE(MGS2EnhancedDemos::Initialize());
         INITIALIZE(CaptionReplacements::Setup());
+        INITIALIZE(MGS2ScanlineScale::Initialize());
+        INITIALIZE(MGS2_EffectSpeedFix.Initialize());
         INITIALIZE(SMAA_AA::CompileShaders());
         INITIALIZE(ScreenspaceFixes::Apply());
     }
@@ -703,8 +705,6 @@ static void InitializeSubsystems()
     }
     INITIALIZE(g_CPUCoreLimitFix.ApplyFix());
     INITIALIZE(g_VectorScalingFix.Initialize());
-    INITIALIZE(MGS2ScanlineScale::Initialize());
-    INITIALIZE(g_EffectSpeedFix.Initialize()); //todo - fix more effects, ie rain speed, bullet trails, helicopter rotors
     INITIALIZE(g_StereoAudioFix.Initialize());
     INITIALIZE(DamagedSaveFix::Initialize());
     INITIALIZE(g_FixAimAfterEquip.Initialize());
