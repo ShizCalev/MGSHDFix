@@ -194,11 +194,11 @@ namespace
 
     Gates SlotGates(size_t slot)
     {
-        // Square is about letting go, not pressing: 24 lowers the gun instead of firing (both
-        // games), and a rapid-fire weapon only runs above TH2, which MGS3 doubled.
+        // Square is about letting go, not pressing: below the lower gate the gun drops instead of
+        // firing, and a rapid-fire weapon only runs above the fire gate.
         if (slot == 7)
         {
-            return { { { 24 }, { (eGameType & MGS3) ? uint8_t(120) : uint8_t(60) } }, 2 };
+            return { { { PressureInputs::WeaponLowerGate() }, { PressureInputs::WeaponFireGate() } }, 2 };
         }
         if ((eGameType & MGS3) && slot == 5)
         {
@@ -216,7 +216,7 @@ namespace
     // inside it (attack.c, PL_PAD_WEAPON_TH). Exclusive upper bound, 0 where there is no release.
     uint8_t ReleaseBand(size_t slot)
     {
-        return (slot == 7) ? 24 : 0;
+        return (slot == 7) ? PressureInputs::WeaponLowerGate() : 0;
     }
 
     TextColor PressureColour(uint8_t value, uint8_t alpha)
@@ -323,7 +323,8 @@ namespace
             for (size_t g = 0; g < gates.count; g++)
             {
                 const float tickY = y + barH * (1.0f - static_cast<float>(gates.gate[g].value) / 255.0f);
-                AddQuad(barX - 2.0f, tickY, kBarW + 4.0f, 1.5f, { 255, 255, 255, 235 });
+                const bool moved = kStrip[i].slot == 7 && PressureInputs::bReduceSensitivity;   // cyan = reduced gates
+                AddQuad(barX - 2.0f, tickY, kBarW + 4.0f, 1.5f, moved ? TextColor{ 90, 225, 255, 235 } : TextColor{ 255, 255, 255, 235 });
             }
 
             if (value)
