@@ -5,12 +5,15 @@
 #include "game_funcs.hpp"
 #include "game_stages.hpp"
 #include "gamevars.hpp"
+#include "mgs2_linkvarbuf.hpp"
 
 namespace
 {
-    constexpr uint32_t STRCODE_TEROP = GameVars::GV_StrCode("terop");
+    bool gApplyJpStaffroll = false;
 
-    // It's "sr##e", not "sr##j". That's why we need this fix.
+    constexpr uint32_t STRCODE_TITLE_MGS2 = GameVars::GV_StrCode("title_mgs2_alp_ovl");
+
+    // It's "sr##e", not "sr##j". That's why we need the position fix for JP.
     constexpr uint32_t STRCODE_SR04E = GameVars::GV_StrCode("sr04e_alp_ovl");
     constexpr uint32_t STRCODE_SR05E = GameVars::GV_StrCode("sr05e_alp_ovl");
     constexpr uint32_t STRCODE_SR06E = GameVars::GV_StrCode("sr06e_alp_ovl");
@@ -22,9 +25,9 @@ namespace
     constexpr uint32_t STRCODE_SR14E = GameVars::GV_StrCode("sr14e_alp_ovl");
     constexpr uint32_t STRCODE_SR18E = GameVars::GV_StrCode("sr18e_alp_ovl");
 
-    float JpStaffrollPosXFor(uint32_t tri, uint32_t tex, float currentX)
+    float JpStaffrollPosXFor(uint32_t tex, float currentX)
     {
-        if (tri != STRCODE_TEROP || strcmp(Shared_Gamefuncs::GM_GetArea(), MGS2Stages::D001P01) != 0)
+        if (strcmp(Shared_Gamefuncs::GM_GetArea(), MGS2Stages::D001P01) != 0)
         {
             return currentX;
         }
@@ -62,28 +65,47 @@ void MGS2_SpritePositionFixes::ApplyFix()
 
     if (!Util::IsJapanese())
     {
-        spdlog::info("MGS 2: JP Staffroll Position Fix: Launched as a non-Japanese version, skipping.");
-        return;
+        spdlog::info("MGS 2: Sprite Position Fixes: JP staff roll: Launched as a non-Japanese version, skipping.");
     }
-
-    if (!Shared_Gamefuncs::GM_GetArea)
+    else if (!Shared_Gamefuncs::GM_GetArea)
     {
-        spdlog::error("MGS 2: JP Staffroll Position Fix: Shared_Gamefuncs::GM_GetArea is null, cannot apply fixes.");
-        return;
+        spdlog::error("MGS 2: Sprite Position Fixes: JP staff roll: Shared_Gamefuncs::GM_GetArea is null, cannot apply fixes.");
+    }
+    else
+    {
+        gApplyJpStaffroll = true;
     }
 
-    MAKE_HOOK_MID(baseModule, "48 8B 43 58 B1 73 48 8B B0 90 00 00 00 E8 ?? ?? ?? ?? 48 85 C0 74 14", "MGS 2: JP Staffroll Position Fix: mgs2x\\source\\user\\shibata\\effect\\2d_sprt.c -> GetResources() | @l191", {
-        float& posX = *reinterpret_cast<float*>(ctx.rsp + 0x30);
-        const float newX = JpStaffrollPosXFor(static_cast<uint32_t>(ctx.rsi), static_cast<uint32_t>(ctx.rdi), posX);
+    MAKE_HOOK_MID(baseModule, "66 0F 6E F1 48 8B 4E", "MGS 2: Sprite Position Fixes: mgs2x\\source\\user\\shibata\\effect\\2d_sprt.c -> GetResources() | @l252", {
+        const uint32_t tex = static_cast<uint32_t>(ctx.rdi);
 
-        if (newX != posX)
+        if (tex == STRCODE_TITLE_MGS2 && ctx.rcx == 519 && ctx.rax == 125 && (MGS2_LinkVarBuf::GM_Configuration & MGS2_LinkVarBuf::GM_CONFIG_CUTSCENES_LETTERBOXED))
         {
-            if (g_Logging.bVerboseLogging)
-            {
-                spdlog::info("MGS 2: JP Staffroll Position Fix: tex={:#010x} pos.x {} -> {}", static_cast<uint32_t>(ctx.rdi), posX, newX);
-            }
+            //FULLSCREEN SETTINGS
+            //ctx.rcx = 519;                                        // w
+            //ctx.rax = 125;                                        // h
+            //*reinterpret_cast<float*>(ctx.rsp + 0x30) = 0.0f;    // pos.x
+            //*reinterpret_cast<float*>(ctx.rsp + 0x34) = 20.0f;   // pos.y
 
-            posX = newX;
+            ctx.rcx = 346; // width
+            ctx.rax = 83; // height
+            *reinterpret_cast<float*>(ctx.rsp + 0x30) = 83.0f;    // pos.x
+            *reinterpret_cast<float*>(ctx.rsp + 0x34) = 40.0f;   // pos.y
+        }
+        else if (gApplyJpStaffroll)
+        {
+            float& posX = *reinterpret_cast<float*>(ctx.rsp + 0x30);
+            const float newX = JpStaffrollPosXFor(tex, posX);
+
+            if (newX != posX)
+            {
+                if (g_Logging.bVerboseLogging)
+                {
+                    spdlog::info("MGS 2: Sprite Position Fixes: JP staff roll: tex={:#010x} pos.x {} -> {}", static_cast<uint32_t>(ctx.rdi), posX, newX);
+                }
+
+                posX = newX;
+            }
         }
         });
 }
