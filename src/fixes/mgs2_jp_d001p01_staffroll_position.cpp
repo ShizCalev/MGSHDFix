@@ -8,30 +8,43 @@
 
 namespace
 {
+    constexpr uint32_t STRCODE_TEROP = GameVars::GV_StrCode("terop");
+
+    // It's "sr##e", not "sr##j". That's why we need this fix.
+    constexpr uint32_t STRCODE_SR04E = GameVars::GV_StrCode("sr04e_alp_ovl");
+    constexpr uint32_t STRCODE_SR05E = GameVars::GV_StrCode("sr05e_alp_ovl");
+    constexpr uint32_t STRCODE_SR06E = GameVars::GV_StrCode("sr06e_alp_ovl");
+    constexpr uint32_t STRCODE_SR07E = GameVars::GV_StrCode("sr07e_alp_ovl");
+    constexpr uint32_t STRCODE_SR08E = GameVars::GV_StrCode("sr08e_alp_ovl");
+    constexpr uint32_t STRCODE_SR09E = GameVars::GV_StrCode("sr09e_alp_ovl");
+    constexpr uint32_t STRCODE_SR12E = GameVars::GV_StrCode("sr12e_alp_ovl");
+    constexpr uint32_t STRCODE_SR13E = GameVars::GV_StrCode("sr13e_alp_ovl");
+    constexpr uint32_t STRCODE_SR14E = GameVars::GV_StrCode("sr14e_alp_ovl");
+    constexpr uint32_t STRCODE_SR18E = GameVars::GV_StrCode("sr18e_alp_ovl");
+
     float JpStaffrollPosXFor(uint32_t tri, uint32_t tex, float currentX)
     {
-        if (tri != GameVars::GV_StrCode("terop") || strcmp(Shared_Gamefuncs::GM_GetArea(), MGS2Stages::D001P01) != 0)
+        if (tri != STRCODE_TEROP || strcmp(Shared_Gamefuncs::GM_GetArea(), MGS2Stages::D001P01) != 0)
         {
             return currentX;
         }
 
         switch (tex)
         {
-        // It's "sr##e", not "sr##j". That's why we need this fix.
-        case GameVars::GV_StrCode("sr04e_alp_ovl"):
-        case GameVars::GV_StrCode("sr05e_alp_ovl"):
-        case GameVars::GV_StrCode("sr06e_alp_ovl"):
-        case GameVars::GV_StrCode("sr18e_alp_ovl"):
-        case GameVars::GV_StrCode("sr09e_alp_ovl"):
-        case GameVars::GV_StrCode("sr12e_alp_ovl"):
-        case GameVars::GV_StrCode("sr13e_alp_ovl"):
-        case GameVars::GV_StrCode("sr14e_alp_ovl"):
+        case STRCODE_SR04E:
+        case STRCODE_SR05E:
+        case STRCODE_SR06E:
+        case STRCODE_SR18E:
+        case STRCODE_SR09E:
+        case STRCODE_SR12E:
+        case STRCODE_SR13E:
+        case STRCODE_SR14E:
             return (currentX == 75.0f) ? 95.0f : currentX;
 
-        case GameVars::GV_StrCode("sr07e_alp_ovl"):
+        case STRCODE_SR07E:
             return (currentX == 40.0f) ? 20.0f : currentX;
 
-        case GameVars::GV_StrCode("sr08e_alp_ovl"):
+        case STRCODE_SR08E:
             return (currentX == -45.0f) ? -35.0f : currentX;
 
         default:
