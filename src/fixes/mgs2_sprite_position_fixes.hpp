@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MGS2_JpStaffrollPosition
+namespace MGS2_SpritePositionFixes
 {
     void ApplyFix();
 }

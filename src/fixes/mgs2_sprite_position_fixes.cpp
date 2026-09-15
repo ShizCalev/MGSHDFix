@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "mgs2_jp_d001p01_staffroll_position.hpp"
+#include "mgs2_sprite_position_fixes.hpp"
 #include "common.hpp"
 #include "logging.hpp"
 #include "game_funcs.hpp"
@@ -53,7 +53,7 @@ namespace
     }
 }
 
-void MGS2_JpStaffrollPosition::ApplyFix()
+void MGS2_SpritePositionFixes::ApplyFix()
 {
     if (!(eGameType & MGS2))
     {
