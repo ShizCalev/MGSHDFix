@@ -29,13 +29,53 @@ namespace
     FASTCALL_3IN1OUT AllocTexture;
     FASTCALL_1IN1OUT FreeTexture;
 
-    std::list<std::pair<uintptr_t, uintptr_t>> SwapMap;
+    enum class CtxrSwapOwner
+    {
+        NoRestore,
+        Ray,
+        Harrier,
+        TitleScreen,
+        SnakeHolster,
+    };
+
+    struct SavedCtxrSwap
+    {
+        int tricode;
+        int dst;
+        uintptr_t saveHandle;
+        uintptr_t dstHandle;
+        CtxrSwapOwner owner;
+    };
+
+    std::list<SavedCtxrSwap> SwapMap;
 
     bool bRestoringCtxrs = false;
 
-    bool GetAndCopyCtxr(int tricode, int dst, int src, bool shouldSave = true)
+    void RestoreSavedCtxr(const SavedCtxrSwap& swap)
     {
-        if (!GetCtxrHandle || !CopyCtxr || !AllocTexture)
+        uintptr_t currentDstHandle = 0;
+
+        if (uintptr_t* dstCtxr = GetCtxrHandle(swap.tricode, swap.dst))
+        {
+            currentDstHandle = dstCtxr[4];
+        }
+
+        // Texture handles are destroyed when their .tri unload, check for stale pointers or we'll ctd
+        if (currentDstHandle && currentDstHandle == swap.dstHandle)
+        {
+            CopyCtxr(swap.saveHandle, currentDstHandle);
+        }
+        else
+        {
+            spdlog::warn("Texture Swaps: Discarding stale restore for .tri {:x}, texture {:x}.", swap.tricode, swap.dst);
+        }
+
+        FreeTexture(swap.saveHandle);
+    }
+
+    bool GetAndCopyCtxr(int tricode, int dst, int src, CtxrSwapOwner owner)
+    {
+        if (!GetCtxrHandle || !CopyCtxr || !AllocTexture || !FreeTexture)
             return false;
 
         uintptr_t* srcCtxr = GetCtxrHandle(tricode, src);
@@ -56,13 +96,28 @@ namespace
             return false;
         }
 
-        // Need to save handles to restore on stage reset
-        for (auto it = SwapMap.begin(); it != SwapMap.end(); it++)
+        bool shouldSave = owner != CtxrSwapOwner::NoRestore;
+
+        // Match texture id, as CBaseTexture addresses can be reused.
+        if (shouldSave)
         {
-            if (it->second == dstHandle)
+            for (auto it = SwapMap.begin(); it != SwapMap.end(); ++it)
             {
-                // Texture already swapped, do not add to map
-                shouldSave = false;
+                if (it->owner != owner || it->tricode != tricode || it->dst != dst)
+                    continue;
+
+                if (it->dstHandle == dstHandle)
+                {
+                    // Texture already swapped, do not add to map.
+                    shouldSave = false;
+                }
+                else
+                {
+                    // A previous instance disappeared without cleanup; free its saved copy without touching dst.
+                    uintptr_t staleSaveHandle = it->saveHandle;
+                    SwapMap.erase(it);
+                    FreeTexture(staleSaveHandle);
+                }
                 break;
             }
         }
@@ -76,16 +131,16 @@ namespace
                 return false;
 
             CopyCtxr(dstHandle, saveHandle);
-            SwapMap.push_back({ saveHandle, dstHandle });
+            SwapMap.push_back({ tricode, dst, saveHandle, dstHandle, owner });
         }
 
         CopyCtxr(srcHandle, dstHandle);
         return true;
     }
 
-    void RestoreCtxrs()
+    void RestoreCtxrs(CtxrSwapOwner owner)
     {
-        if (!CopyCtxr || !FreeTexture || bRestoringCtxrs || SwapMap.empty())
+        if (!GetCtxrHandle || !CopyCtxr || !FreeTexture || bRestoringCtxrs || SwapMap.empty())
             return;
 
         bRestoringCtxrs = true;
@@ -98,49 +153,34 @@ namespace
             }
         } guard;
 
-        auto swaps = std::move(SwapMap);
-        SwapMap.clear();
-
-        for (const auto& [saveHandle, dstHandle] : swaps)
+        for (auto it = SwapMap.begin(); it != SwapMap.end();)
         {
-            if (!saveHandle || !dstHandle)
+            if (it->owner != owner)
+            {
+                ++it;
                 continue;
+            }
 
-            CopyCtxr(saveHandle, dstHandle);
-            FreeTexture(saveHandle);
+            SavedCtxrSwap swap = *it;
+            it = SwapMap.erase(it);
+            RestoreSavedCtxr(swap);
         }
     }
 
 
-    void RestoreCtxr(int tricode, int dst)
+    void RestoreCtxr(int tricode, int dst, CtxrSwapOwner owner)
     {
         if (!GetCtxrHandle || !CopyCtxr || !FreeTexture)
             return;
 
-        uintptr_t* dstCtxr = GetCtxrHandle(tricode, dst);
-
-        if (dstCtxr == nullptr)
-            return;
-
-        uintptr_t dstHandle = dstCtxr[4];
-
-        if (!dstHandle)
-            return;
-
-        for (auto it = SwapMap.begin(); it != SwapMap.end(); it++)
+        for (auto it = SwapMap.begin(); it != SwapMap.end(); ++it)
         {
-            if (it->second != dstHandle)
+            if (it->owner != owner || it->tricode != tricode || it->dst != dst)
                 continue;
 
-            auto swap = *it;
+            SavedCtxrSwap swap = *it;
             SwapMap.erase(it);
-
-            if (swap.first && swap.second)
-            {
-                CopyCtxr(swap.first, swap.second);
-                FreeTexture(swap.first);
-            }
-
+            RestoreSavedCtxr(swap);
             break;
         }
     }
@@ -190,22 +230,22 @@ void TextureLiveSwaps::ApplyFixes()
 
     {   // user/takabe/pdray/r_server.c -> RAYSERVER_GetNumberModel()
         MAKE_HOOK_MID(baseModule, "B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 84 F3", "Texture Swaps (RAY Numbers)", {
-            GetAndCopyCtxr(STRCODE_PDRAY_OTHER, ctx.rdx, ctx.r8);
+            GetAndCopyCtxr(STRCODE_PDRAY_OTHER, ctx.rdx, ctx.r8, CtxrSwapOwner::Ray);
         });
     }
     {   // user/satoyoshi/harrier/har_damage.c -> Har_damage_tex()
         MAKE_HOOK_MID(baseModule, "E8 ?? ?? ?? ?? 48 8B C8 48 89 84 DE", "Texture Swaps (Harrier Damage)", {
-            GetAndCopyCtxr(ctx.rcx, ctx.rdx, ctx.r8);
+            GetAndCopyCtxr(ctx.rcx, ctx.rdx, ctx.r8, CtxrSwapOwner::Harrier);
         });
     }
     {   // user/takabe/pdray/r_server.c -> Die()
         MAKE_HOOK_MID(baseModule, "57 48 83 EC ?? 48 8D 99 ?? ?? ?? ?? BF ?? ?? ?? ?? 48 8B 4B", "Texture Swaps (RAY Cleanup)", {
-            RestoreCtxrs();
+            RestoreCtxrs(CtxrSwapOwner::Ray);
         });
     }
     {   // user/satoyoshi/harrier/har_main.c -> Die() (invokes static function Clean_damage_tex_set() from har_damage.c)
         MAKE_HOOK_MID(baseModule, "48 8D 8E ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 4E ?? E8 ?? ?? ?? ?? 33 ED", "Texture Swaps (Harrier Cleanup)", {
-            RestoreCtxrs();
+            RestoreCtxrs(CtxrSwapOwner::Harrier);
         });
     }
 
@@ -229,7 +269,7 @@ void TextureLiveSwaps::ApplyFixes()
         // user/mode/demo/demod.c -> StartDemo()
         MAKE_HOOK_MID(baseModule, "48 83 EC 28 48 8B 15 ?? ?? ?? ?? 48 85 D2 74 53", "Texture Swaps (Ocelot Spying)", {
             if (g_GameVars.IsStage(MGS2Stages::D036P03) && MGS2_LinkVarBuf::GM_Item == MGS2_ITEM_INDEX_UNIFORM) {
-                GetAndCopyCtxr(STRCODE_W24C1, STRCODE_REV_DISP, STRCODE_BDU_DISP, false);
+                GetAndCopyCtxr(STRCODE_W24C1, STRCODE_REV_DISP, STRCODE_BDU_DISP, CtxrSwapOwner::NoRestore);
             }
         });
 
@@ -247,10 +287,15 @@ void TextureLiveSwaps::ApplyFixes()
         MAKE_HOOK_MID(baseModule, "89 83 ?? ?? ?? ?? 8B 4B ?? 45 33 C9 45 33 C0 41 8D 51 ?? E8 ?? ?? ?? ?? 89 43 ?? 48 8D 3D", "NewTitleScrMan", {
             if(ctx.rax)
             {
-                GetAndCopyCtxr(STRCODE_NODE_TITLE_TEX_TRI, STRCODE_TITLE_LOGO, STRCODE_TITLE_NUMBAH_TWO);
+                GetAndCopyCtxr(STRCODE_NODE_TITLE_TEX_TRI, STRCODE_TITLE_LOGO, STRCODE_TITLE_NUMBAH_TWO, CtxrSwapOwner::TitleScreen);
                 return;
             }
-            RestoreCtxr(STRCODE_NODE_TITLE_TEX_TRI, STRCODE_TITLE_LOGO);
+            RestoreCtxr(STRCODE_NODE_TITLE_TEX_TRI, STRCODE_TITLE_LOGO, CtxrSwapOwner::TitleScreen);
+            });
+
+        //Die_32
+        MAKE_HOOK_MID(baseModule, "40 53 48 83 EC ?? 48 8B D9 8B 49 6C 85 C9 78 ?? E8 ?? ?? ?? ?? C7 43 6C FF FF FF FF 8B 4B 70", "MGS 2: Texture Swaps: user\\kano\\titlescr\\titlescr.c -> Die() | @l401: ", {
+            RestoreCtxr(STRCODE_NODE_TITLE_TEX_TRI, STRCODE_TITLE_LOGO, CtxrSwapOwner::TitleScreen);
             });
 
     }
@@ -300,7 +345,7 @@ void TextureLiveSwaps::ApplyFixes()
                     if (g_GameVars.InCutscene())
                     {
                         bSnakeHolsterManaged = false;
-                        RestoreCtxr(SNA_DEF_TRI_STRCODE, SNA_M9_GLIP);
+                        RestoreCtxr(SNA_DEF_TRI_STRCODE, SNA_M9_GLIP, CtxrSwapOwner::SnakeHolster);
                     }
                     return;
                 }
@@ -310,7 +355,7 @@ void TextureLiveSwaps::ApplyFixes()
                     {
                         return;
                     }
-                    if (!GetAndCopyCtxr(SNA_DEF_TRI_STRCODE, SNA_M9_GLIP, NULL_MSK_STRCODE))
+                    if (!GetAndCopyCtxr(SNA_DEF_TRI_STRCODE, SNA_M9_GLIP, NULL_MSK_STRCODE, CtxrSwapOwner::SnakeHolster))
                     {
                         //spdlog::error("MGS2 - Texture Swaps: Failed to swap Snake holster texture.");
                         failed = true;
@@ -331,7 +376,7 @@ void TextureLiveSwaps::ApplyFixes()
                     return;
                 }
                 bSnakeHolsterManaged = false;
-                RestoreCtxr(SNA_DEF_TRI_STRCODE, SNA_M9_GLIP);
+                RestoreCtxr(SNA_DEF_TRI_STRCODE, SNA_M9_GLIP, CtxrSwapOwner::SnakeHolster);
                       });
     }
 

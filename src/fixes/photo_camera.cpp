@@ -9,6 +9,8 @@
 #pragma warning(disable:4828)
 #include "steam_api.h"
 #include "isteamscreenshots.h"
+#include "mgs2_equipment_enums.hpp"
+#include "mgs2_linkvarbuf.hpp"
 #pragma warning(pop)
 
 // The camera freezes the screen for its capture, so the next present still shows exactly the
@@ -114,6 +116,10 @@ void PhotoCamera::Initialize()
     }
     gSnapHook = safetyhook::create_mid(address, [](SafetyHookContext&)
     {
+        if ((eGameType & MGS2) && MGS2_LinkVarBuf::GM_Item != MGS2_ITEM_INDEX_CAMERA) //don't spam the user when they're taking photos of ray.
+        {
+            return;
+        }
         gPending.store(true, std::memory_order_relaxed);
     });
     LOG_HOOK(gSnapHook, "Photo Camera - Capture Start")
