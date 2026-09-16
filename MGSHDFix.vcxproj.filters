@@ -377,6 +377,9 @@
     <ClCompile Include="src\fixes\mgs2_glass_dmapack_overflow.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_scanline_scale.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -815,6 +818,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_glass_dmapack_overflow.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_codec_band.hpp">
