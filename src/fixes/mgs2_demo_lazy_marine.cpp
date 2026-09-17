@@ -2,11 +2,11 @@
 #include "mgs2_demo_lazy_marine.hpp"
 
 #include "common.hpp"
-#include "game_funcs.hpp"
 #include "gamevars.hpp"
 #include "game_stages.hpp"
 #include "helper.hpp"
 #include "logging.hpp"
+#include "mgs2_demo_patches.hpp"
 
 #include <algorithm>
 #include <array>
@@ -164,16 +164,9 @@ namespace
         m->pos[2] = gZ;
     }
 
-    SafetyHookInline h_ExecDemoStream{};
-    void ExecDemoStream_hook(void* work, uint8_t* stream, int exec)
+    void After(uint8_t* stream)
     {
-        h_ExecDemoStream.call<void>(work, stream, exec);
-        if (!g_GameVars.IsStage(MGS2Stages::D01T))      // t02a1d.sdt
-        {
-            return;
-        }
-
-        const int frame = *reinterpret_cast<int*>(stream - 8) / 5;      // STREAM_TAG.time, 300 Hz
+        const int frame = MGS2_DemoPatches::Frame(stream);
         DemoMotion* m = DM_GetMotionData(kMarine);
         if (!m || m->nJoints != kJoints)
         {
@@ -217,13 +210,11 @@ void MGS2_DemoLazyMarine::Initialize()
     uint8_t* getMotion = Memory::PatternScan(baseModule,
         "40 53 48 83 EC ?? 8B D9 E8 ?? ?? ?? ?? 48 85 C0 74 ?? 48 8D 90",
         "MGS 2: Lazy Marine | demo_mtn.c -> DM_GetMotionData()");
-    uint8_t* exec = MGS2_GameFuncs::DM_ExecDemoStream;
-    if (!getMotion || !exec)
+    if (!getMotion)
     {
         return;
     }
 
     DM_GetMotionData = reinterpret_cast<DemoMotion* (*)(int)>(getMotion);
-    h_ExecDemoStream = safetyhook::create_inline(reinterpret_cast<void*>(exec), ExecDemoStream_hook);
-    LOG_HOOK(h_ExecDemoStream, "MGS 2: Lazy Marine | demo_pkt.c -> DM_ExecDemoStream()")
+    MGS2_DemoPatches::Add(MGS2Stages::D01T, nullptr, After);      // t02a1d.sdt
 }

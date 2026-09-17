@@ -64,6 +64,8 @@
 #include "mgs2_demo_m9_hammer.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_solidus_pipe.hpp"
+#include "mgs2_demo_ocelot_lips.hpp"
+#include "mgs2_demo_patches.hpp"
 #include "mgs2_item_toss_fix.hpp"
 #include "mgs2_radar_fixes.hpp"
 #include "cpu_core_limit.hpp"
@@ -620,6 +622,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_DemoLazyMarine::Initialize());
         INITIALIZE(MGS2_SolidusPipe::Initialize());
         INITIALIZE(MGS2_DemoM9Hammer::Initialize());
+        INITIALIZE(MGS2_DemoOcelotLips::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
         INITIALIZE(MGS2_RadarFixes::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
@@ -708,6 +711,7 @@ static void InitializeSubsystems()
         INITIALIZE(SMAA_AA::CompileShaders());
         INITIALIZE(ScreenspaceFixes::Apply());
         INITIALIZE(MGS2_ScriptPatches::Initialize());   // last: every feature has added its patches by now
+        INITIALIZE(MGS2_DemoPatches::Initialize());
     }
     else if (eGameType & MGS3)
     {

@@ -82,6 +82,7 @@
 #include "mgs2_demo_m9_hammer.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_solidus_pipe.hpp"
+#include "mgs2_demo_ocelot_lips.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -805,6 +806,7 @@ void Config::Read()
                 &MGS2_DemoLazyMarine::bEnabled,
                 &MGS2_SolidusPipe::bEnabled,
                 &MGS2_DemoM9Hammer::bEnabled,
+                &MGS2_DemoOcelotLips::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)

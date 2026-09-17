@@ -20,6 +20,7 @@
     <ClCompile Include="src\fixes\mgs2_demo_m9_hammer.cpp" />
     <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp" />
     <ClCompile Include="src\fixes\mgs2_solidus_pipe.cpp" />
+    <ClCompile Include="src\fixes\mgs2_demo_ocelot_lips.cpp" />
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_radar_fixes.cpp" />
     <ClCompile Include="src\fixes\mgs2_newscrconcentrateblur.cpp" />
@@ -28,6 +29,7 @@
     <ClCompile Include="src\resources\mgs2_status_flags.cpp" />
     <ClCompile Include="src\resources\game_funcs.cpp" />
     <ClCompile Include="src\resources\mgs2_script_patches.cpp" />
+    <ClCompile Include="src\resources\mgs2_demo_patches.cpp" />
     <ClCompile Include="src\features\mgs2_snake_tales_radar.cpp" />
     <ClCompile Include="src\features\mgs2_ng_cutscene_skips.cpp" />
     <ClCompile Include="src\features\expand_bp_assets.cpp" />
@@ -190,6 +192,7 @@
     <ClInclude Include="src\fixes\mgs2_demo_m9_hammer.hpp" />
     <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp" />
     <ClInclude Include="src\fixes\mgs2_solidus_pipe.hpp" />
+    <ClInclude Include="src\fixes\mgs2_demo_ocelot_lips.hpp" />
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp" />
     <ClInclude Include="src\fixes\mgs2_radar_fixes.hpp" />
     <ClInclude Include="src\resources\game_strings.hpp" />
@@ -209,6 +212,7 @@
     <ClInclude Include="src\resources\game_defines.hpp" />
     <ClInclude Include="src\resources\game_funcs.hpp" />
     <ClInclude Include="src\resources\mgs2_script_patches.hpp" />
+    <ClInclude Include="src\resources\mgs2_demo_patches.hpp" />
     <ClInclude Include="src\features\mgs2_snake_tales_radar.hpp" />
     <ClInclude Include="src\features\mgs2_ng_cutscene_skips.hpp" />
     <ClInclude Include="src\features\expand_bp_assets.hpp" />

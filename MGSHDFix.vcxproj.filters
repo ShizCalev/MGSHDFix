@@ -257,6 +257,9 @@
     <ClCompile Include="src\resources\mgs2_script_patches.cpp">
       <Filter>APIs</Filter>
     </ClCompile>
+    <ClCompile Include="src\resources\mgs2_demo_patches.cpp">
+      <Filter>APIs</Filter>
+    </ClCompile>
     <ClCompile Include="src\resources\mgs2_status_flags.cpp">
       <Filter>APIs</Filter>
     </ClCompile>
@@ -417,6 +420,9 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_solidus_pipe.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_demo_ocelot_lips.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp">
@@ -721,6 +727,9 @@
     <ClInclude Include="src\resources\mgs2_script_patches.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\resources\mgs2_demo_patches.hpp">
+      <Filter>APIs\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\resources\game_defines.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
@@ -884,6 +893,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_solidus_pipe.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_demo_ocelot_lips.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp">
