@@ -860,6 +860,13 @@ namespace ConfigKeys
         "\n"
         "Check that your category allows it.";
 
+    constexpr const char* MGS2_SkipSwordTraining_Section = "Skips";
+    constexpr const char* MGS2_SkipSwordTraining_Setting = "Sword Training";
+    constexpr const char* MGS2_SkipSwordTraining_Help = "";
+    constexpr const char* MGS2_SkipSwordTraining_Tooltip = "Removes the 45 second wait in Snake's sword training, so you can move on right after your first swing.\n"
+        "\n"
+        "Check that your category allows it.";
+
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";
     constexpr const char* ShowSpeedrunnerOverlay_Help = "";

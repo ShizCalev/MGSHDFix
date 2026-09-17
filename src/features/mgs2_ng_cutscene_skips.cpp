@@ -124,6 +124,10 @@ void MGS2NGCutsceneSkips::Initialize()
         MGS2_ScriptPatches::Add(MGS2Stages::W00B, { 0x35, 0x14, 0x04, 0x03, 0x6D, 0xA0 }, 1, { 0xC2, 0xA0 });
         MGS2_ScriptPatches::Add(MGS2Stages::W00B, { 0x35, 0x14, 0x07, 0x0C, 0x40, 0xA0 }, 1, { 0xC2, 0xA0 });
     }
+    if (bSwordTraining)   // the 45 second wait after the first swing becomes one frame
+    {
+        MGS2_ScriptPatches::Add(MGS2Stages::W43A, { 0x54, 0x74, 0x01, 0x8C, 0x0A, 0x5D }, 3, { 0x01, 0x00 });
+    }
     if (!bEnding)
     {
         return;   // no staff roll hooks, so nothing touches the game clock

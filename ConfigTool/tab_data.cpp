@@ -327,6 +327,9 @@ std::nullopt, false, Field::Int, 100, 1, 100},
         { (MGS2), ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, ConfigKeys::MGS2_SkipOlgaTaunt_Help, ConfigKeys::MGS2_SkipOlgaTaunt_Tooltip,
           std::nullopt, false, Field::Bool, false },
 
+        { (MGS2), ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, ConfigKeys::MGS2_SkipSwordTraining_Help, ConfigKeys::MGS2_SkipSwordTraining_Tooltip,
+          std::nullopt, false, Field::Bool, false },
+
         { (MGS2), ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, ConfigKeys::MGS2_SkipEnding_Help, ConfigKeys::MGS2_SkipEnding_Tooltip,
           std::nullopt, false, Field::Bool, false },
 

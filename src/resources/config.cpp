@@ -993,6 +993,8 @@ void Config::Read()
     LOG_CONFIG(ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
     LOG_CONFIG(ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
