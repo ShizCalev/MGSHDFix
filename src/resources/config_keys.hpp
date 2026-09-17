@@ -353,6 +353,20 @@ namespace ConfigKeys
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Help = "";
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Tooltip = "Fixes the M92's laser sight origin point when aiming in first-person view, which is aligned with the gun's barrel instead of the attached laser aiming module.";
 
+    constexpr const char* MGS2_RadarOffAlert_Section = "Bugfixes";
+    constexpr const char* MGS2_RadarOffAlert_Setting = "Show Alert Status With Radar Off";
+    constexpr const char* MGS2_RadarOffAlert_Help = "";
+    constexpr const char* MGS2_RadarOffAlert_Tooltip = "With the radar turned off in the options, the ALERT / EVASION / CAUTION box and its countdown gauge no longer appear.\n"
+        "\n"
+        "Shows them again, as on PS2 and the HD Edition.";
+
+    constexpr const char* MGS2_KeepSavedRadarType_Section = "Bugfixes";
+    constexpr const char* MGS2_KeepSavedRadarType_Setting = "Keep Radar Type From Save";
+    constexpr const char* MGS2_KeepSavedRadarType_Help = "";
+    constexpr const char* MGS2_KeepSavedRadarType_Tooltip = "After visiting the Options screen, loading a save can reset its radar setting to Type 1.\n"
+        "\n"
+        "Keeps the radar setting stored in the save, as on PS2.";
+
     constexpr const char* MGS2_ItemTossFix_Section = "Bugfixes";
     constexpr const char* MGS2_ItemTossFix_Setting = "Fix Dropped Item Toss";
     constexpr const char* MGS2_ItemTossFix_Help = "";

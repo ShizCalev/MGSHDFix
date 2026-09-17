@@ -51,6 +51,12 @@ const std::vector<std::pair<wxString, std::vector<Field>>> kTabs = {
         { (MGS2), ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, ConfigKeys::MGS2_ItemTossFix_Help, ConfigKeys::MGS2_ItemTossFix_Tooltip,
           std::nullopt, false, Field::Bool, true },
 
+        { (MGS2), ConfigKeys::MGS2_RadarOffAlert_Section, ConfigKeys::MGS2_RadarOffAlert_Setting, ConfigKeys::MGS2_RadarOffAlert_Help, ConfigKeys::MGS2_RadarOffAlert_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
+        { (MGS2), ConfigKeys::MGS2_KeepSavedRadarType_Section, ConfigKeys::MGS2_KeepSavedRadarType_Setting, ConfigKeys::MGS2_KeepSavedRadarType_Help, ConfigKeys::MGS2_KeepSavedRadarType_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
 
         { (MGS3), ConfigKeys::BusyLoopFix_Section, "",
           "", "",
