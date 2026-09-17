@@ -690,8 +690,7 @@ namespace ConfigKeys
 
     constexpr const char* PressureSensitiveFacebuttons_Section = "Controller Settings";
     constexpr const char* PressureSensitiveFacebuttons_Setting = "Dualshock 2 && 3 Controller Support";
-    constexpr const char* PressureSensitiveFacebuttons_Help = "(Pressure Sensitive Buttons)\n"
-                                                              "(Experimental)";
+    constexpr const char* PressureSensitiveFacebuttons_Help = "(Pressure Sensitive Buttons)";
     constexpr const char* PressureSensitiveFacebuttons_Tooltip =
         "Enables support for Dualshock 2 / 3 Controllers, complete with\n"
         "pressure sensitive facebutton support.\n"
