@@ -5,6 +5,8 @@
 // counts in full on the game clock.
 namespace MGS2NGCutsceneSkips
 {
-    inline bool bEnabled = false;
+    inline bool bStillman = false;
+    inline bool bOlgaTaunt = false;
+    inline bool bEnding = false;
     void Initialize();
 }

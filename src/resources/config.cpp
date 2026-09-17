@@ -934,8 +934,12 @@ void Config::Read()
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
 
-    ConfigHelper::getValue(ini, ConfigKeys::MGS2_NGCutsceneSkips_Section, ConfigKeys::MGS2_NGCutsceneSkips_Setting, MGS2NGCutsceneSkips::bEnabled);
-    LOG_CONFIG(ConfigKeys::MGS2_NGCutsceneSkips_Section, ConfigKeys::MGS2_NGCutsceneSkips_Setting, MGS2NGCutsceneSkips::bEnabled);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
