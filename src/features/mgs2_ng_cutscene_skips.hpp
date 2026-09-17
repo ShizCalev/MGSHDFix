@@ -8,5 +8,6 @@ namespace MGS2NGCutsceneSkips
     inline bool bStillman = false;
     inline bool bOlgaTaunt = false;
     inline bool bEnding = false;
+    inline bool bSwordTraining = false;
     void Initialize();
 }
