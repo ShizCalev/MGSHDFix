@@ -2,8 +2,10 @@
 
 #include "mgs2_difficulty.hpp"
 #include "common.hpp"
+#include "game_stages.hpp"
 #include "input_handler.hpp"
 #include "logging.hpp"
+#include "mgs2_script_patches.hpp"
 
 namespace
 {
@@ -41,6 +43,14 @@ void MGS2_RestoreOriginalDifficulty::Apply()
     {
         spdlog::info("MGS2: Restore Original Difficulty: Config disabled, skipping.");
         return;
+    }
+
+    // The choke's O2 gauge lives in w51a's script. HD drains 3 a frame and a press gives back 1/19;
+    // PS2 drains 2 and gives back 1/17. Any restore option puts the gauge back too.
+    if (bRestoreOriginalSolidusChokingDuration || bRestoreOriginalSolidusChokingLife)
+    {
+        MGS2_ScriptPatches::Add(MGS2Stages::W51A, { 0x3C, 0x11, 0x80, 0x00, 0xFE, 0x11, 0x80, 0x00, 0xFE, 0xC4, 0xA5, 0xB6, 0xA0 }, 9, { 0xC3 });   // O2 = O2 - 3 -> 2
+        MGS2_ScriptPatches::Add(MGS2Stages::W51A, { 0x37, 0x11, 0x80, 0x01, 0x00, 0xD4, 0xA7, 0xA0 }, 5, { 0xD2 });                                 // O2 max / 19 -> 17
     }
 
     if (bEnableGrenadeCooking)

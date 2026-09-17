@@ -33,6 +33,7 @@
 #include "mgs2_restore_action_level_selection.hpp"
 #include "mgs2_3rd_person_freecam.hpp"
 #include "mgs2_difficulty.hpp"
+#include "mgs2_script_patches.hpp"
 #include "mgs2_hostage_type_easter_egg.hpp"
 #include "original_camera_positions.hpp"
 #include "expand_bp_assets.hpp"
@@ -674,6 +675,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_EffectSpeedFix.Initialize());
         INITIALIZE(SMAA_AA::CompileShaders());
         INITIALIZE(ScreenspaceFixes::Apply());
+        INITIALIZE(MGS2_ScriptPatches::Initialize());   // last: every feature has added its patches by now
     }
     else if (eGameType & MGS3)
     {

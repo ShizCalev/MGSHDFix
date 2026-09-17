@@ -254,6 +254,9 @@
     <ClCompile Include="src\resources\game_funcs.cpp">
       <Filter>APIs</Filter>
     </ClCompile>
+    <ClCompile Include="src\resources\mgs2_script_patches.cpp">
+      <Filter>APIs</Filter>
+    </ClCompile>
     <ClCompile Include="src\resources\mgs2_status_flags.cpp">
       <Filter>APIs</Filter>
     </ClCompile>
@@ -671,6 +674,9 @@
       <Filter>Features\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\resources\game_funcs.hpp">
+      <Filter>APIs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resources\mgs2_script_patches.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\resources\game_defines.hpp">

@@ -22,6 +22,7 @@
     <ClCompile Include="src\resources\d3d11_text_overlay.cpp" />
     <ClCompile Include="src\resources\mgs2_status_flags.cpp" />
     <ClCompile Include="src\resources\game_funcs.cpp" />
+    <ClCompile Include="src\resources\mgs2_script_patches.cpp" />
     <ClCompile Include="src\features\mgs2_snake_tales_radar.cpp" />
     <ClCompile Include="src\features\expand_bp_assets.cpp" />
     <ClCompile Include="src\features\mgs2_restore_sol_radar.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="src\resources\d3d11_text_overlay.hpp" />
     <ClInclude Include="src\resources\game_defines.hpp" />
     <ClInclude Include="src\resources\game_funcs.hpp" />
+    <ClInclude Include="src\resources\mgs2_script_patches.hpp" />
     <ClInclude Include="src\features\mgs2_snake_tales_radar.hpp" />
     <ClInclude Include="src\features\expand_bp_assets.hpp" />
     <ClInclude Include="src\features\mgs2_restore_sol_radar.hpp" />

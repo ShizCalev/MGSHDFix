@@ -620,6 +620,8 @@ namespace ConfigKeys
     constexpr const char* MGS2_RestoreOriginalDifficulty_Solidus_Choking_Help = "";
     constexpr const char* MGS2_RestoreOriginalDifficulty_Solidus_Choking_Tooltip = "Restores the original harder PS2 durations and life reductions for Solidus's choking sequence, which were rebalanced/made easier with the HD Collection.\n"
                                                                                          "\n"
+                                                                                         "Any option other than Disabled also restores the PS2 O2 gauge: it drains 2 per frame instead of 3, and a press gives back 1/17 instead of 1/19.\n"
+                                                                                         "\n"
                                                                                          "HDC Duration:\n"
                                                                                          "Very Easy: 600, Easy: 650, Normal: 700, Hard: 750, Extreme: 800, European Extreme: 850\n"
                                                                                          "PS2 Duration:\n"
