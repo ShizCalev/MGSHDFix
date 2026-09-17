@@ -48,6 +48,9 @@ const std::vector<std::pair<wxString, std::vector<Field>>> kTabs = {
         { (MGS2), ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Help, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Tooltip,
           std::nullopt, false, Field::Bool, true },
 
+        { (MGS2), ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, ConfigKeys::MGS2_ItemTossFix_Help, ConfigKeys::MGS2_ItemTossFix_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
 
         { (MGS3), ConfigKeys::BusyLoopFix_Section, "",
           "", "",

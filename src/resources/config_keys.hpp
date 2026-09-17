@@ -353,6 +353,13 @@ namespace ConfigKeys
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Help = "";
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Tooltip = "Fixes the M92's laser sight origin point when aiming in first-person view, which is aligned with the gun's barrel instead of the attached laser aiming module.";
 
+    constexpr const char* MGS2_ItemTossFix_Section = "Bugfixes";
+    constexpr const char* MGS2_ItemTossFix_Setting = "Fix Dropped Item Toss";
+    constexpr const char* MGS2_ItemTossFix_Help = "";
+    constexpr const char* MGS2_ItemTossFix_Tooltip = "Items and dog tags dropped by a held-up guard are tossed in a wider arc than on PS2, so a dog tag can land a metre away or off a ledge.\n"
+        "\n"
+        "Restores the PS2 launch angle.";
+
     constexpr const char* EnablePauseOnFocusLoss_Section = "Various";
     constexpr const char* EnablePauseOnFocusLoss_Setting = "Pause On Focus Loss";
     constexpr const char* EnablePauseOnFocusLoss_Help = "";

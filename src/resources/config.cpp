@@ -72,6 +72,7 @@
 #include "texture_live_swaps.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
+#include "mgs2_item_toss_fix.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -495,6 +496,9 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
     LOG_CONFIG(ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, MGS2ItemTossFix::bEnabled);
+    LOG_CONFIG(ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, MGS2ItemTossFix::bEnabled);
 
 
     ConfigHelper::getValue(ini, ConfigKeys::AnisotropicFiltering_Section, ConfigKeys::AnisotropicFiltering_Setting, iAnisotropicFiltering);
