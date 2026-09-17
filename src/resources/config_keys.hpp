@@ -837,12 +837,29 @@ namespace ConfigKeys
                                                                "\n"
                                                                "Substance gated elevator operation to standing/squat to patch this out. Off by default.";
 
-    constexpr const char* MGS2_NGCutsceneSkips_Section = "Speedrunner Settings";
-    constexpr const char* MGS2_NGCutsceneSkips_Setting = "NG Cutscene Skips";
-    constexpr const char* MGS2_NGCutsceneSkips_Help = "";
-    constexpr const char* MGS2_NGCutsceneSkips_Tooltip = "Makes the Stillman cutscenes, Olga's mid-fight monologues and the staff roll skippable in New Game playthroughs.\n"
+    constexpr const char* MGS2_SkipStillman_Section = "Skips";
+    constexpr const char* MGS2_SkipStillman_Setting = "Stillman";
+    constexpr const char* MGS2_SkipStillman_Help = "";
+    constexpr const char* MGS2_SkipStillman_Tooltip = "Makes the two Peter Stillman cutscenes in the Shell 1 Core skippable in New Game playthroughs.\n"
         "\n"
-        "A skipped staff roll still counts in full on the game clock, so the recorded play time is unchanged.";
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipOlgaTaunt_Section = "Skips";
+    constexpr const char* MGS2_SkipOlgaTaunt_Setting = "Olga Taunt";
+    constexpr const char* MGS2_SkipOlgaTaunt_Help = "";
+    constexpr const char* MGS2_SkipOlgaTaunt_Tooltip = "Makes Olga's two mid-fight monologues skippable in New Game playthroughs.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipEnding_Section = "Skips";
+    constexpr const char* MGS2_SkipEnding_Setting = "Ending";
+    constexpr const char* MGS2_SkipEnding_Help = "";
+    constexpr const char* MGS2_SkipEnding_Tooltip = "Makes the proposal scene and the staff roll skippable.\n"
+        "\n"
+        "A skipped part still counts in full on the game clock, so the recorded play time is unchanged.\n"
+        "\n"
+        "Check that your category allows it.";
+
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";
     constexpr const char* ShowSpeedrunnerOverlay_Help = "";

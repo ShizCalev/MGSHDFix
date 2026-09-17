@@ -108,28 +108,36 @@ namespace
 
 void MGS2NGCutsceneSkips::Initialize()
 {
-    if (!(eGameType & MGS2) || !bEnabled)
+    if (!(eGameType & MGS2))
     {
         return;
     }
 
     // Each script asks "seen it before?" before it adds the skip button. These make the answer yes.
-    // Stillman: "cleared the Plant before?"
-    MGS2_ScriptPatches::Add(MGS2Stages::W16A, { 0x37, 0x11, 0x80, 0x00, 0x04, 0xC1, 0xAC, 0xA0 }, 6, { 0xB0 });
-    MGS2_ScriptPatches::Add(MGS2Stages::W16B, { 0x37, 0x11, 0x80, 0x00, 0x04, 0xC1, 0xAC, 0xA0 }, 6, { 0xB0 });
-    // Olga: "heard this monologue before?"
-    MGS2_ScriptPatches::Add(MGS2Stages::W00B, { 0x35, 0x14, 0x04, 0x03, 0x6D, 0xA0 }, 1, { 0xC2, 0xA0 });
-    MGS2_ScriptPatches::Add(MGS2Stages::W00B, { 0x35, 0x14, 0x07, 0x0C, 0x40, 0xA0 }, 1, { 0xC2, 0xA0 });
+    if (bStillman)   // "cleared the Plant before?"
+    {
+        MGS2_ScriptPatches::Add(MGS2Stages::W16A, { 0x37, 0x11, 0x80, 0x00, 0x04, 0xC1, 0xAC, 0xA0 }, 6, { 0xB0 });
+        MGS2_ScriptPatches::Add(MGS2Stages::W16B, { 0x37, 0x11, 0x80, 0x00, 0x04, 0xC1, 0xAC, 0xA0 }, 6, { 0xB0 });
+    }
+    if (bOlgaTaunt)   // "heard this monologue before?"
+    {
+        MGS2_ScriptPatches::Add(MGS2Stages::W00B, { 0x35, 0x14, 0x04, 0x03, 0x6D, 0xA0 }, 1, { 0xC2, 0xA0 });
+        MGS2_ScriptPatches::Add(MGS2Stages::W00B, { 0x35, 0x14, 0x07, 0x0C, 0x40, 0xA0 }, 1, { 0xC2, 0xA0 });
+    }
+    if (!bEnding)
+    {
+        return;   // no staff roll hooks, so nothing touches the game clock
+    }
 
-    // Olga's skip test names the pad for us.
+    // Olga's skip test names the pad for us: test [GV_PadDataDirect.release], PAD_B | PAD_STA
     uint8_t* pad = Memory::PatternScan(baseModule,
-        "40 53 48 83 EC ?? 83 B9 ?? ?? ?? ?? 00 8B C2",
+        "F7 05 ?? ?? ?? ?? ?? ?? ?? ?? 74 ?? F7 81",
         "MGS 2: NG Cutscene Skips - morita\\orga\\action\\orga_teaz.h -> ORG_TeaseStopStream()");
-    if (!pad || pad[0x14] != 0xF7 || pad[0x15] != 0x05)
+    if (!pad)
     {
         return;
     }
-    gPadRelease = reinterpret_cast<const uint32_t*>(Memory::GetAbsolute(reinterpret_cast<uintptr_t>(pad) + 0x16) + 4);   // imm32 follows the disp
+    gPadRelease = reinterpret_cast<const uint32_t*>(Memory::GetAbsolute(reinterpret_cast<uintptr_t>(pad) + 2) + 4);   // imm32 follows the disp
 
     uint8_t* check = Memory::PatternScan(baseModule,
         "83 BB ?? ?? ?? ?? 00 74 ?? E8 ?? ?? ?? ?? 85 05 ?? ?? ?? ?? 74 ?? 81 4B",
@@ -141,30 +149,23 @@ void MGS2NGCutsceneSkips::Initialize()
     gEndingCheckHook = safetyhook::create_mid(check, OnEndingCheck);
     LOG_HOOK(gEndingCheckHook, "MGS 2: NG Cutscene Skips - uehara\\pss\\ending.c -> Act()")
 
-    uint8_t* act = Memory::PatternScan(baseModule,
-        "40 53 48 83 EC ?? 83 B9 ?? ?? ?? ?? 00 48 8B D9 74 ?? E8",
-        "MGS 2: NG Cutscene Skips - uehara\\pss\\ending.c -> Act() pre-movie");
-    if (!act || act[0x17] != 0x3D)   // cmp eax, <time>
-    {
-        return;
-    }
-    uint8_t* streamTime = reinterpret_cast<uint8_t*>(Memory::GetAbsolute(reinterpret_cast<uintptr_t>(act) + 0x13));
-    if (streamTime[0] != 0x48 || streamTime[1] != 0x8B || streamTime[2] != 0x05)   // mov rax, [player]
-    {
-        return;
-    }
-    gStreamActor = reinterpret_cast<uint8_t**>(Memory::GetAbsolute(reinterpret_cast<uintptr_t>(streamTime) + 3));
-
+    uint8_t* player = Memory::PatternScan(baseModule,
+        "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 ?? 48 8B 88 ?? ?? ?? ?? 48 85 C9 74 ?? 8B 41",
+        "MGS 2: NG Cutscene Skips - uehara\\pss\\mpegstr.c -> GetMovieStreamTime()");
     uint8_t* stream = Memory::PatternScan(baseModule,
         "8B 83 ?? ?? ?? ?? 85 05 ?? ?? ?? ?? 0F 85 ?? ?? ?? ?? 39 BB",
         "MGS 2: NG Cutscene Skips - uehara\\pss\\mpegstr.c -> Act() cancel check");
-    if (!stream)
+    uint8_t* wait = Memory::PatternScan(baseModule,
+        "3D ?? ?? ?? ?? 0F 8C ?? ?? ?? ?? E8",
+        "MGS 2: NG Cutscene Skips - uehara\\pss\\ending.c -> Act() pre-movie");
+    if (!player || !stream || !wait)
     {
         return;
     }
+    gStreamActor = reinterpret_cast<uint8_t**>(Memory::GetAbsolute(reinterpret_cast<uintptr_t>(player) + 3));
     gStreamCancelMask = *reinterpret_cast<const int32_t*>(stream + 2);
-    gPreMovieDone = *reinterpret_cast<const uint32_t*>(act + 0x18);   // copied first: the hook's jump lands on these bytes
-    gEndingPreMovieHook = safetyhook::create_mid(act + 0x17, OnEndingPreMovie);
+    gPreMovieDone = *reinterpret_cast<const uint32_t*>(wait + 1);   // copied first: the hook's jump lands on these bytes
+    gEndingPreMovieHook = safetyhook::create_mid(wait, OnEndingPreMovie);
     LOG_HOOK(gEndingPreMovieHook, "MGS 2: NG Cutscene Skips - uehara\\pss\\ending.c -> Act() pre-movie")
 
     if (uint8_t* die = Memory::PatternScan(baseModule,
