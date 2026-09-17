@@ -820,6 +820,12 @@ namespace ConfigKeys
                                                                "\n"
                                                                "Substance gated elevator operation to standing/squat to patch this out. Off by default.";
 
+    constexpr const char* MGS2_NGCutsceneSkips_Section = "Speedrunner Settings";
+    constexpr const char* MGS2_NGCutsceneSkips_Setting = "NG Cutscene Skips";
+    constexpr const char* MGS2_NGCutsceneSkips_Help = "";
+    constexpr const char* MGS2_NGCutsceneSkips_Tooltip = "Makes the Stillman cutscenes, Olga's mid-fight monologues and the staff roll skippable in New Game playthroughs.\n"
+        "\n"
+        "A skipped staff roll still counts in full on the game clock, so the recorded play time is unchanged.";
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";
     constexpr const char* ShowSpeedrunnerOverlay_Help = "";

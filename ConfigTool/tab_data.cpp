@@ -309,6 +309,9 @@ std::nullopt, false, Field::Int, 100, 1, 100},
         { (MGS2), ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, ConfigKeys::MGS2_RestoreElevatorGlitch_Help, ConfigKeys::MGS2_RestoreElevatorGlitch_Tooltip,
           std::nullopt, false, Field::Bool, false },
 
+        { (MGS2), ConfigKeys::MGS2_NGCutsceneSkips_Section, ConfigKeys::MGS2_NGCutsceneSkips_Setting, ConfigKeys::MGS2_NGCutsceneSkips_Help, ConfigKeys::MGS2_NGCutsceneSkips_Tooltip,
+          std::nullopt, false, Field::Bool, false },
+
 
                     { (MGS2), ConfigKeys::MGS2_Hostage_Type_Section, ConfigKeys::MGS2_Hostage_Type_Setting, ConfigKeys::MGS2_Hostage_Type_Help, ConfigKeys::MGS2_Hostage_Type_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MGS2_Hostage_Type_Option_Normal, {ConfigKeys::MGS2_Hostage_Type_Option_Normal, ConfigKeys::MGS2_Hostage_Type_Option_OnePM, ConfigKeys::MGS2_Hostage_Type_Option_TenPM, ConfigKeys::MGS2_Hostage_Type_Option_Midnight,} },

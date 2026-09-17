@@ -24,6 +24,7 @@
     <ClCompile Include="src\resources\game_funcs.cpp" />
     <ClCompile Include="src\resources\mgs2_script_patches.cpp" />
     <ClCompile Include="src\features\mgs2_snake_tales_radar.cpp" />
+    <ClCompile Include="src\features\mgs2_ng_cutscene_skips.cpp" />
     <ClCompile Include="src\features\expand_bp_assets.cpp" />
     <ClCompile Include="src\features\mgs2_restore_sol_radar.cpp" />
     <ClCompile Include="src\features\mgs2_restore_elevator_glitch.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="src\resources\game_funcs.hpp" />
     <ClInclude Include="src\resources\mgs2_script_patches.hpp" />
     <ClInclude Include="src\features\mgs2_snake_tales_radar.hpp" />
+    <ClInclude Include="src\features\mgs2_ng_cutscene_skips.hpp" />
     <ClInclude Include="src\features\expand_bp_assets.hpp" />
     <ClInclude Include="src\features\mgs2_restore_sol_radar.hpp" />
     <ClInclude Include="src\features\mgs2_restore_elevator_glitch.hpp" />
