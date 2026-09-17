@@ -323,6 +323,9 @@
     <ClCompile Include="src\fixes\mgs2_flare_occlusion.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\features\mgs2_ng_cutscene_skips.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_demo_blur.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -758,6 +761,9 @@
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_flare_occlusion.hpp">
       <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mgs2_ng_cutscene_skips.hpp">
+      <Filter>Features\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_blur.hpp">
       <Filter>Fixes\Headers</Filter>

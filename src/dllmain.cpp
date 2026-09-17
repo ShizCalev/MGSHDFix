@@ -120,6 +120,7 @@
 #include "mgs2_parrot_radar_fix.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
+#include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_shimmer.hpp"
 #include "mgs2_crossfade.hpp"
 #include "photo_camera.hpp"
@@ -614,6 +615,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_RestoreActionLevelSelection::Apply());
         INITIALIZE(MGS2_RestoreSoLRadar::Apply());
         INITIALIZE(MGS2_RestoreElevatorGlitch::Initialize());
+        INITIALIZE(MGS2NGCutsceneSkips::Initialize());
         INITIALIZE(MGS2_ThirdPersonFreecam::Activate());
         INITIALIZE(MGS2_Hostage_Type_Easter_Egg::Force());
         INITIALIZE(MGS2_First_Person_View::Activate());
