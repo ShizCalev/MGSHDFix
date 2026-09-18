@@ -61,6 +61,7 @@
 #include "mgs2_tanker_snake_snap.hpp"
 #include "mgs2_glass_dmapack_overflow.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_radar_fixes.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
 #include "line_scaling.hpp"
@@ -602,6 +603,7 @@ static void InitializeSubsystems()
     {
         INITIALIZE(MGS2_GlassDmapackOverflow::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
+        INITIALIZE(MGS2_RadarFixes::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
         INITIALIZE(MGS2BladeAnywhere::Initialize());
         INITIALIZE(MGS2_RestoreDogtags::Initialize());
