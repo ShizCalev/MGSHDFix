@@ -735,17 +735,12 @@ void Config::Read()
         }
 
         bool bRestoreVFX = true;
-        ConfigHelper::getValue(ini, ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting, bRestoreVFX);
+        ConfigHelper::getValue(ini, ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting, bRestoreVFX);
 #if defined(BEFORE_COMPARISON_PICS)
         spdlog::info("DISABLED VFX FIXES");
         bRestoreVFX = false;
 #endif
-        LOG_CONFIG(ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting, bRestoreVFX);
-
-        g_VectorScalingFix.bFixRain = g_VectorScalingFix.bFixUI = MGS2_EffectSpeedFix.isEnabled = bRestoreVFX;
-        MGS2ScanlineScale::bEnabled = bRestoreVFX;
-        MGS3GlowOverbright::bEnabled = bRestoreVFX;
-        MGS3MapRelight::bEnabled = bRestoreVFX;
+        LOG_CONFIG(ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting, bRestoreVFX);
 
 
         ConfigHelper::getValue(ini, ConfigKeys::Restore_Reverb_Level_Section, ConfigKeys::Restore_Reverb_Level_Setting, FixReverbWetLevel::bEnabled);
@@ -758,12 +753,16 @@ void Config::Read()
         if (eGameType & MGS2)
         {
             static bool* const vfxToggles[] = {
+                &g_VectorScalingFix.bFixRain,
+                &g_VectorScalingFix.bFixUI,
+                &MGS2_EffectSpeedFix.isEnabled,
                 &g_MGS2UnderwaterFilterFix.bEnabled,
                 &g_OpticalCamoFix.bEnabled,
                 &MGS2BloodStains::bEnabled,
                 &MGS2ScopeWarp::bEnabled,
                 &MGS2WaterEffects::bEnabled,
                 &MGS2LensDroplets::bEnabled,
+                &MGS2ScanlineScale::bEnabled,
                 &MGS2GasHaze::bEnabled,
                 &MGS2_ContrastShader::bEnabled,
                 &MGS2_AiRayVision::bEnabled,
@@ -781,7 +780,9 @@ void Config::Read()
             };
 
             for (bool* pEnabled : vfxToggles)
+            {
                 *pEnabled = bRestoreVFX;
+            }
 
             ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestorePhotosensitiveEffects_Section, ConfigKeys::MGS2_RestorePhotosensitiveEffects_Setting, MGS2_RestorePhotosensitiveEffects::bEnabled);
             LOG_CONFIG(ConfigKeys::MGS2_RestorePhotosensitiveEffects_Section, ConfigKeys::MGS2_RestorePhotosensitiveEffects_Setting, MGS2_RestorePhotosensitiveEffects::bEnabled);
@@ -833,6 +834,23 @@ void Config::Read()
 #if defined(BEFORE_COMPARISON_PICS)
             spdlog::info("DISABLED VFX FIXES");
 #endif 
+
+
+            static bool* const vfxToggles[] = {
+                &g_VectorScalingFix.bFixRain,
+                &g_VectorScalingFix.bFixUI,
+            };
+
+            for (bool* pEnabled : vfxToggles)
+            {
+                *pEnabled = bRestoreVFX;
+            }
+
+            ConfigHelper::getValue(ini, ConfigKeys::MGS3_GlowOverbright_Section, ConfigKeys::MGS3_GlowOverbright_Setting, MGS3GlowOverbright::bEnabled);
+            LOG_CONFIG(ConfigKeys::MGS3_GlowOverbright_Section, ConfigKeys::MGS3_GlowOverbright_Setting, MGS3GlowOverbright::bEnabled);
+
+            ConfigHelper::getValue(ini, ConfigKeys::MGS3_MapRelight_Section, ConfigKeys::MGS3_MapRelight_Setting, MGS3MapRelight::bEnabled);
+            LOG_CONFIG(ConfigKeys::MGS3_MapRelight_Section, ConfigKeys::MGS3_MapRelight_Setting, MGS3MapRelight::bEnabled);
 
             std::string sFilmGrainMode = "On";
             ConfigHelper::getValue(ini, ConfigKeys::MGS3_Restore_Film_Grain_Section, ConfigKeys::MGS3_Restore_Film_Grain_Setting, sFilmGrainMode);

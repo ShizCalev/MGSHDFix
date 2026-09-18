@@ -2,6 +2,6 @@
 
 namespace MGS2SoftParticles
 {
-    inline bool bEnabled = true;
+    inline bool bEnabled = false;
     void OnDeviceReady();
 }
