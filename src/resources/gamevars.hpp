@@ -59,6 +59,7 @@ enum class MGS2GameMode
     Tanker,
     Plant,
     Alternate,
+    SnakeTales,
 
     VRSneaking,
     VRVariety,

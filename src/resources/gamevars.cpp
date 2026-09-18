@@ -10,6 +10,7 @@
 #include "mgs2_3rd_person_freecam.hpp"
 #include "mgs2_first_person_view_mode.hpp"
 #include "mgs2_rotor_procession.hpp"
+#include "mgs2_tanker_fog.hpp"
 #include "mgs2_sunglasses.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
 #include "mgs3_linkvarbuf.hpp"
@@ -259,6 +260,7 @@ void GameVars::OnLevelTransition()
         ResolutionScalingFixes::HandleLevelTransition();
         D3D11TextOverlay::HandleLevelTransition();
         MGS2RotorProcession::HandleLevelTransition();
+        MGS2TankerFog::HandleLevelTransition();
 
     }
     else if (eGameType & MGS3)
@@ -382,6 +384,11 @@ MGS2GameMode GameVars::MGS2_GetGameMode() const
     if (_stricmp(s->sGameMode, "Plant") == 0)
     {
         return MGS2GameMode::Plant;
+    }
+
+    if (_stricmp(s->sGameMode, "Snake Tales") == 0)
+    {
+        return MGS2GameMode::SnakeTales;
     }
 
     if (_stricmp(s->sGameMode, "Alternate") == 0)
