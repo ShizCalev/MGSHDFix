@@ -76,6 +76,7 @@
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -953,6 +954,15 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
