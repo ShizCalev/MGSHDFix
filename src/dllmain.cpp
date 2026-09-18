@@ -62,6 +62,7 @@
 #include "mgs2_glass_dmapack_overflow.hpp"
 #include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
+#include "mgs2_solidus_pipe.hpp"
 #include "mgs2_item_toss_fix.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
@@ -614,6 +615,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_GlassDmapackOverflow::Initialize());
         INITIALIZE(MGS2_DemoBindPoseMarine::Initialize());
         INITIALIZE(MGS2_DemoLazyMarine::Initialize());
+        INITIALIZE(MGS2_SolidusPipe::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
         INITIALIZE(MGS2BladeAnywhere::Initialize());

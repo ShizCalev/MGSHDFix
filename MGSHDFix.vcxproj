@@ -18,6 +18,7 @@
     <ClCompile Include="src\fixes\mgs2_glass_dmapack_overflow.cpp" />
     <ClCompile Include="src\fixes\mgs2_demo_bind_pose_marine.cpp" />
     <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp" />
+    <ClCompile Include="src\fixes\mgs2_solidus_pipe.cpp" />
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_newscrconcentrateblur.cpp" />
     <ClCompile Include="src\fixes\mgs2_enhanced_demos.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="src\fixes\mgs2_glass_dmapack_overflow.hpp" />
     <ClInclude Include="src\fixes\mgs2_demo_bind_pose_marine.hpp" />
     <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp" />
+    <ClInclude Include="src\fixes\mgs2_solidus_pipe.hpp" />
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp" />
     <ClInclude Include="src\resources\game_strings.hpp" />
     <ClInclude Include="src\fixes\caption_replacements.hpp" />
