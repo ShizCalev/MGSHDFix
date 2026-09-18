@@ -60,6 +60,7 @@
 #include "mgs2_flare_occlusion.hpp"
 #include "mgs2_tanker_snake_snap.hpp"
 #include "mgs2_glass_dmapack_overflow.hpp"
+#include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_item_toss_fix.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
@@ -601,6 +602,7 @@ static void InitializeSubsystems()
     if (eGameType & MGS2)
     {
         INITIALIZE(MGS2_GlassDmapackOverflow::Initialize());
+        INITIALIZE(MGS2_DemoBindPoseMarine::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
         INITIALIZE(MGS2BladeAnywhere::Initialize());
