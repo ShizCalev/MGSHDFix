@@ -1,3 +1,12 @@
-//gBP_1stPersonCamera_EnableMovement
+#pragma once
 
-//todo: find it. this white whale is hiding, but it's absolutely out there per the ancient texts.
+#if defined(MGS3_FPS_DEV)
+namespace MGS3_First_Person_View
+{
+    void Activate();
+
+    inline bool bFirst_Person_View_Enabled = false;
+    inline bool bFirst_Person_View_Movement_Enabled_By_Default = true;
+    inline int vkToggle_First_Person_View_Movement = 0;
+}
+#endif

@@ -68,6 +68,9 @@
 #include "caption_replacements.hpp"
 #include "color_correction.hpp"
 #include "mgs2_first_person_view_mode.hpp"
+#if defined(MGS3_FPS_DEV)
+#include "mgs3_first_person_view_mode.hpp"
+#endif
 #include "resolution_scaling_fixes.hpp"
 #include "texture_live_swaps.hpp"
 #include "mgs2_restore_sol_radar.hpp"
@@ -1128,6 +1131,20 @@ void Config::Read()
         LOG_CONFIG(ConfigKeys::MGS2_First_Person_View_Sticky_Section, ConfigKeys::MGS2_First_Person_View_Sticky_Setting, MGS2_First_Person_View::bFirst_Person_View_Sticky);
         InputHandler::GetKeybind(ini, ConfigKeys::MGS2_First_Person_View_Hold_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_Hold_ToggleKey_Setting, MGS2_First_Person_View::vkToggle_Hold_First_Person_View);
     }
+
+#if defined(MGS3_FPS_DEV)
+    if (eGameType & MGS3)
+    {
+        ConfigHelper::getValue(ini, ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting, MGS3_First_Person_View::bFirst_Person_View_Enabled);
+        LOG_CONFIG(ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting, MGS3_First_Person_View::bFirst_Person_View_Enabled);
+        if (MGS3_First_Person_View::bFirst_Person_View_Enabled)
+        {
+            ConfigHelper::getValue(ini, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Section, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Setting, MGS3_First_Person_View::bFirst_Person_View_Movement_Enabled_By_Default);
+            LOG_CONFIG(ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Section, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Setting, MGS3_First_Person_View::bFirst_Person_View_Movement_Enabled_By_Default);
+            InputHandler::GetKeybind(ini, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Setting, MGS3_First_Person_View::vkToggle_First_Person_View_Movement);
+        }
+    }
+#endif
 
     std::string sColonelMsxSprite;
     ConfigHelper::getValue(ini, ConfigKeys::UnusedRetroColonel_Section, ConfigKeys::UnusedRetroColonel_Setting, sColonelMsxSprite);
