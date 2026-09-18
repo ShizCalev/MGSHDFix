@@ -721,6 +721,9 @@ void Config::Read()
             ConfigHelper::getValue(ini, ConfigKeys::SuppressAlternativeActions_Section, ConfigKeys::SuppressAlternativeActions_Setting, PressureInputs::bSuppressAlternates);
             LOG_CONFIG(ConfigKeys::SuppressAlternativeActions_Section, ConfigKeys::SuppressAlternativeActions_Setting, PressureInputs::bSuppressAlternates);
 
+            ConfigHelper::getValue(ini, ConfigKeys::ReducePressureSensitivity_Section, ConfigKeys::ReducePressureSensitivity_Setting, PressureInputs::bReduceSensitivity);
+            LOG_CONFIG(ConfigKeys::ReducePressureSensitivity_Section, ConfigKeys::ReducePressureSensitivity_Setting, PressureInputs::bReduceSensitivity);
+
             if (!Util::IsSteamOS())
             {
                 ConfigHelper::getValue(ini, ConfigKeys::Ds3RumbleStrength_Section, ConfigKeys::Ds3RumbleStrength_Setting, Ds3Rumble::iStrength);

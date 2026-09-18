@@ -9,6 +9,12 @@ namespace PressureInputs
     // games shipped with are the only ones. Needs a pad that reports pressure.
     inline bool bSuppressAlternates = false;
 
+    // Square gates moved up: the gun lowers below 50 instead of 24, rapid fire wants 20 more.
+    inline bool bReduceSensitivity = false;
+    // The Square gates in the pad's own units, for the overlay's ticks.
+    uint8_t WeaponLowerGate();
+    uint8_t WeaponFireGate();
+
     void Initialize();
 
     // Twelve slots, libgv order: R L U D TRI CIR CRO SQU L1 R1 L2 R2. Zeroed without a pad.
