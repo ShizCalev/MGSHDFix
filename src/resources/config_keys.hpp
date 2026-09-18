@@ -321,6 +321,20 @@ namespace ConfigKeys
     constexpr const char* MGS3_Restore_Film_Grain_Help = "(Performance Heavy)";
     constexpr const char* MGS3_Restore_Film_Grain_Tooltip = "Restores the film grain effect used during dark cutscenes, which was broken by the HD Collection.";
 
+    constexpr const char* MGS3_GlowOverbright_Section = "Bugfixes";
+    constexpr const char* MGS3_GlowOverbright_Setting = "Fix Emissive Textures";
+    constexpr const char* MGS3_GlowOverbright_Help = "";
+    constexpr const char* MGS3_GlowOverbright_Tooltip = "Fixes light-emitting textures (eg. windows, glowy panels) not emitting light and looking flat.\n"
+        "\n"
+        "The PS2 did the math for these effects using whole integers. The HD Collection switched that math to decimal numbers (floats), which broke the effect.";
+
+    constexpr const char* MGS3_MapRelight_Section = "Bugfixes";
+    constexpr const char* MGS3_MapRelight_Setting = "Fix Lighting Bounding Boxes";
+    constexpr const char* MGS3_MapRelight_Help = "";
+    constexpr const char* MGS3_MapRelight_Tooltip = "The HD Collection threw away the PS2's per-light bounding boxes/cones and makes every light radius-based instead.\n"
+        "\n"
+        "This restores the original lighting bounds; fixing broken shadows, dark scenes getting blown out with bloom, and tons of other lighting issues.";
+
     constexpr const char* MGS2_RestoreActionLevelSelection_Section = "Various";
     constexpr const char* MGS2_RestoreActionLevelSelection_Setting = "Restore Main Menu Voiceovers";
     constexpr const char* MGS2_RestoreActionLevelSelection_Help = "";
@@ -334,11 +348,9 @@ namespace ConfigKeys
         "This option makes shadow resolution scale dynamically with the game's internal resolution.";
 
     constexpr const char* MGS2_SoftParticles_Section = "Model Quality && Level of Detail Enhancements";
-    constexpr const char* MGS2_SoftParticles_Setting = "Show Soft Particles";
-    constexpr const char* MGS2_SoftParticles_Help = "";
-    constexpr const char* MGS2_SoftParticles_Tooltip = "Spray and dust puffs are flat sprites, so they cut off along a hard line wherever they pass through water or ground.\n"
-        "\n"
-        "This option fades them out against nearby surfaces instead.";
+    constexpr const char* MGS2_SoftParticles_Setting = "Blend Particle Effect Sprites";
+    constexpr const char* MGS2_SoftParticles_Help = "(Performance Heavy)";
+    constexpr const char* MGS2_SoftParticles_Tooltip = "Fades out & wraps particle effect sprites around edges when they're close to walls / other geometry so that they don't have hard-cutoff edges.";
 
 
 
@@ -383,10 +395,10 @@ namespace ConfigKeys
     constexpr const char* FixAimingFullTilt_Help = "";
     constexpr const char* FixAimingFullTilt_Tooltip = "In MGS2, prevents aiming from dropping when tilting the analog stick fully while holding Lock-On / L1.";
 
-    constexpr const char* MGS2_Restore_VFX_Section = "Bugfixes";
-    constexpr const char* MGS2_Restore_VFX_Setting = "Fix Broken PS2 Visual Effects";
-    constexpr const char* MGS2_Restore_VFX_Help = "";
-    constexpr const char* MGS2_Restore_VFX_Tooltip = "Restores numerous broken visual effects that were broken by the HD Collection / Master Collection.\n"
+    constexpr const char* Restore_VFX_Section = "Bugfixes";
+    constexpr const char* Restore_VFX_Setting = "Fix Broken PS2 Visual Effects";
+    constexpr const char* Restore_VFX_Help = "";
+    constexpr const char* Restore_VFX_Tooltip = "Restores numerous broken visual effects that were broken by the HD Collection / Master Collection.\n"
                                                      "\n"
                                                      "These effects range from vector effect scaling (ie lasers, rain, UI line elements), water distortion, stealth camoflauge refraction, water droplets on the camera, blood stains on enemy clothing, underwater distortion, and many more.";
 
