@@ -330,14 +330,18 @@ std::nullopt, false, Field::Int, 100, 1, 100},
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MotionBlur_Option_Full, {ConfigKeys::MotionBlur_Option_Full, ConfigKeys::MotionBlur_Option_CutscenesOnly, ConfigKeys::MotionBlur_Option_Disabled} },
 
         { (MGS2|MGS3), ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, ConfigKeys::FixDepthOfField_Help, ConfigKeys::FixDepthOfField_Tooltip,
-          std::nullopt, false, Field::Bool, true },
+          std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::FixDepthOfField_Option_Full,
+          {ConfigKeys::FixDepthOfField_Option_Full, ConfigKeys::FixDepthOfField_Option_Half, ConfigKeys::FixDepthOfField_Option_Disabled},
+          0.0, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), {},
+          {{"true", ConfigKeys::FixDepthOfField_Option_Full}, {"false", ConfigKeys::FixDepthOfField_Option_Disabled}} },
 
 
         { (MGS3), ConfigKeys::MGS3_Restore_Film_Grain_Section, ConfigKeys::MGS3_Restore_Film_Grain_Setting, ConfigKeys::MGS3_Restore_Film_Grain_Help, ConfigKeys::MGS3_Restore_Film_Grain_Tooltip,
           std::nullopt, false, Field::Bool, true },
 
         { (MGS2|MGS3), ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, ConfigKeys::DepthOfFieldBlurUvMultiplier_Help, ConfigKeys::DepthOfFieldBlurUvMultiplier_Tooltip,
-          std::make_pair(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting), false, Field::Float, 0, 0, 0, "", {}, 10.0, 0.0, 30.0 },
+          std::make_pair(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting), false, Field::Float, 0, 0, 0, "", {}, 10.0, 0.0, 30.0,
+          {ConfigKeys::FixDepthOfField_Option_Full, ConfigKeys::FixDepthOfField_Option_Half} },
 
         { (MGS3), ConfigKeys::MGS3_GlowOverbright_Section, ConfigKeys::MGS3_GlowOverbright_Setting, ConfigKeys::MGS3_GlowOverbright_Help, ConfigKeys::MGS3_GlowOverbright_Tooltip,
           std::nullopt, false, Field::Bool, true },

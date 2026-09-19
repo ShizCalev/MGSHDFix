@@ -16,6 +16,12 @@ namespace
 {
     constexpr int kFocusMaxPlaneCount = 64;
     constexpr UINT kFocusPyramidMipCount = 7;
+
+    // 1 = blur at half res, 2 = quarter. The final composite is always full res.
+    UINT DofScaleShift()
+    {
+        return g_DepthOfFieldFixes.bHalfRes ? 2u : 1u;
+    }
     constexpr float kMGS3FocusSpreadBoost = 2.75f;
     constexpr uint64_t kMGS3PendingNearFocusMaxFrameAge = 2;
     constexpr size_t kTrackedNearFocusPacketCount = 16;
@@ -210,6 +216,10 @@ namespace
     ComPtr<ID3D11ShaderResourceView> gDofDepthMSSRV;
     D3D11_TEXTURE2D_DESC gDofDepthMSDesc {};
     ComPtr<ID3D11PixelShader> gDofCocMSPS;
+    ComPtr<ID3D11PixelShader> gDofGatherDirectPS;
+    ComPtr<ID3D11PixelShader> gDofGatherDirectMSPS;
+    ComPtr<ID3D11PixelShader> gDofCocDilatePS;
+    ComPtr<ID3D11PixelShader> gDofCocDilateMSPS;
     bool gDofDepthMultisampled = false;
     ComPtr<ID3D11SamplerState> gDofFocusSampler;
     ComPtr<ID3D11RasterizerState> gDofFocusRasterizerState;
@@ -276,6 +286,10 @@ namespace
         gDofDepthPS.Reset();
         gDofDownsamplePS.Reset();
         gDofCocPS.Reset();
+        gDofGatherDirectPS.Reset();
+        gDofGatherDirectMSPS.Reset();
+        gDofCocDilatePS.Reset();
+        gDofCocDilateMSPS.Reset();
         gDofDilateHPS.Reset();
         gDofDilateVPS.Reset();
         gDofGatherPS.Reset();
@@ -495,7 +509,7 @@ namespace
                     return coc;
                 }
 
-                float2 cocDims = max(depthSize.xy * 0.5, float2(1.0, 1.0));
+                float2 cocDims = max(depthSize.xy / max(depthSize.w, 1.0), float2(1.0, 1.0));
                 float2 step = direction * (NearDilateRadius() / cocDims);
 
                 [unroll]
@@ -521,13 +535,12 @@ namespace
 
             // Plane count and per-plane alpha carry the scene's authored blur
             // strength; 8 planes at alpha 64 is the reference width.
-            float4 ComputeFocusSample(float2 sourceUv, float2 sourceSize)
+            float4 ComputeFocusSampleFromCoc(float3 coc, float2 sourceUv, float2 sourceSize)
             {
                 float farPlaneScale = PlaneWidthScale(planeData[0]);
                 float nearPlaneScale = PlaneWidthScale(planeData[1]);
                 float nearSpreadLimit = focusColor.a * nearPlaneScale;
 
-                float3 coc = cocSource.SampleLevel(focusSampler, sourceUv, 0).xyz;
                 float farAmount = coc.x;
                 float nearAmount = coc.y;
                 float nearEdgeAmount = coc.z;
@@ -547,6 +560,81 @@ namespace
                 float maxMip = sourceSizeAndSpread.w;
                 float3 color = SampleBlurredSource(sourceUv, spread, maxMip, sourceSize) * focusColor.rgb;
                 return float4(color, alpha);
+            }
+
+            float4 ComputeFocusSample(float2 sourceUv, float2 sourceSize)
+            {
+                float3 coc = cocSource.SampleLevel(focusSampler, sourceUv, 0).xyz;
+                return ComputeFocusSampleFromCoc(coc, sourceUv, sourceSize);
+            }
+
+            // With no near blur there is nothing to dilate, so read the CoC straight from
+            // depth here and skip the CoC pass.
+            float3 CocFromDepth(float depth)
+            {
+                float farAmount = FocusRangeAmount(depth, planeData[0], false);
+                float nearAmount = FocusRangeAmount(depth, planeData[1], true);
+                return float3(farAmount, nearAmount, nearAmount);
+            }
+
+            // CoC and near dilate in one pass: a 7x7 max over depth instead of three small passes.
+            float3 CocDilateFromDepth(float2 uv, bool multisampled)
+            {
+                float2 depthDims = max(depthSize.xy, float2(1.0, 1.0));
+                float2 centerPx = clamp(uv * depthDims, float2(0.0, 0.0), depthDims - 1.0);
+                float depth = multisampled ? sceneDepthMS.Load(int2(centerPx), 0) : sceneDepth.Load(int3(int2(centerPx), 0)).r;
+                float3 coc = CocFromDepth(depth);
+                if (planeData[1].z <= 0.0 || focusColor.a <= 0.0)
+                {
+                    return coc;
+                }
+
+                // The radius is in CoC texels; depthSize.w converts it to depth pixels.
+                float radiusPx = NearDilateRadius() * max(depthSize.w, 1.0);
+                float stepPx = radiusPx / 3.0;
+                [unroll]
+                for (int y = -3; y <= 3; ++y)
+                {
+                    [unroll]
+                    for (int x = -3; x <= 3; ++x)
+                    {
+                        if (x == 0 && y == 0) { continue; }
+                        float2 px = clamp(centerPx + float2(x, y) * stepPx, float2(0.0, 0.0), depthDims - 1.0);
+                        float d = multisampled ? sceneDepthMS.Load(int2(px), 0) : sceneDepth.Load(int3(int2(px), 0)).r;
+                        coc.z = max(coc.z, FocusRangeAmount(d, planeData[1], true) * kNearEdgeSpillScale);
+                    }
+                }
+                return coc;
+            }
+
+            float4 CocDilatePS(VSOut input) : SV_Target
+            {
+                return float4(CocDilateFromDepth(input.uv, false), 0.0);
+            }
+
+            float4 CocDilateMSPS(VSOut input) : SV_Target
+            {
+                return float4(CocDilateFromDepth(input.uv, true), 0.0);
+            }
+
+            float4 GatherDirectPS(VSOut input) : SV_Target
+            {
+                float2 sourceSize = max(sourceSizeAndSpread.xy, float2(1.0, 1.0));
+                float2 depthDims = max(depthSize.xy, float2(1.0, 1.0));
+                int2 depthPixel = int2(clamp(input.uv * depthDims, float2(0.0, 0.0), depthDims - 1.0));
+                float depth = sceneDepth.Load(int3(depthPixel, 0)).r;
+                float4 focus = ComputeFocusSampleFromCoc(CocFromDepth(depth), input.uv, sourceSize);
+                return float4(focus.rgb * focus.a, focus.a);
+            }
+
+            float4 GatherDirectMSPS(VSOut input) : SV_Target
+            {
+                float2 sourceSize = max(sourceSizeAndSpread.xy, float2(1.0, 1.0));
+                float2 depthDims = max(depthSize.xy, float2(1.0, 1.0));
+                int2 depthPixel = int2(clamp(input.uv * depthDims, float2(0.0, 0.0), depthDims - 1.0));
+                float depth = sceneDepthMS.Load(depthPixel, 0);
+                float4 focus = ComputeFocusSampleFromCoc(CocFromDepth(depth), input.uv, sourceSize);
+                return float4(focus.rgb * focus.a, focus.a);
             }
 
             float4 DepthFocusPS(VSOut input) : SV_Target
@@ -939,6 +1027,10 @@ namespace
         if (!(eGameType & MGS2) &&
             (!compilePS("CocPS", gDofCocPS) ||
              !compilePS("CocMSPS", gDofCocMSPS) ||
+             !compilePS("GatherDirectPS", gDofGatherDirectPS) ||
+             !compilePS("GatherDirectMSPS", gDofGatherDirectMSPS) ||
+             !compilePS("CocDilatePS", gDofCocDilatePS) ||
+             !compilePS("CocDilateMSPS", gDofCocDilateMSPS) ||
              !compilePS("DilateHPS", gDofDilateHPS) ||
              !compilePS("DilateVPS", gDofDilateVPS)))
         {
@@ -2398,11 +2490,13 @@ namespace
             }
         }
         constants.depthSize[2] = gDofFocusLodBias;
+        const UINT shift = DofScaleShift();
+        constants.depthSize[3] = static_cast<float>(1u << shift);   // CoC target divisor, for the dilate step
 
         context->UpdateSubresource(gDofFocusConstants.Get(), 0, nullptr, &constants, 0, 0);
 
-        const UINT cocWidth = std::max<UINT>(static_cast<UINT>(constants.depthSize[0]) / 2, 1);
-        const UINT cocHeight = std::max<UINT>(static_cast<UINT>(constants.depthSize[1]) / 2, 1);
+        const UINT cocWidth = std::max<UINT>(static_cast<UINT>(constants.depthSize[0]) >> shift, 1);
+        const UINT cocHeight = std::max<UINT>(static_cast<UINT>(constants.depthSize[1]) >> shift, 1);
         if (!EnsureDofCocTargets(g_D3D11Hooks.d3dDevice.Get(), cocWidth, cocHeight))
         {
             return false;
@@ -2429,16 +2523,29 @@ namespace
             context->DrawInstanced(3, 1, 0, 0);
         };
 
-        runCocPass(gDofDepthMultisampled ? gDofCocMSPS.Get() : gDofCocPS.Get(), gDofCocRTV.Get(), nullptr);
-        if (activeNear)
+        ID3D11PixelShader* directGather = gDofDepthMultisampled ? gDofGatherDirectMSPS.Get() : gDofGatherDirectPS.Get();
+        const bool gatherReadsDepth = !activeNear && directGather != nullptr;
+        if (!gatherReadsDepth)
         {
-            runCocPass(gDofDilateHPS.Get(), gDofCocScratchRTV.Get(), gDofCocSRV.Get());
-            runCocPass(gDofDilateVPS.Get(), gDofCocRTV.Get(), gDofCocScratchSRV.Get());
+            ID3D11PixelShader* onePass = gDofDepthMultisampled ? gDofCocDilateMSPS.Get() : gDofCocDilatePS.Get();
+            if (onePass)
+            {
+                runCocPass(onePass, gDofCocRTV.Get(), nullptr);
+            }
+            else
+            {
+                runCocPass(gDofDepthMultisampled ? gDofCocMSPS.Get() : gDofCocPS.Get(), gDofCocRTV.Get(), nullptr);
+                if (activeNear)
+                {
+                    runCocPass(gDofDilateHPS.Get(), gDofCocScratchRTV.Get(), gDofCocSRV.Get());
+                    runCocPass(gDofDilateVPS.Get(), gDofCocRTV.Get(), gDofCocScratchSRV.Get());
+                }
+            }
         }
 
-        // Blur taps at half res; the full-res composite then only upsamples and blends.
-        const UINT gatherWidth = std::max<UINT>(gDofFocusLogicalWidth / 2, 1);
-        const UINT gatherHeight = std::max<UINT>(gDofFocusLogicalHeight / 2, 1);
+        // Blur at half or quarter res; the full-res composite only upsamples and blends.
+        const UINT gatherWidth = std::max<UINT>(gDofFocusLogicalWidth >> shift, 1);
+        const UINT gatherHeight = std::max<UINT>(gDofFocusLogicalHeight >> shift, 1);
         const bool halfResGather = gDofGatherPS &&
             gDofUpsamplePS &&
             gDofFocusPremultBlendState &&
@@ -2452,15 +2559,21 @@ namespace
             context->OMSetRenderTargets(1, &gatherRTV, nullptr);
             context->RSSetViewports(1, &gatherViewport);
             context->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-            ID3D11ShaderResourceView* gatherSrvs[4] = { gDofFocusSourceSRV.Get(), nullptr, gDofCocSRV.Get(), nullptr };
-            context->PSSetShader(gDofGatherPS.Get(), nullptr, 0);
-            context->PSSetShaderResources(0, 4, gatherSrvs);
+            ID3D11ShaderResourceView* gatherSrvs[5] = { gDofFocusSourceSRV.Get(), nullptr, gDofCocSRV.Get(), nullptr, nullptr };
+            if (gatherReadsDepth)
+            {
+                gatherSrvs[1] = depthSingle;
+                gatherSrvs[2] = nullptr;
+                gatherSrvs[4] = depthMulti;
+            }
+            context->PSSetShader(gatherReadsDepth ? directGather : gDofGatherPS.Get(), nullptr, 0);
+            context->PSSetShaderResources(0, 5, gatherSrvs);
             context->DrawInstanced(3, 1, 0, 0);
         }
 
         // Back to the caller's target for the composite.
         ID3D11RenderTargetView* targetRTV = passState.oldRTV[0];
-        context->PSSetShaderResources(0, 4, nullSRVs);
+        context->PSSetShaderResources(0, 5, nullSRVs);
         context->OMSetRenderTargets(1, &targetRTV, passState.oldDSV);
         context->RSSetViewports(1, passState.oldViewports);
         context->OMSetBlendState(halfResGather ? gDofFocusPremultBlendState.Get() : gDofFocusBlendState.Get(), nullptr, 0xFFFFFFFF);

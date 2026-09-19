@@ -913,6 +913,10 @@ public:
                     }
                     m_conf->Read(path, &v);
                     v = Unquote(v);
+                    for (const auto& legacy : field.legacyValues)
+                    {
+                        if (v.IsSameAs(legacy.first, false)) { v = legacy.second; break; }
+                    }
 
                     auto* ch = new wxChoice(sectionSizer->GetStaticBox(), wxID_ANY);
                     ch->Bind(wxEVT_CHOICE, [this](wxCommandEvent& e)
