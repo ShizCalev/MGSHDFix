@@ -113,15 +113,14 @@ namespace
     const char* kShader = R"(
     Texture2D    prevTex : register(t0);
     SamplerState sampLin : register(s0);
-    cbuffer CB : register(b0) { float gFactor; float2 gMag; float _pad; }
+    cbuffer CB : register(b0) { float gFactor; float2 gMag; float _pad; float2 gHalfPixel; float2 _pad2; }
     void VS(uint id : SV_VertexID, out float4 pos : SV_Position, out float2 uv : TEXCOORD0) {
         uv  = float2((id << 1) & 2, id & 2);
         pos = float4(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, 0.0, 1.0);
     }
     float4 PS(float4 p : SV_Position, float2 uv : TEXCOORD0) : SV_Target {
-        // Read inward by gMag for the oversize blit. The half texel is the source rect nudge.
-        const float2 kOffset = float2(0.5 / 512.0, 0.5 / 448.0);
-        float2 src = (uv - 0.5) / gMag + 0.5 + kOffset;
+        // Read inward by gMag for the oversize blit. The PS2 sampled half of ITS pixel off, so use half of ours.
+        float2 src = (uv - 0.5) / gMag + 0.5 + gHalfPixel;
         return float4(prevTex.Sample(sampLin, src).rgb, gFactor);
     }
     )";
@@ -284,9 +283,10 @@ void MGS2DemoBlur::DrawInto(ID3D11RenderTargetView* sceneColor, ID3D11ShaderReso
             D3D11_MAPPED_SUBRESOURCE m;
             if (SUCCEEDED(ctx->Map(g_cb.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &m)))
             {
-                const float cb[4] = { factor,
+                const float cb[8] = { factor,
                                       g_magX.load(std::memory_order_relaxed),
-                                      g_magY.load(std::memory_order_relaxed), 0 };
+                                      g_magY.load(std::memory_order_relaxed), 0,
+                                      0.5f / bb.Width, 0.5f / bb.Height, 0, 0 };
                 memcpy(m.pData, cb, sizeof(cb));
                 ctx->Unmap(g_cb.Get(), 0);
             }
@@ -441,7 +441,7 @@ void MGS2DemoBlur::Init()
     }
 
     D3D11_BUFFER_DESC bd {};
-    bd.ByteWidth = 16; bd.Usage = D3D11_USAGE_DYNAMIC;
+    bd.ByteWidth = 32; bd.Usage = D3D11_USAGE_DYNAMIC;
     bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER; bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     dev->CreateBuffer(&bd, nullptr, g_cb.GetAddressOf());
 
