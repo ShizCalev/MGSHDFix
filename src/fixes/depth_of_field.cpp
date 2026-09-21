@@ -62,7 +62,13 @@ namespace
     constexpr float kMGS2NearPlaneVariance = 0.5f;
     constexpr float kMGS2NearPlaneAlpha = 0.75f;          // the near copy is blended back at vertex alpha 0x60
     constexpr float kMGS2TexelAspect = 448.0f / 384.0f;   // 512 PS2 texels across a 4:3 picture
-    constexpr float kMGS2UpsampleVariance = 0.75f;        // added by the bilinear half-to-full-res upsample
+
+    // What the bilinear upsample from a 1/scale target adds, averaged over pixel phase: 0.75 at half size.
+    constexpr float MGS2UpsampleVariance(UINT scale)
+    {
+        const float s = static_cast<float>(scale);
+        return (2.0f * s * s + 1.0f) / 12.0f;
+    }
 
     using BpRbAllocFn = void*(__fastcall*)(int);
     using BpRbAddCommandFn = void(__fastcall*)(unsigned int, void*);
@@ -868,16 +874,20 @@ namespace
             float4 ComputeFocusSample(float2 sourceUv, float2 sourceSize)
             {
                 float2 depthDims = max(depthSize.xy, float2(1.0, 1.0));
-                bool perPixel = (int(depthSize.w + 0.5) & 4) != 0;
+                int flags = int(depthSize.w + 0.5);
+                bool perPixel = (flags & 4) != 0;
+                // Screen pixels under one gather texel; a 4x4 block is read as the middles of its quarters.
+                int block = perPixel ? 1 : ((flags & 8) != 0 ? 4 : 2);
+                int stride = block >> 1;
                 int2 at = int2(clamp(sourceUv * depthDims, float2(0.0, 0.0), depthDims - 1.0));
-                int2 base = perPixel ? at : (at & ~1);
+                int2 base = at & ~(block - 1);
                 float cover = 0.0;
                 float varianceSum = 0.0;
                 float copies = 0.0;
                 [unroll]
                 for (int j = 0; j < 4; ++j)
                 {
-                    int2 px = perPixel ? base : min(base + int2(j & 1, j >> 1), int2(depthDims) - 1);
+                    int2 px = perPixel ? base : min(base + int2(j & 1, j >> 1) * stride + (stride >> 1), int2(depthDims) - 1);
                     float d = Ps2DepthAt(px);
                     float a = max(Ps2OnsetAlpha(d, planeData[0], false), Ps2OnsetAlpha(d, planeData[1], true));
                     float farPlanes = Ps2PlaneCount(d, planeData[0], false);
@@ -891,7 +901,7 @@ namespace
                 float onePlane = max(Ps2StackVariance(1.0, planeData[0].w), Ps2StackVariance(1.0, planeData[1].w));
                 float sigma = texel * sqrt(cover > 0.0 ? varianceSum / cover : onePlane);
                 Ps2Taps taps = Ps2Plan(sigma, sourceSize);
-                float here = Ps2DepthAt(base);
+                float here = Ps2DepthAt(min(base + (stride >> 1), int2(depthDims) - 1));
                 float2 reach = clamp(kCoverReachSigmas * sigma, kCoverReachMinPx, kCoverReachMaxPx) / sourceSize;
                 float ringAlpha = 0.0;
                 float ringVariance = 0.0;
@@ -2963,7 +2973,7 @@ namespace
     }
 
     // Blur at half size, then paint the result back at full size. Small screens blur at full size so
-    // we never go coarser than the PS2 did.
+    // we never go coarser than the PS2 did; Half Resolution drops one size below that.
     bool DrawMGS2PlaneStack(
         const DofPassState& passState,
         const Ps2PlaneStack* farStack,
@@ -2985,9 +2995,14 @@ namespace
             return false;
         }
 
-        const bool gatherFull = gDofFocusLogicalHeight < static_cast<UINT>(2.0f * kPs2DrawLines);
-        const UINT gatherWidth = std::max<UINT>(gatherFull ? gDofFocusLogicalWidth : gDofFocusLogicalWidth / 2, 1);
-        const UINT gatherHeight = std::max<UINT>(gatherFull ? gDofFocusLogicalHeight : gDofFocusLogicalHeight / 2, 1);
+        UINT shift = gDofFocusLogicalHeight < static_cast<UINT>(2.0f * kPs2DrawLines) ? 0u : 1u;
+        if (g_DepthOfFieldFixes.bHalfRes)
+        {
+            ++shift;
+        }
+        const bool gatherFull = shift == 0;
+        const UINT gatherWidth = std::max<UINT>(gDofFocusLogicalWidth >> shift, 1);
+        const UINT gatherHeight = std::max<UINT>(gDofFocusLogicalHeight >> shift, 1);
         const bool halfResGather = gDofGatherPS &&
             gDofUpsamplePS &&
             gDofFocusPremultBlendState &&
@@ -3004,7 +3019,7 @@ namespace
         constants.sourceSizeAndSpread[2] = static_cast<float>(gDofFocusLogicalHeight) / kPs2DrawLines * g_DepthOfFieldFixes.fBlurUvMultiplier / 10.0f;
         constants.sourceSizeAndSpread[3] = static_cast<float>(std::max<UINT>(gDofFocusSourceMipCount, 1) - 1);
         constants.color[0] = kMGS2TexelAspect;
-        constants.color[1] = (halfResGather && !gatherFull) ? kMGS2UpsampleVariance : 0.0f;
+        constants.color[1] = (halfResGather && !gatherFull) ? MGS2UpsampleVariance(1u << shift) : 0.0f;
 
         const auto writeStack = [&](int index, const Ps2PlaneStack* stack) {
             if (!stack)
@@ -3036,7 +3051,7 @@ namespace
             }
         }
         constants.depthSize[2] = gDofFocusLodBias;
-        constants.depthSize[3] = static_cast<float>((directSRV ? 1 : 0) | (gDofDepthMultisampled ? 2 : 0) | (gatherFull ? 4 : 0));
+        constants.depthSize[3] = static_cast<float>((directSRV ? 1 : 0) | (gDofDepthMultisampled ? 2 : 0) | (gatherFull ? 4 : 0) | (shift >= 2 ? 8 : 0));
 
         context->UpdateSubresource(gDofFocusConstants.Get(), 0, nullptr, &constants, 0, 0);
 

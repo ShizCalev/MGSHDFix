@@ -4,7 +4,7 @@ class DepthOfFieldFixes final
 {
 public:
     bool bEnabled = true;
-    bool bHalfRes = false;   // gather, CoC and pyramid root at quarter res instead of half
+    bool bHalfRes = false;   // blur at half the size Full uses
     float fBlurUvMultiplier = 3.0f;
 
     void Initialize();

@@ -283,7 +283,7 @@ namespace ConfigKeys
                                                     "\n"
                                                     "Also restores close-up depth of field / camera blur, which was outright disabled/broken by the HD Collection.\n"
                                                     "\n"
-                                                    "Half Resolution runs the blur at a quarter of the render size instead of half. Sharp areas look the same and it costs less.";
+                                                    "Half Resolution runs the blur at half the size Full Resolution uses. Sharp areas look the same and it costs less.";
     constexpr const char* FixDepthOfField_Option_Disabled = "Disabled";
     constexpr const char* FixDepthOfField_Option_Half = "Half Resolution";
     constexpr const char* FixDepthOfField_Option_Full = "Full Resolution";
