@@ -4,7 +4,7 @@
 #include "common.hpp"
 #include "logging.hpp"
 #include "d3d11_api.hpp"
-#include "custom_resolution_and_borderless.hpp"
+#include "mgs2_blood_stains.hpp"
 
 #include <algorithm>
 
@@ -23,14 +23,6 @@ namespace
     constexpr uint32_t DG_FLAG_PAINT = 0x0001;
     constexpr uint32_t DG_FLAG_IRREACTION = 0x0100;
     constexpr uint32_t DG_STATE_IR_MODE = 0x0001;
-
-    // At PS2 resolution the port picks the same texture mips the PS2 did. More lines mean sharper
-    // mips, so nudge the choice back by that amount.
-    float PS2LodBias()
-    {
-        const int lines = CustomResolutionAndBorderless::iInternalResY;
-        return lines > 0 ? std::log2(static_cast<float>(lines) / f_PS2_Height) : 0.0f;
-    }
 
     // The PS2 clamps each vertex's lit colour to white before drawing; the port never does.
     // These shaders redo the stock vertex maths and add that clamp.
@@ -154,10 +146,6 @@ float4 main(PSIn i) : SV_TARGET
     ComPtr<ID3D11PixelShader> gHeatLit;       // lit colour, already /255 and clamped
     ComPtr<ID3D11PixelShader> gHeatPaint;     // preshade colour, /128 in the stream
     ComPtr<ID3D11BlendState> gOpaqueBlend;
-    struct CoarseSampler { ID3D11SamplerState* stock; ComPtr<ID3D11SamplerState> coarse; };
-    CoarseSampler gCoarse[8] {};
-    int gCoarseCount = 0;
-    float gCoarseBias = 0.0f;
 
     // Placed objects only ever set the IR flag on their group, so remember it from there.
     void __fastcall HookedObjLocalParam(uint8_t* packet)
@@ -209,47 +197,13 @@ float4 main(PSIn i) : SV_TARGET
         }
     }
 
-    ID3D11SamplerState* CoarseFor(ID3D11SamplerState* stock)
-    {
-        const float bias = PS2LodBias();
-        if (bias != gCoarseBias)
-        {
-            for (int i = 0; i < gCoarseCount; i++) { gCoarse[i].stock->Release(); gCoarse[i].coarse.Reset(); }
-            gCoarseCount = 0;
-            gCoarseBias = bias;
-        }
-        for (int i = 0; i < gCoarseCount; i++)
-        {
-            if (gCoarse[i].stock == stock) return gCoarse[i].coarse.Get();
-        }
-        if (!stock || gCoarseCount >= static_cast<int>(std::size(gCoarse))) return stock;
-        D3D11_SAMPLER_DESC sd = {};
-        stock->GetDesc(&sd);
-        sd.MipLODBias += bias;
-        ComPtr<ID3D11SamplerState> coarse;
-        if (FAILED(g_D3D11Hooks.d3dDevice->CreateSamplerState(&sd, coarse.GetAddressOf()))) return stock;
-        stock->AddRef();
-        gCoarse[gCoarseCount++] = { stock, coarse };
-        return gCoarse[gCoarseCount - 1].coarse.Get();
-    }
-
-    // Heat draws: no texture, no blending, just the lit colour. Everything else samples its
-    // textures at the PS2's detail level.
+    // Heat draws: no texture, no blending, just the lit colour.
     void STDMETHODCALLTYPE HookedDrawIndexed(ID3D11DeviceContext* ctx, UINT indexCount, UINT startIndex, INT baseVertex)
     {
-        if (!(*pDisplayStatus & DG_STATE_IR_MODE))
+        // leave Blood Stains' own pass alone, or the whole body gets painted the wrong colour
+        if (!(*pDisplayStatus & DG_STATE_IR_MODE) || !gIRDraw || MGS2BloodStains::InOverlay())
         {
             gDrawIndexedHook.stdcall<void>(ctx, indexCount, startIndex, baseVertex);
-            return;
-        }
-        if (!gIRDraw)
-        {
-            ComPtr<ID3D11SamplerState> theirSampler;
-            ctx->PSGetSamplers(0, 1, theirSampler.GetAddressOf());
-            ID3D11SamplerState* coarse = CoarseFor(theirSampler.Get());
-            ctx->PSSetSamplers(0, 1, &coarse);
-            gDrawIndexedHook.stdcall<void>(ctx, indexCount, startIndex, baseVertex);
-            ctx->PSSetSamplers(0, 1, theirSampler.GetAddressOf());
             return;
         }
 
