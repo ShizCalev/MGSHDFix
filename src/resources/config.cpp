@@ -823,15 +823,15 @@ void Config::Read()
                 std::string sDof;
                 ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
                 // older settings files carry the checkbox's true/false
-                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Full; }
+                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Quality; }
                 if (sDof == "false" || sDof == "0") { sDof = ConfigKeys::FixDepthOfField_Option_Disabled; }
-                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Half && sDof != ConfigKeys::FixDepthOfField_Option_Full)
+                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Performance && sDof != ConfigKeys::FixDepthOfField_Option_Quality)
                 {
-                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Full);
-                    sDof = ConfigKeys::FixDepthOfField_Option_Full;
+                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Quality);
+                    sDof = ConfigKeys::FixDepthOfField_Option_Quality;
                 }
                 g_DepthOfFieldFixes.bEnabled = sDof != ConfigKeys::FixDepthOfField_Option_Disabled;
-                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Half;
+                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Performance;
 #if defined(BEFORE_COMPARISON_PICS)
                 g_DepthOfFieldFixes.bEnabled = false;
 #endif
@@ -891,15 +891,15 @@ void Config::Read()
                 std::string sDof;
                 ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
                 // older settings files carry the checkbox's true/false
-                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Full; }
+                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Quality; }
                 if (sDof == "false" || sDof == "0") { sDof = ConfigKeys::FixDepthOfField_Option_Disabled; }
-                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Half && sDof != ConfigKeys::FixDepthOfField_Option_Full)
+                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Performance && sDof != ConfigKeys::FixDepthOfField_Option_Quality)
                 {
-                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Full);
-                    sDof = ConfigKeys::FixDepthOfField_Option_Full;
+                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Quality);
+                    sDof = ConfigKeys::FixDepthOfField_Option_Quality;
                 }
                 g_DepthOfFieldFixes.bEnabled = sDof != ConfigKeys::FixDepthOfField_Option_Disabled;
-                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Half;
+                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Performance;
 #if defined(BEFORE_COMPARISON_PICS)
                 g_DepthOfFieldFixes.bEnabled = false;
 #endif

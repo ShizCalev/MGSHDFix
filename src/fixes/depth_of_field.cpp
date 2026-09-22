@@ -2973,7 +2973,7 @@ namespace
     }
 
     // Blur at half size, then paint the result back at full size. Small screens blur at full size so
-    // we never go coarser than the PS2 did; Half Resolution drops one size below that.
+    // we never go coarser than the PS2 did; Performance drops one size below that.
     bool DrawMGS2PlaneStack(
         const DofPassState& passState,
         const Ps2PlaneStack* farStack,
