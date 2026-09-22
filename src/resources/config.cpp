@@ -89,6 +89,7 @@
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
+#include "mgs2_title_lightning.hpp"
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
@@ -766,6 +767,7 @@ void Config::Read()
                 &MGS2GasHaze::bEnabled,
                 &MGS2_ContrastShader::bEnabled,
                 &MGS2_AiRayVision::bEnabled,
+                &MGS2_TitleLightning::bEnabled,
                 &MGS2_Crossfade::bEnabled,
                 &MGS2ConcentrateBlur::bEnabled,
                 &MGS2RailgunBeam::bEnabled,
