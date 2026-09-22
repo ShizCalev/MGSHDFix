@@ -114,6 +114,7 @@
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
+#include "mgs2_title_lightning.hpp"
 #include "mgs2_parrot_radar_fix.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
@@ -544,6 +545,7 @@ void afterPresent()
         MGS2_Crossfade::Initialize();
         g_MGS2UnderwaterFilterFix.InstallD3D11StateHooks();
         MGS2_AiRayVision::Init();
+        MGS2_TitleLightning::Init();
         MGS2DemoBlur::Init();
         MGS2GasHaze::Init();
         MGS2SoftShadows::Init();
@@ -670,6 +672,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_CodecBackground::Setup());
         INITIALIZE(MGS2_ContrastShader::Setup());
         INITIALIZE(MGS2_AiRayVision::Setup());
+        INITIALIZE(MGS2_TitleLightning::Setup());
         INITIALIZE(MGS2FixedAlpha::Setup());
         INITIALIZE(MGS2ConcentrateBlur::Initialize());
         INITIALIZE(MGS2EnhancedDemos::Initialize());
