@@ -115,6 +115,7 @@
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
+#include "mgs2_light_stain.hpp"
 #include "mgs2_credits_smoke.hpp"
 #include "mgs2_parrot_radar_fix.hpp"
 #include "mgs2_restore_sol_radar.hpp"
@@ -674,6 +675,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_ContrastShader::Setup());
         INITIALIZE(MGS2_AiRayVision::Setup());
         INITIALIZE(MGS2_TitleLightning::Setup());
+        INITIALIZE(MGS2_LightStain::Setup());
         INITIALIZE(MGS2_CreditsSmoke::Setup());
         INITIALIZE(MGS2FixedAlpha::Setup());
         INITIALIZE(MGS2ConcentrateBlur::Initialize());
