@@ -370,6 +370,16 @@
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_light_stain.cpp">
       <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_override_probe_cache.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\mgs2_fast_doors.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\mgs2_area_prefetch.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_credits_smoke.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -860,6 +870,16 @@
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_light_stain.hpp">
       <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_override_probe_cache.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mgs2_fast_doors.hpp">
+      <Filter>Features\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mgs2_area_prefetch.hpp">
+      <Filter>Features\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\fixes\mgs2_credits_smoke.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>

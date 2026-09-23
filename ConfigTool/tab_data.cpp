@@ -253,6 +253,9 @@ std::nullopt, false, Field::Bool, false},
           std::nullopt, false, Field::Bool, false },
 
 
+        { (MGS2), ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, ConfigKeys::MGS2_OverrideLookupCache_Help, ConfigKeys::MGS2_OverrideLookupCache_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
         { (MGS2), ConfigKeys::MGS2Sunglasses_Section, ConfigKeys::MGS2Sunglasses_Setting, ConfigKeys::MGS2Sunglasses_Help, ConfigKeys::MGS2Sunglasses_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MGS2Sunglasses_Option_Normal, {ConfigKeys::MGS2Sunglasses_Option_Normal,ConfigKeys::MGS2Sunglasses_Option_Always, ConfigKeys::MGS2Sunglasses_Option_Never } },
 
@@ -316,6 +319,8 @@ std::nullopt, false, Field::Int, 100, 1, 100},
 
         { (MGS2), ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, ConfigKeys::MGS2_RestoreElevatorGlitch_Help, ConfigKeys::MGS2_RestoreElevatorGlitch_Tooltip,
           std::nullopt, false, Field::Bool, false },
+        { (MGS2), ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, ConfigKeys::MGS2_LoadOptimizations_Help, ConfigKeys::MGS2_LoadOptimizations_Tooltip,
+          std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MGS2_LoadOptimizations_Option_Off, {ConfigKeys::MGS2_LoadOptimizations_Option_Off, ConfigKeys::MGS2_LoadOptimizations_Option_Preload, ConfigKeys::MGS2_LoadOptimizations_Option_Full} },
 
 
         { (MGS2), ConfigKeys::MGS2_Hostage_Type_Section, ConfigKeys::MGS2_Hostage_Type_Setting, ConfigKeys::MGS2_Hostage_Type_Help, ConfigKeys::MGS2_Hostage_Type_Tooltip,

@@ -94,6 +94,8 @@ public:
     [[nodiscard]] std::string GetRichPresenceString() const;
     [[nodiscard]] std::string GetGameMode() const;
     [[nodiscard]] const char* GetCurrentStage() const;
+    // the asset region folder the loader reads from: "us", "jp" or "eu"
+    [[nodiscard]] const char* MGS2_RegionDir() const;
     [[nodiscard]] bool IsStage(const char* stageConst) const;
     [[nodiscard]] bool IsAnyStage(std::initializer_list<const char*> stages) const;
 
@@ -185,6 +187,8 @@ private:
     int* scriptedSequenceFlag = nullptr;
     double* actorWaitValue = nullptr;
     const char* currentStage = nullptr;
+    int* p_RegionIndex = nullptr;
+    const char* const* p_RegionDirs = nullptr;
     char*** p_GCL_CommandLine = nullptr;
     char** p_GCL_NextStrPtr = nullptr;
     uint32_t* heldTriggers = nullptr;

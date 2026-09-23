@@ -92,6 +92,9 @@
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
 #include "mgs2_light_stain.hpp"
+#include "mgs2_fast_doors.hpp"
+#include "mgs2_area_prefetch.hpp"
+#include "mgs2_override_probe_cache.hpp"
 #include "mgs2_credits_smoke.hpp"
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
@@ -986,6 +989,22 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, MGS2_OverrideProbeCache::bEnabled);
+    LOG_CONFIG(ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, MGS2_OverrideProbeCache::bEnabled);
+
+    {
+        std::string sLoadOptimizations = ConfigKeys::MGS2_LoadOptimizations_Option_Off;
+        ConfigHelper::getValue(ini, ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations);
+        const bool full = sLoadOptimizations == ConfigKeys::MGS2_LoadOptimizations_Option_Full;
+        const bool preload = full || sLoadOptimizations == ConfigKeys::MGS2_LoadOptimizations_Option_Preload;
+        if (!preload && sLoadOptimizations != ConfigKeys::MGS2_LoadOptimizations_Option_Off)
+        {
+            spdlog::warn("Unknown value for {}: {}, using {}", ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations, ConfigKeys::MGS2_LoadOptimizations_Option_Off);
+        }
+        MGS2_AreaPrefetch::bEnabled = preload;
+        MGS2_FastDoors::bEnabled = full;
+        LOG_CONFIG(ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations);
+    }
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
     LOG_CONFIG(ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
