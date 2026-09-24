@@ -366,6 +366,7 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_city_glow.cpp">
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_light_stain.cpp">
       <Filter>Fixes</Filter>
     <ClCompile Include="src\fixes\mgs2_credits_smoke.cpp">
