@@ -3,6 +3,7 @@
 #include "mgs2_restore_action_level_selection.hpp"
 
 #include "common.hpp"
+#include "gamevars.hpp"
 #include "logging.hpp"
 #include "mgs2_linkvarbuf.hpp"
 
@@ -638,6 +639,11 @@ void MGS2_RestoreActionLevelSelection::Apply()
     MAKE_HOOK_MID(baseModule,
         "41 B9 ?? ?? ?? ?? C6 83 ?? ?? ?? ?? ?? BA",
         "MGS2: Restore Action Level Selection - questionnaire voice | skoba\\etc\\encute.c -> GetResources()", {
+            if (!g_GameVars.IsStage(MGS2Stages::N_TITLE))
+            {
+                return;
+            }
+
             ConvertQuestionTextToBpFont(ctx.rbx);
             SetQuestionIntroVoice(ctx.rbx);
         });

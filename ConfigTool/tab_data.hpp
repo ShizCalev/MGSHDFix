@@ -65,6 +65,9 @@ struct Field
     double maxFloat = std::numeric_limits<double>::max();
 
     std::vector<wxString> prerequisiteChoiceMatches;
+
+    // Values an older settings file may hold for a Choice, mapped to the choice they mean.
+    std::vector<std::pair<wxString, wxString>> legacyValues;
 };
 
 

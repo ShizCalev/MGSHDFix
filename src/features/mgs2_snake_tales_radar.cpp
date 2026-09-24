@@ -21,7 +21,7 @@ void MGS2_SnakeTalesRadar::Apply()
     spdlog::info("MGS 2: Snake Tales Radar: Enabling radar in Snake Tales mode.");
 
     MAKE_HOOK_MID(baseModule, "3D ?? ?? ?? ?? 75 ?? 81 0D ?? ?? ?? ?? ?? ?? ?? ?? 33 C0", "game\\gamed.c -> NewSetMenuStatus() @ l2029", {
-        if (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Alternate)
+        if (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::SnakeTales)
         {
             ctx.rax = 3662; //if(MENU_NODE_ACCESSED == GM_STRCODE_ON) = true
         }

@@ -142,7 +142,7 @@ void Logging::Initialize()
             spdlog::info("Module First Segment: 0x{0:X}", (uintptr_t)baseModule+0x1000);
             spdlog::info("Module Version: {}", VersionCheck::GetModuleVersion(baseModule, VersionCheck::VersionType::File, bIsLauncher));
             spdlog::info("Parent Process: {}", Util::GetParentProcessName(true));
-            if (std::filesystem::exists(sExePath / "steamclient64.dll") || std::filesystem::exists(sExePath / "steamclient.dll") || std::filesystem::exists(sExePath / "GameOverlayRenderer64.dll") || std::filesystem::exists(sExePath / "GameOverlayRenderer.dll"))
+            if (std::filesystem::exists(sExePath / "steam_emu.ini") || std::filesystem::exists(sExePath / "steamclient64.dll") || std::filesystem::exists(sExePath / "steamclient.dll") || std::filesystem::exists(sExePath / "GameOverlayRenderer64.dll") || std::filesystem::exists(sExePath / "GameOverlayRenderer.dll"))
             {
                 g_SteamAPI.bIsLegitCopy = false;
                 spdlog::warn("Piracy Warning: This has been detected as a pirated copy of the game. Crashing issues are VERY likely to occur due to missing memory patterns.");

@@ -95,7 +95,7 @@
     <ClCompile Include="src\fixes\aiming_after_equip.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
-    <ClCompile Include="src\fixes\effect_speeds.cpp">
+    <ClCompile Include="src\fixes\mgs2_effect_speeds.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\aiming_full_tilt.cpp">
@@ -254,6 +254,9 @@
     <ClCompile Include="src\resources\game_funcs.cpp">
       <Filter>APIs</Filter>
     </ClCompile>
+    <ClCompile Include="src\resources\mgs2_script_patches.cpp">
+      <Filter>APIs</Filter>
+    </ClCompile>
     <ClCompile Include="src\resources\mgs2_status_flags.cpp">
       <Filter>APIs</Filter>
     </ClCompile>
@@ -320,6 +323,9 @@
     <ClCompile Include="src\fixes\mgs2_flare_occlusion.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\features\mgs2_ng_cutscene_skips.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_demo_blur.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -333,6 +339,9 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_hair_layering.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_thermal_heat.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_rotor_procession.cpp">
@@ -359,6 +368,27 @@
     <ClCompile Include="src\fixes\mgs2_ai_ray_vision.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_title_lightning.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_city_glow.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_light_stain.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_override_probe_cache.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\mgs2_fast_doors.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
+    <ClCompile Include="src\features\mgs2_area_prefetch.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_credits_smoke.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_bandana_mass.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -375,6 +405,21 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_glass_dmapack_overflow.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_demo_bind_pose_marine.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_solidus_pipe.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_radar_fixes.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_scanline_scale.cpp">
@@ -415,7 +460,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\fixes\effect_speeds.hpp">
+    <ClInclude Include="src\fixes\mgs2_effect_speeds.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\stereo_audio.hpp">
@@ -670,6 +715,9 @@
     <ClInclude Include="src\resources\game_funcs.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\resources\mgs2_script_patches.hpp">
+      <Filter>APIs\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\resources\game_defines.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
@@ -742,6 +790,9 @@
     <ClInclude Include="src\fixes\mgs2_flare_occlusion.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\features\mgs2_ng_cutscene_skips.hpp">
+      <Filter>Features\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_blur.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
@@ -761,6 +812,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_hair_layering.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_thermal_heat.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\resources\mgs3_status_flags.hpp">
@@ -817,6 +871,21 @@
     <ClInclude Include="src\fixes\mgs2_glass_dmapack_overflow.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_demo_bind_pose_marine.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_solidus_pipe.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_radar_fixes.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\fixes\mgs2_codec_band.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
@@ -827,6 +896,27 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_ai_ray_vision.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_title_lightning.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_city_glow.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_light_stain.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_override_probe_cache.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mgs2_fast_doors.hpp">
+      <Filter>Features\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mgs2_area_prefetch.hpp">
+      <Filter>Features\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_credits_smoke.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_scanline_scale.hpp">

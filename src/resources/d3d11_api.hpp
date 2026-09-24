@@ -7,8 +7,8 @@ class D3D11Hooks final
 public:
     static void Initialize();
 
-    // Stock Prim.fx vertex shaders, caught as the game creates them.
-    enum class StockVS { None, Sprite, SpriteFog, Poly, PolyFog };
+    // Stock vertex shaders we recognise as the game creates them.
+    enum class StockVS { None, Sprite, SpriteFog, Poly, PolyFog, KmsLitUv0, KmsLitUv1, KmsLitUv2, KmsLitRigid, KmsLitRigidShortNrm, KmsLitMorph };
     static StockVS GetStockVS(ID3D11VertexShader* vs);
 
     HWND MainHwnd = nullptr;

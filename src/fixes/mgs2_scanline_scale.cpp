@@ -5,6 +5,8 @@
 #include "logging.hpp"
 #include "d3d11_api.hpp"
 
+#include <smmintrin.h>
+
 //mgs2x\source\user\takabe\effect1\raster.c -> NewRasterEffect() | (mgs2x\source\user\skoba\weapon\equip_layout.c -> NewDEMO_Equip() / mgs2x\source\user\skoba\weapon\vtr_layout.c -> NewVtrSight() / mgs2x\source\user\skoba\weapon\ray_layout.c -> NewRaySight())
 
 // The raster effect lays 112 lines down the screen, 3 units tall with a 1 unit gap. Scale that to
@@ -45,6 +47,25 @@ namespace
         }
         const float scale = h / f_PS2_Height;
         gScale = (scale > 0.0f) ? ceilf(scale) / scale : 1.0f;
+    }
+
+    // mapped vertices can be write-combined (AMD/DXVK), so read little, in streaming loads
+    bool gStreamLoads = false;
+
+    __m128 Load16(const uint8_t* p)
+    {
+        if (gStreamLoads && (reinterpret_cast<uintptr_t>(p) & 15) == 0)
+        {
+            return _mm_castsi128_ps(_mm_stream_load_si128(reinterpret_cast<__m128i*>(const_cast<uint8_t*>(p))));
+        }
+        return _mm_loadu_ps(reinterpret_cast<const float*>(p));
+    }
+
+    bool IsLineColour(__m128 c)
+    {
+        const __m128 want = _mm_setr_ps(0.0f, 32.0f / 255.0f, 0.0f, 54.0f / 255.0f);
+        const __m128 diff = _mm_andnot_ps(_mm_set1_ps(-0.0f), _mm_sub_ps(c, want));
+        return _mm_movemask_ps(_mm_cmplt_ps(diff, _mm_set1_ps(0.001f))) == 0xF;
     }
 
     bool Near(float v, float want)
@@ -111,13 +132,19 @@ namespace
             auto it = gMapped.find(res);
             if (it != gMapped.end())
             {
-                if (gStride == 32)
+                const uint8_t* mapped = it->second + gOffset;
+                if (gStride == 32 && IsLineColour(Load16(mapped + 16)))
                 {
-                    Vertex* v = reinterpret_cast<Vertex*>(it->second + gOffset);
-                    if (IsScanline(v))
+                    Vertex local[4];
+                    for (int i = 0; i < 8; i++)
+                    {
+                        _mm_storeu_ps(reinterpret_cast<float*>(local) + i * 4, Load16(mapped + i * 16));
+                    }
+                    if (IsScanline(local))
                     {
                         // a scaled line no longer measures 3 units, so this cannot stack
-                        for (int i = 0; i < 4; i++) { v[i].y *= gScale; }
+                        Vertex* v = reinterpret_cast<Vertex*>(it->second + gOffset);
+                        for (int i = 0; i < 4; i++) { v[i].y = local[i].y * gScale; }
                     }
                 }
                 gMapped.erase(it);
@@ -141,6 +168,10 @@ void MGS2ScanlineScale::OnDeviceReady()
     }
     gImmediate = dc;
     Recalculate();
+
+    int info[4] {};
+    __cpuid(info, 1);
+    gStreamLoads = (info[2] & (1 << 19)) != 0;   // SSE4.1
 
     void** vt = *reinterpret_cast<void***>(dc);
     gMap = safetyhook::create_inline(vt[14], reinterpret_cast<void*>(HookedMap));

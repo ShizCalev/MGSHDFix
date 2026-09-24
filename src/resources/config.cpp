@@ -50,7 +50,7 @@
 #include "mgs2_sunglasses.hpp"
 #include "config_keys.hpp"
 #include "corrupt_save_message.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "mgs2_restore_dogtags.hpp"
 #include "windows_fullscreen_optimization.hpp"
 #include "custom_resolution_and_borderless.hpp"
@@ -68,10 +68,19 @@
 #include "caption_replacements.hpp"
 #include "color_correction.hpp"
 #include "mgs2_first_person_view_mode.hpp"
+#if defined(MGS3_FPS_DEV)
+#include "mgs3_first_person_view_mode.hpp"
+#endif
 #include "resolution_scaling_fixes.hpp"
 #include "texture_live_swaps.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
+#include "mgs2_item_toss_fix.hpp"
+#include "mgs2_radar_fixes.hpp"
+#include "mgs2_ng_cutscene_skips.hpp"
+#include "mgs2_demo_bind_pose_marine.hpp"
+#include "mgs2_demo_lazy_marine.hpp"
+#include "mgs2_solidus_pipe.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -85,9 +94,17 @@
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
+#include "mgs2_title_lightning.hpp"
+#include "mgs2_city_glow.hpp"
+#include "mgs2_light_stain.hpp"
+#include "mgs2_fast_doors.hpp"
+#include "mgs2_area_prefetch.hpp"
+#include "mgs2_override_probe_cache.hpp"
+#include "mgs2_credits_smoke.hpp"
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
+#include "mgs2_thermal_heat.hpp"
 #include "mgs_smaa.hpp"
 #include "mgs3_film_grain.hpp"
 #include "mgs3_glow_overbright.hpp"
@@ -492,9 +509,17 @@ void Config::Read()
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_SoftParticles_Section, ConfigKeys::MGS2_SoftParticles_Setting, MGS2SoftParticles::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_SoftParticles_Section, ConfigKeys::MGS2_SoftParticles_Setting, MGS2SoftParticles::bEnabled);
 
-
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
     LOG_CONFIG(ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_RadarOffAlert_Section, ConfigKeys::MGS2_RadarOffAlert_Setting, MGS2_RadarFixes::bShowAlertWithRadarOff);
+    LOG_CONFIG(ConfigKeys::MGS2_RadarOffAlert_Section, ConfigKeys::MGS2_RadarOffAlert_Setting, MGS2_RadarFixes::bShowAlertWithRadarOff);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_KeepSavedRadarType_Section, ConfigKeys::MGS2_KeepSavedRadarType_Setting, MGS2_RadarFixes::bKeepSavedRadarType);
+    LOG_CONFIG(ConfigKeys::MGS2_KeepSavedRadarType_Section, ConfigKeys::MGS2_KeepSavedRadarType_Setting, MGS2_RadarFixes::bKeepSavedRadarType);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, MGS2ItemTossFix::bEnabled);
+    LOG_CONFIG(ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, MGS2ItemTossFix::bEnabled);
 
 
     ConfigHelper::getValue(ini, ConfigKeys::AnisotropicFiltering_Section, ConfigKeys::AnisotropicFiltering_Setting, iAnisotropicFiltering);
@@ -731,17 +756,12 @@ void Config::Read()
         }
 
         bool bRestoreVFX = true;
-        ConfigHelper::getValue(ini, ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting, bRestoreVFX);
+        ConfigHelper::getValue(ini, ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting, bRestoreVFX);
 #if defined(BEFORE_COMPARISON_PICS)
         spdlog::info("DISABLED VFX FIXES");
         bRestoreVFX = false;
 #endif
-        LOG_CONFIG(ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting, bRestoreVFX);
-
-        g_VectorScalingFix.bFixRain = g_VectorScalingFix.bFixUI = g_EffectSpeedFix.isEnabled = bRestoreVFX;
-        MGS2ScanlineScale::bEnabled = bRestoreVFX;
-        MGS3GlowOverbright::bEnabled = bRestoreVFX;
-        MGS3MapRelight::bEnabled = bRestoreVFX;
+        LOG_CONFIG(ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting, bRestoreVFX);
 
 
         ConfigHelper::getValue(ini, ConfigKeys::Restore_Reverb_Level_Section, ConfigKeys::Restore_Reverb_Level_Setting, FixReverbWetLevel::bEnabled);
@@ -754,15 +774,23 @@ void Config::Read()
         if (eGameType & MGS2)
         {
             static bool* const vfxToggles[] = {
+                &g_VectorScalingFix.bFixRain,
+                &g_VectorScalingFix.bFixUI,
+                &MGS2_EffectSpeedFix.isEnabled,
                 &g_MGS2UnderwaterFilterFix.bEnabled,
                 &g_OpticalCamoFix.bEnabled,
                 &MGS2BloodStains::bEnabled,
                 &MGS2ScopeWarp::bEnabled,
                 &MGS2WaterEffects::bEnabled,
                 &MGS2LensDroplets::bEnabled,
+                &MGS2ScanlineScale::bEnabled,
                 &MGS2GasHaze::bEnabled,
                 &MGS2_ContrastShader::bEnabled,
                 &MGS2_AiRayVision::bEnabled,
+                &MGS2_TitleLightning::bEnabled,
+                &MGS2_CityGlow::bEnabled,
+                &MGS2_LightStain::bEnabled,
+                &MGS2_CreditsSmoke::bEnabled,
                 &MGS2_Crossfade::bEnabled,
                 &MGS2ConcentrateBlur::bEnabled,
                 &MGS2RailgunBeam::bEnabled,
@@ -774,10 +802,16 @@ void Config::Read()
                 &MGS2CodecBand::bEnabled,
                 &MGS2FixedAlpha::bEnabled,
                 &MGS2TankerFog::bEnabled,
+                &MGS2ThermalHeat::bEnabled,
+                &MGS2_DemoBindPoseMarine::bEnabled,
+                &MGS2_DemoLazyMarine::bEnabled,
+                &MGS2_SolidusPipe::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)
+            {
                 *pEnabled = bRestoreVFX;
+            }
 
             ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestorePhotosensitiveEffects_Section, ConfigKeys::MGS2_RestorePhotosensitiveEffects_Setting, MGS2_RestorePhotosensitiveEffects::bEnabled);
             LOG_CONFIG(ConfigKeys::MGS2_RestorePhotosensitiveEffects_Section, ConfigKeys::MGS2_RestorePhotosensitiveEffects_Setting, MGS2_RestorePhotosensitiveEffects::bEnabled);
@@ -814,11 +848,24 @@ void Config::Read()
 
 
 
-            ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+            {
+                std::string sDof;
+                ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+                // older settings files carry the checkbox's true/false
+                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Quality; }
+                if (sDof == "false" || sDof == "0") { sDof = ConfigKeys::FixDepthOfField_Option_Disabled; }
+                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Performance && sDof != ConfigKeys::FixDepthOfField_Option_Quality)
+                {
+                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Quality);
+                    sDof = ConfigKeys::FixDepthOfField_Option_Quality;
+                }
+                g_DepthOfFieldFixes.bEnabled = sDof != ConfigKeys::FixDepthOfField_Option_Disabled;
+                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Performance;
 #if defined(BEFORE_COMPARISON_PICS)
-            g_DepthOfFieldFixes.bEnabled = false;
+                g_DepthOfFieldFixes.bEnabled = false;
 #endif
-            LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+                LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+            }
 
             ConfigHelper::getValue(ini, ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
             LOG_CONFIG(ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
@@ -829,6 +876,23 @@ void Config::Read()
 #if defined(BEFORE_COMPARISON_PICS)
             spdlog::info("DISABLED VFX FIXES");
 #endif 
+
+
+            static bool* const vfxToggles[] = {
+                &g_VectorScalingFix.bFixRain,
+                &g_VectorScalingFix.bFixUI,
+            };
+
+            for (bool* pEnabled : vfxToggles)
+            {
+                *pEnabled = bRestoreVFX;
+            }
+
+            ConfigHelper::getValue(ini, ConfigKeys::MGS3_GlowOverbright_Section, ConfigKeys::MGS3_GlowOverbright_Setting, MGS3GlowOverbright::bEnabled);
+            LOG_CONFIG(ConfigKeys::MGS3_GlowOverbright_Section, ConfigKeys::MGS3_GlowOverbright_Setting, MGS3GlowOverbright::bEnabled);
+
+            ConfigHelper::getValue(ini, ConfigKeys::MGS3_MapRelight_Section, ConfigKeys::MGS3_MapRelight_Setting, MGS3MapRelight::bEnabled);
+            LOG_CONFIG(ConfigKeys::MGS3_MapRelight_Section, ConfigKeys::MGS3_MapRelight_Setting, MGS3MapRelight::bEnabled);
 
             std::string sFilmGrainMode = "On";
             ConfigHelper::getValue(ini, ConfigKeys::MGS3_Restore_Film_Grain_Section, ConfigKeys::MGS3_Restore_Film_Grain_Setting, sFilmGrainMode);
@@ -852,11 +916,24 @@ void Config::Read()
             MGS3FilmGrain::mode = bFilmGrainEnabled ? MGS3FilmGrain::Mode::On : MGS3FilmGrain::Mode::Off;
             LOG_CONFIG(ConfigKeys::MGS3_Restore_Film_Grain_Section, ConfigKeys::MGS3_Restore_Film_Grain_Setting, bFilmGrainEnabled);
 
-            ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+            {
+                std::string sDof;
+                ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+                // older settings files carry the checkbox's true/false
+                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Quality; }
+                if (sDof == "false" || sDof == "0") { sDof = ConfigKeys::FixDepthOfField_Option_Disabled; }
+                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Performance && sDof != ConfigKeys::FixDepthOfField_Option_Quality)
+                {
+                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Quality);
+                    sDof = ConfigKeys::FixDepthOfField_Option_Quality;
+                }
+                g_DepthOfFieldFixes.bEnabled = sDof != ConfigKeys::FixDepthOfField_Option_Disabled;
+                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Performance;
 #if defined(BEFORE_COMPARISON_PICS)
-            g_DepthOfFieldFixes.bEnabled = false;
-#endif 
-            LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+                g_DepthOfFieldFixes.bEnabled = false;
+#endif
+                LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+            }
             
             ConfigHelper::getValue(ini, ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
             LOG_CONFIG(ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
@@ -931,6 +1008,31 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, MGS2_OverrideProbeCache::bEnabled);
+    LOG_CONFIG(ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, MGS2_OverrideProbeCache::bEnabled);
+
+    {
+        std::string sLoadOptimizations = ConfigKeys::MGS2_LoadOptimizations_Option_Off;
+        ConfigHelper::getValue(ini, ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations);
+        const bool full = sLoadOptimizations == ConfigKeys::MGS2_LoadOptimizations_Option_Full;
+        const bool preload = full || sLoadOptimizations == ConfigKeys::MGS2_LoadOptimizations_Option_Preload;
+        if (!preload && sLoadOptimizations != ConfigKeys::MGS2_LoadOptimizations_Option_Off)
+        {
+            spdlog::warn("Unknown value for {}: {}, using {}", ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations, ConfigKeys::MGS2_LoadOptimizations_Option_Off);
+        }
+        MGS2_AreaPrefetch::bEnabled = preload;
+        MGS2_FastDoors::bEnabled = full;
+        LOG_CONFIG(ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations);
+    }
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
@@ -1127,6 +1229,20 @@ void Config::Read()
         LOG_CONFIG(ConfigKeys::MGS2_First_Person_View_Sticky_Section, ConfigKeys::MGS2_First_Person_View_Sticky_Setting, MGS2_First_Person_View::bFirst_Person_View_Sticky);
         InputHandler::GetKeybind(ini, ConfigKeys::MGS2_First_Person_View_Hold_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_Hold_ToggleKey_Setting, MGS2_First_Person_View::vkToggle_Hold_First_Person_View);
     }
+
+#if defined(MGS3_FPS_DEV)
+    if (eGameType & MGS3)
+    {
+        ConfigHelper::getValue(ini, ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting, MGS3_First_Person_View::bFirst_Person_View_Enabled);
+        LOG_CONFIG(ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting, MGS3_First_Person_View::bFirst_Person_View_Enabled);
+        if (MGS3_First_Person_View::bFirst_Person_View_Enabled)
+        {
+            ConfigHelper::getValue(ini, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Section, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Setting, MGS3_First_Person_View::bFirst_Person_View_Movement_Enabled_By_Default);
+            LOG_CONFIG(ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Section, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Setting, MGS3_First_Person_View::bFirst_Person_View_Movement_Enabled_By_Default);
+            InputHandler::GetKeybind(ini, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Setting, MGS3_First_Person_View::vkToggle_First_Person_View_Movement);
+        }
+    }
+#endif
 
     std::string sColonelMsxSprite;
     ConfigHelper::getValue(ini, ConfigKeys::UnusedRetroColonel_Section, ConfigKeys::UnusedRetroColonel_Setting, sColonelMsxSprite);

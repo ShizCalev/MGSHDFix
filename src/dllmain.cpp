@@ -16,7 +16,7 @@
 ///Features
 #include "custom_resolution_and_borderless.hpp"
 #include "distance_culling.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "intro_skip.hpp"
 #include "keep_aiming_after_firing.hpp"
 #include "pause_on_focus_loss.hpp"
@@ -33,6 +33,7 @@
 #include "mgs2_restore_action_level_selection.hpp"
 #include "mgs2_3rd_person_freecam.hpp"
 #include "mgs2_difficulty.hpp"
+#include "mgs2_script_patches.hpp"
 #include "mgs2_hostage_type_easter_egg.hpp"
 #include "original_camera_positions.hpp"
 #include "expand_bp_assets.hpp"
@@ -59,6 +60,11 @@
 #include "mgs2_flare_occlusion.hpp"
 #include "mgs2_tanker_snake_snap.hpp"
 #include "mgs2_glass_dmapack_overflow.hpp"
+#include "mgs2_demo_bind_pose_marine.hpp"
+#include "mgs2_demo_lazy_marine.hpp"
+#include "mgs2_solidus_pipe.hpp"
+#include "mgs2_item_toss_fix.hpp"
+#include "mgs2_radar_fixes.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
 #include "line_scaling.hpp"
@@ -103,15 +109,26 @@
 #include "color_correction.hpp"
 #include "custom_player_name.hpp"
 #include "mgs2_first_person_view_mode.hpp"
+#if defined(MGS3_FPS_DEV)
+#include "mgs3_first_person_view_mode.hpp"
+#endif
 #include "cutscene_pausing.hpp"
 #include "d3d11_text_overlay.hpp"
 #include "mg1_display_scaling.hpp"
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
+#include "mgs2_title_lightning.hpp"
+#include "mgs2_city_glow.hpp"
+#include "mgs2_light_stain.hpp"
+#include "mgs2_override_probe_cache.hpp"
+#include "mgs2_fast_doors.hpp"
+#include "mgs2_area_prefetch.hpp"
+#include "mgs2_credits_smoke.hpp"
 #include "mgs2_parrot_radar_fix.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
+#include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_shimmer.hpp"
 #include "mgs2_crossfade.hpp"
 #include "photo_camera.hpp"
@@ -120,6 +137,7 @@
 #include "playtime_fixes.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
+#include "mgs2_thermal_heat.hpp"
 #include "mgs2_bandana_mass.hpp"
 #include "mgs_smaa.hpp"
 #include "caption_replacements.hpp"
@@ -539,6 +557,7 @@ void afterPresent()
         MGS2_Crossfade::Initialize();
         g_MGS2UnderwaterFilterFix.InstallD3D11StateHooks();
         MGS2_AiRayVision::Init();
+        MGS2_TitleLightning::Init();
         MGS2DemoBlur::Init();
         MGS2GasHaze::Init();
         MGS2SoftShadows::Init();
@@ -596,6 +615,11 @@ static void InitializeSubsystems()
     if (eGameType & MGS2)
     {
         INITIALIZE(MGS2_GlassDmapackOverflow::Initialize());
+        INITIALIZE(MGS2_DemoBindPoseMarine::Initialize());
+        INITIALIZE(MGS2_DemoLazyMarine::Initialize());
+        INITIALIZE(MGS2_SolidusPipe::Initialize());
+        INITIALIZE(MGS2ItemTossFix::Initialize());
+        INITIALIZE(MGS2_RadarFixes::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
         INITIALIZE(MGS2BladeAnywhere::Initialize());
         INITIALIZE(MGS2_RestoreDogtags::Initialize());
@@ -604,6 +628,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_RestoreActionLevelSelection::Apply());
         INITIALIZE(MGS2_RestoreSoLRadar::Apply());
         INITIALIZE(MGS2_RestoreElevatorGlitch::Initialize());
+        INITIALIZE(MGS2NGCutsceneSkips::Initialize());
         INITIALIZE(MGS2_ThirdPersonFreecam::Activate());
         INITIALIZE(MGS2_Hostage_Type_Easter_Egg::Force());
         INITIALIZE(MGS2_First_Person_View::Activate());
@@ -647,6 +672,7 @@ static void InitializeSubsystems()
         INITIALIZE(FixReverbWetLevel::Initialize());
         INITIALIZE(MGS2DemoBlur::Initialize());
         INITIALIZE(MGS2FlareOcclusion::Initialize());
+        INITIALIZE(MGS2ThermalHeat::Initialize());
         INITIALIZE(CoolantMirrorFix::ApplyFix());
         INITIALIZE(ResolutionScalingFixes::ApplyFixes()); // Always load after custom resolution
         INITIALIZE(TextureLiveSwaps::ApplyFixes());
@@ -664,12 +690,22 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_CodecBackground::Setup());
         INITIALIZE(MGS2_ContrastShader::Setup());
         INITIALIZE(MGS2_AiRayVision::Setup());
+        INITIALIZE(MGS2_TitleLightning::Setup());
+        INITIALIZE(MGS2_CityGlow::Setup());
+        INITIALIZE(MGS2_LightStain::Setup());
+        INITIALIZE(MGS2_OverrideProbeCache::Setup());
+        INITIALIZE(MGS2_FastDoors::Setup());
+        INITIALIZE(MGS2_AreaPrefetch::Setup());
+        INITIALIZE(MGS2_CreditsSmoke::Setup());
         INITIALIZE(MGS2FixedAlpha::Setup());
         INITIALIZE(MGS2ConcentrateBlur::Initialize());
         INITIALIZE(MGS2EnhancedDemos::Initialize());
         INITIALIZE(CaptionReplacements::Setup());
+        INITIALIZE(MGS2ScanlineScale::Initialize());
+        INITIALIZE(MGS2_EffectSpeedFix.Initialize());
         INITIALIZE(SMAA_AA::CompileShaders());
         INITIALIZE(ScreenspaceFixes::Apply());
+        INITIALIZE(MGS2_ScriptPatches::Initialize());   // last: every feature has added its patches by now
     }
     else if (eGameType & MGS3)
     {
@@ -680,6 +716,9 @@ static void InitializeSubsystems()
         INITIALIZE(MGS3GlowOverbright::Initialize());
         INITIALIZE(MGS3MapRelight::Initialize());
         INITIALIZE(MGS3_CrossfadeCapture::Initialize());
+#if defined(MGS3_FPS_DEV)
+        INITIALIZE(MGS3_First_Person_View::Activate());
+#endif
         INITIALIZE(MGS3FixCameraOffset::Activate());
         INITIALIZE(g_DepthOfFieldFixes.Initialize());
         INITIALIZE(CaptionReplacements::Setup());
@@ -703,8 +742,6 @@ static void InitializeSubsystems()
     }
     INITIALIZE(g_CPUCoreLimitFix.ApplyFix());
     INITIALIZE(g_VectorScalingFix.Initialize());
-    INITIALIZE(MGS2ScanlineScale::Initialize());
-    INITIALIZE(g_EffectSpeedFix.Initialize()); //todo - fix more effects, ie rain speed, bullet trails, helicopter rotors
     INITIALIZE(g_StereoAudioFix.Initialize());
     INITIALIZE(DamagedSaveFix::Initialize());
     INITIALIZE(g_FixAimAfterEquip.Initialize());

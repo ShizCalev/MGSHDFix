@@ -59,6 +59,7 @@ enum class MGS2GameMode
     Tanker,
     Plant,
     Alternate,
+    SnakeTales,
 
     VRSneaking,
     VRVariety,
@@ -93,6 +94,9 @@ public:
     [[nodiscard]] std::string GetRichPresenceString() const;
     [[nodiscard]] std::string GetGameMode() const;
     [[nodiscard]] const char* GetCurrentStage() const;
+    // the asset region folder the loader reads from: "us", "jp" or "eu"
+    // equivalent to FS_BP_GetCurrentRegionFolder()
+    [[nodiscard]] const char* MGS2_RegionDir() const;
     [[nodiscard]] bool IsStage(const char* stageConst) const;
     [[nodiscard]] bool IsAnyStage(std::initializer_list<const char*> stages) const;
 
@@ -171,6 +175,9 @@ public:
 
     [[nodiscard]] const FVECTOR* GM_CameraTarget() const { return p_GM_CameraTarget; }
     [[nodiscard]] const FVECTOR* ArmCamShift() const { return p_ArmCamShift; }
+#if defined(MGS3_FPS_DEV)
+    [[nodiscard]] int32_t* gBP_1stPersonCamera_EnableMovement() const { return p_gBP_1stPersonCamera_EnableMovement; }
+#endif
 
 
 private:
@@ -181,6 +188,8 @@ private:
     int* scriptedSequenceFlag = nullptr;
     double* actorWaitValue = nullptr;
     const char* currentStage = nullptr;
+    int* p_RegionIndex = nullptr;
+    const char* const* p_RegionDirs = nullptr;
     char*** p_GCL_CommandLine = nullptr;
     char** p_GCL_NextStrPtr = nullptr;
     uint32_t* heldTriggers = nullptr;
@@ -206,6 +215,9 @@ private:
     int* p_HZX_CurrentGroupID = nullptr;
     FVECTOR* p_GM_CameraTarget = nullptr;
     FVECTOR* p_ArmCamShift = nullptr;
+#if defined(MGS3_FPS_DEV)
+    int32_t* p_gBP_1stPersonCamera_EnableMovement = nullptr;
+#endif
 
 };
 

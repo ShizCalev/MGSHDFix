@@ -281,7 +281,12 @@ namespace ConfigKeys
     constexpr const char* FixDepthOfField_Help = "(Performance Heavy)";
     constexpr const char* FixDepthOfField_Tooltip = "Restores depth of field blur at higher resolutions.\n"
                                                     "\n"
-                                                    "Also restores close-up depth of field / camera blur, which was outright disabled/broken by the HD Collection.";
+                                                    "Also restores close-up depth of field / camera blur, which was outright disabled/broken by the HD Collection.\n"
+                                                    "\n"
+                                                    "Performance runs the blur at half the size Quality uses. Sharp areas look the same and it costs less.";
+    constexpr const char* FixDepthOfField_Option_Disabled = "Disabled";
+    constexpr const char* FixDepthOfField_Option_Performance = "Performance";
+    constexpr const char* FixDepthOfField_Option_Quality = "Quality";
 
 
     constexpr const char* MotionBlur_Section = "Bugfixes";
@@ -321,6 +326,20 @@ namespace ConfigKeys
     constexpr const char* MGS3_Restore_Film_Grain_Help = "(Performance Heavy)";
     constexpr const char* MGS3_Restore_Film_Grain_Tooltip = "Restores the film grain effect used during dark cutscenes, which was broken by the HD Collection.";
 
+    constexpr const char* MGS3_GlowOverbright_Section = "Bugfixes";
+    constexpr const char* MGS3_GlowOverbright_Setting = "Fix Emissive Textures";
+    constexpr const char* MGS3_GlowOverbright_Help = "";
+    constexpr const char* MGS3_GlowOverbright_Tooltip = "Fixes light-emitting textures (eg. windows, glowy panels) not emitting light and looking flat.\n"
+        "\n"
+        "The PS2 did the math for these effects using whole integers. The HD Collection switched that math to decimal numbers (floats), which broke the effect.";
+
+    constexpr const char* MGS3_MapRelight_Section = "Bugfixes";
+    constexpr const char* MGS3_MapRelight_Setting = "Fix Lighting Bounding Boxes";
+    constexpr const char* MGS3_MapRelight_Help = "";
+    constexpr const char* MGS3_MapRelight_Tooltip = "The HD Collection threw away the PS2's per-light bounding boxes/cones and makes every light radius-based instead.\n"
+        "\n"
+        "This restores the original lighting bounds; fixing broken shadows, dark scenes getting blown out with bloom, and tons of other lighting issues.";
+
     constexpr const char* MGS2_RestoreActionLevelSelection_Section = "Various";
     constexpr const char* MGS2_RestoreActionLevelSelection_Setting = "Restore Main Menu Voiceovers";
     constexpr const char* MGS2_RestoreActionLevelSelection_Help = "";
@@ -334,11 +353,9 @@ namespace ConfigKeys
         "This option makes shadow resolution scale dynamically with the game's internal resolution.";
 
     constexpr const char* MGS2_SoftParticles_Section = "Model Quality && Level of Detail Enhancements";
-    constexpr const char* MGS2_SoftParticles_Setting = "Show Soft Particles";
-    constexpr const char* MGS2_SoftParticles_Help = "";
-    constexpr const char* MGS2_SoftParticles_Tooltip = "Spray and dust puffs are flat sprites, so they cut off along a hard line wherever they pass through water or ground.\n"
-        "\n"
-        "This option fades them out against nearby surfaces instead.";
+    constexpr const char* MGS2_SoftParticles_Setting = "Blend Particle Effect Sprites";
+    constexpr const char* MGS2_SoftParticles_Help = "(Performance Heavy)";
+    constexpr const char* MGS2_SoftParticles_Tooltip = "Fades out & wraps particle effect sprites around edges when they're close to walls / other geometry so that they don't have hard-cutoff edges.";
 
 
 
@@ -352,6 +369,27 @@ namespace ConfigKeys
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Setting = "Fix M92 Laser Origin in FPV";
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Help = "";
     constexpr const char* MGS2_LaserOriginFix_FixM9FPV_Tooltip = "Fixes the M92's laser sight origin point when aiming in first-person view, which is aligned with the gun's barrel instead of the attached laser aiming module.";
+
+    constexpr const char* MGS2_RadarOffAlert_Section = "Bugfixes";
+    constexpr const char* MGS2_RadarOffAlert_Setting = "Show Alert Status With Radar Off";
+    constexpr const char* MGS2_RadarOffAlert_Help = "";
+    constexpr const char* MGS2_RadarOffAlert_Tooltip = "With the radar turned off in the options, the ALERT / EVASION / CAUTION box and its countdown gauge no longer appear.\n"
+        "\n"
+        "Shows them again, as on PS2 and the HD Edition.";
+
+    constexpr const char* MGS2_KeepSavedRadarType_Section = "Bugfixes";
+    constexpr const char* MGS2_KeepSavedRadarType_Setting = "Keep Radar Type From Save";
+    constexpr const char* MGS2_KeepSavedRadarType_Help = "";
+    constexpr const char* MGS2_KeepSavedRadarType_Tooltip = "After visiting the Options screen, loading a save can reset its radar setting to Type 1.\n"
+        "\n"
+        "Keeps the radar setting stored in the save, as on PS2.";
+
+    constexpr const char* MGS2_ItemTossFix_Section = "Bugfixes";
+    constexpr const char* MGS2_ItemTossFix_Setting = "Fix Dropped Item Toss";
+    constexpr const char* MGS2_ItemTossFix_Help = "";
+    constexpr const char* MGS2_ItemTossFix_Tooltip = "Items and dog tags dropped by a held-up guard are tossed in a wider arc than on PS2, so a dog tag can land a metre away or off a ledge.\n"
+        "\n"
+        "Restores the PS2 launch angle.";
 
     constexpr const char* EnablePauseOnFocusLoss_Section = "Various";
     constexpr const char* EnablePauseOnFocusLoss_Setting = "Pause On Focus Loss";
@@ -376,10 +414,10 @@ namespace ConfigKeys
     constexpr const char* FixAimingFullTilt_Help = "";
     constexpr const char* FixAimingFullTilt_Tooltip = "In MGS2, prevents aiming from dropping when tilting the analog stick fully while holding Lock-On / L1.";
 
-    constexpr const char* MGS2_Restore_VFX_Section = "Bugfixes";
-    constexpr const char* MGS2_Restore_VFX_Setting = "Fix Broken PS2 Visual Effects";
-    constexpr const char* MGS2_Restore_VFX_Help = "";
-    constexpr const char* MGS2_Restore_VFX_Tooltip = "Restores numerous broken visual effects that were broken by the HD Collection / Master Collection.\n"
+    constexpr const char* Restore_VFX_Section = "Bugfixes";
+    constexpr const char* Restore_VFX_Setting = "Fix Broken PS2 Visual Effects";
+    constexpr const char* Restore_VFX_Help = "";
+    constexpr const char* Restore_VFX_Tooltip = "Restores numerous broken visual effects that were broken by the HD Collection / Master Collection.\n"
                                                      "\n"
                                                      "These effects range from vector effect scaling (ie lasers, rain, UI line elements), water distortion, stealth camoflauge refraction, water droplets on the camera, blood stains on enemy clothing, underwater distortion, and many more.";
 
@@ -613,6 +651,8 @@ namespace ConfigKeys
     constexpr const char* MGS2_RestoreOriginalDifficulty_Solidus_Choking_Help = "";
     constexpr const char* MGS2_RestoreOriginalDifficulty_Solidus_Choking_Tooltip = "Restores the original harder PS2 durations and life reductions for Solidus's choking sequence, which were rebalanced/made easier with the HD Collection.\n"
                                                                                          "\n"
+                                                                                         "Any option other than Disabled also restores the PS2 O2 gauge: it drains 2 per frame instead of 3, and a press gives back 1/17 instead of 1/19.\n"
+                                                                                         "\n"
                                                                                          "HDC Duration:\n"
                                                                                          "Very Easy: 600, Easy: 650, Normal: 700, Hard: 750, Extreme: 800, European Extreme: 850\n"
                                                                                          "PS2 Duration:\n"
@@ -675,8 +715,7 @@ namespace ConfigKeys
 
     constexpr const char* PressureSensitiveFacebuttons_Section = "Controller Settings";
     constexpr const char* PressureSensitiveFacebuttons_Setting = "Dualshock 2 && 3 Controller Support";
-    constexpr const char* PressureSensitiveFacebuttons_Help = "(Pressure Sensitive Buttons)\n"
-                                                              "(Experimental)";
+    constexpr const char* PressureSensitiveFacebuttons_Help = "(Pressure Sensitive Buttons)";
     constexpr const char* PressureSensitiveFacebuttons_Tooltip =
         "Enables support for Dualshock 2 / 3 Controllers, complete with\n"
         "pressure sensitive facebutton support.\n"
@@ -783,6 +822,13 @@ namespace ConfigKeys
     constexpr const char* MGS2BladeAnywhere_Tooltip = "Makes the High-Frequency Blade usable on every stage.\n"
         "Loads its models and motions everywhere, arms the blade plugin, and adds it to the inventory.";
 
+    constexpr const char* MGS2_OverrideLookupCache_Section = "Various";
+    constexpr const char* MGS2_OverrideLookupCache_Setting = "Cache Override File Lookups";
+    constexpr const char* MGS2_OverrideLookupCache_Help = "";
+    constexpr const char* MGS2_OverrideLookupCache_Tooltip = "Every file an area loads is first looked for in up to five override folders. On Linux / Steam Deck each miss is slow, adding 4-6 seconds to every load.\n"
+        "\n"
+        "This reads each folder once and answers from that. Override files added while the game runs are picked up on the next load.";
+
     constexpr const char* MGS2Sunglasses_Section = "Various";
     constexpr const char* MGS2Sunglasses_Setting = "Force Sunglasses";
     constexpr const char* MGS2Sunglasses_Help = "";
@@ -818,6 +864,49 @@ namespace ConfigKeys
     constexpr const char* MGS2_RestoreElevatorGlitch_Tooltip = "Speedrun opt-in. Re-enables the Sons of Liberty floor-clip: going prone at an elevator call button and operating it forces a stand-up with the player's origin left on the floor, clipping through it.\n"
                                                                "\n"
                                                                "Substance gated elevator operation to standing/squat to patch this out. Off by default.";
+
+    constexpr const char* MGS2_SkipStillman_Section = "Skips";
+    constexpr const char* MGS2_SkipStillman_Setting = "Stillman";
+    constexpr const char* MGS2_SkipStillman_Help = "";
+    constexpr const char* MGS2_SkipStillman_Tooltip = "Makes the two Peter Stillman cutscenes in the Shell 1 Core skippable in New Game playthroughs.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipOlgaTaunt_Section = "Skips";
+    constexpr const char* MGS2_SkipOlgaTaunt_Setting = "Olga Taunt";
+    constexpr const char* MGS2_SkipOlgaTaunt_Help = "";
+    constexpr const char* MGS2_SkipOlgaTaunt_Tooltip = "Makes Olga's two mid-fight monologues skippable in New Game playthroughs.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipEnding_Section = "Skips";
+    constexpr const char* MGS2_SkipEnding_Setting = "Ending";
+    constexpr const char* MGS2_SkipEnding_Help = "";
+    constexpr const char* MGS2_SkipEnding_Tooltip = "Makes the proposal scene and the staff roll skippable.\n"
+        "\n"
+        "The time saved by the skip will be automatically added to IGT, so final play-time will not differ from if you watched the full thing.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipSwordTraining_Section = "Skips";
+    constexpr const char* MGS2_SkipSwordTraining_Setting = "Sword Training";
+    constexpr const char* MGS2_SkipSwordTraining_Help = "";
+    constexpr const char* MGS2_SkipSwordTraining_Tooltip = "Removes the 45 second wait in Snake's sword training, so you can move on right after your first swing.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_LoadOptimizations_Section = "Speedrunner Settings";
+    constexpr const char* MGS2_LoadOptimizations_Setting = "Load Optimizations";
+    constexpr const char* MGS2_LoadOptimizations_Help = "";
+    constexpr const char* MGS2_LoadOptimizations_Tooltip = "Preload Only: once an area has loaded, the areas its doors lead to are read in the background, so walking through a door loads like a revisit.\n"
+        "\n"
+        "Full: also fades the music out in an eighth of a second when you go through a door, and skips the area name on the black screen; the name still shows as the next area fades in. "
+        "The next area can't load its sounds until the old music stops, so this saves about a second per door.\n"
+        "\n"
+        "Check that your category allows it.";
+    constexpr const char* MGS2_LoadOptimizations_Option_Off = "Off";
+    constexpr const char* MGS2_LoadOptimizations_Option_Preload = "Preload Only";
+    constexpr const char* MGS2_LoadOptimizations_Option_Full = "Full";
 
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";

@@ -11,7 +11,7 @@
 #pragma comment(lib, "dxgi.lib")
 
 #include "color_correction.hpp"
-#include "effect_speeds.hpp"
+#include "mgs2_effect_speeds.hpp"
 #include "input_handler.hpp"
 #include "mgs2_3rd_person_freecam.hpp"
 #include "mgs2_contrast_fix.hpp"
@@ -19,6 +19,7 @@
 #include "mgs2_first_person_view_mode.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_tanker_fog.hpp"
+#include "mgs2_thermal_heat.hpp"
 #include "mgs2_soft_particles.hpp"
 #include "mgs2_railgun_beam.hpp"
 #include "mgs2_underwater_filter.hpp"
@@ -54,7 +55,10 @@ namespace
     using ResizeBuffersFn = HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT);
     ResizeBuffersFn oResizeBuffers = nullptr;
 
-    // Stock Prim.fx vertex shaders, told apart by DXBC digest as the game creates them.
+    // Stock vertex shaders, recognised by the digest in their DXBC header as the game creates them.
+    constexpr SIZE_T kDxbcTagBytes = 4;      // "DXBC"
+    constexpr SIZE_T kDxbcDigestBytes = 16;  // the MD5 right after it
+    constexpr SIZE_T kDxbcHeaderBytes = kDxbcTagBytes + kDxbcDigestBytes;
     struct StockVSDigest
     {
         D3D11Hooks::StockVS kind;
@@ -66,10 +70,19 @@ namespace
         { D3D11Hooks::StockVS::SpriteFog, 4660, { 0x01, 0x4E, 0x2F, 0x77, 0x74, 0x05, 0x3D, 0x61, 0xB3, 0x08, 0x14, 0x9B, 0x17, 0x79, 0x02, 0xF9 } },
         { D3D11Hooks::StockVS::Poly,      4504, { 0x92, 0x12, 0x98, 0xF1, 0x43, 0xBD, 0xE0, 0xFC, 0xBC, 0x66, 0xB2, 0xD2, 0x83, 0xD7, 0x14, 0x39 } },
         { D3D11Hooks::StockVS::PolyFog,   4620, { 0x47, 0x5D, 0x70, 0x52, 0xB9, 0x44, 0x7A, 0xCE, 0x30, 0x00, 0xEA, 0x63, 0x07, 0xDD, 0x01, 0x8A } },
+        { D3D11Hooks::StockVS::KmsLitUv0, 5836, { 0x6B, 0xDB, 0x27, 0xAF, 0x3F, 0x49, 0x1B, 0x90, 0x32, 0xAE, 0x8F, 0x11, 0xC5, 0x07, 0x1C, 0xE1 } },
+        { D3D11Hooks::StockVS::KmsLitUv1, 5836, { 0x8B, 0x8D, 0xF3, 0xEB, 0xBA, 0xF9, 0x8F, 0xF6, 0xDC, 0x9C, 0x70, 0xE0, 0xA9, 0x55, 0xAB, 0x0F } },
+        { D3D11Hooks::StockVS::KmsLitUv2, 5888, { 0xAD, 0xC6, 0x83, 0xC2, 0xB7, 0xF8, 0xF9, 0xCE, 0x6C, 0xEF, 0x28, 0x70, 0x03, 0x3B, 0x66, 0xB4 } },
+        { D3D11Hooks::StockVS::KmsLitRigid, 5236, { 0xFE, 0xB1, 0xFB, 0x7C, 0x50, 0x20, 0xC2, 0x22, 0xE8, 0xFD, 0x92, 0xBD, 0x64, 0x3C, 0xCC, 0xE0 } },
+        { D3D11Hooks::StockVS::KmsLitRigid, 5236, { 0x1D, 0x93, 0x4C, 0x2C, 0x3B, 0x50, 0xF3, 0x85, 0x3F, 0x7B, 0xEA, 0x3F, 0xAE, 0x81, 0xBF, 0xC6 } },
+        { D3D11Hooks::StockVS::KmsLitRigidShortNrm, 5320, { 0xB0, 0xE4, 0x79, 0x23, 0x8E, 0x23, 0x75, 0x3E, 0xBD, 0xA9, 0x91, 0xCA, 0x2D, 0x74, 0x38, 0x2A } },
+        { D3D11Hooks::StockVS::KmsLitMorph, 5712, { 0xAA, 0xAD, 0x6E, 0x3C, 0x26, 0x82, 0x72, 0xF8, 0xB8, 0xCA, 0x87, 0x3A, 0x2E, 0x11, 0x37, 0x91 } },
     };
 
+    // Each entry keeps a reference, so a freed shader's address can't come back as a different one.
+    // The game builds the same shader again for every material, so the table needs room.
     struct StockVSEntry { ID3D11VertexShader* vs; D3D11Hooks::StockVS kind; };
-    StockVSEntry g_stockVS[16] {};
+    StockVSEntry g_stockVS[512] {};
     int g_stockVSCount = 0;
 
     SafetyHookInline g_createDeviceHook {};
@@ -80,12 +93,13 @@ namespace
         SIZE_T length, ID3D11ClassLinkage* linkage, ID3D11VertexShader** out)
     {
         const HRESULT hr = g_createVSHook.stdcall<HRESULT>(dev, bytecode, length, linkage, out);
-        if (SUCCEEDED(hr) && bytecode && out && *out && g_stockVSCount < static_cast<int>(std::size(g_stockVS)))
+        if (SUCCEEDED(hr) && bytecode && length >= kDxbcHeaderBytes && out && *out && g_stockVSCount < static_cast<int>(std::size(g_stockVS)))
         {
             for (const StockVSDigest& known : kStockVSDigests)
             {
-                if (length == known.size && memcmp(static_cast<const uint8_t*>(bytecode) + 4, known.digest, 16) == 0)
+                if (length == known.size && memcmp(static_cast<const uint8_t*>(bytecode) + kDxbcTagBytes, known.digest, kDxbcDigestBytes) == 0)
                 {
+                    (*out)->AddRef();
                     g_stockVS[g_stockVSCount++] = { *out, known.kind };
                     break;
                 }
@@ -379,6 +393,7 @@ namespace
             MGS2TankerFog::OnDeviceReady();
             g_DepthOfFieldFixes.OnDeviceReady();
             MGS2SoftParticles::OnDeviceReady();
+            MGS2ThermalHeat::OnDeviceReady();
             if (eGameType & (MGS2 | MGS3))
             {
                 // Drop redundant IA state changes - the games re-set layout/topology per draw.
@@ -401,7 +416,7 @@ namespace
 
         }
 
-        //g_EffectSpeedFix.Tick();
+        //MGS2_EffectSpeedFix.Tick();
         g_InputHandler.Update();
 
         if (eGameType & MGS3)
@@ -438,7 +453,12 @@ namespace
                 ComPtr<ID3D11RenderTargetView> bbRTV;
                 g_D3D11Hooks.d3dDevice->CreateRenderTargetView(bb.Get(), nullptr, bbRTV.GetAddressOf());
                 if (bbRTV)
+                {
+                    // SMAA's last pass applies the gamma curve too, so the separate one is skipped.
+                    SMAA_AA::bApplyGammaCurve = ColorCorrection::bShaderLoaded;
+                    SMAA_AA::bDrewThisFrame = false;
                     SMAA_AA::Draw(bbRTV.Get(), nullptr);
+                }
             }
         }
         else if (eGameType & MG)
@@ -446,7 +466,11 @@ namespace
             MG1_DisplayScaling::Draw(pSwapChain);
         }
 
-ColorCorrection::Draw(pSwapChain);
+        if (!((eGameType & MGS3) && SMAA_AA::bDrewThisFrame && SMAA_AA::bApplyGammaCurve))
+        {
+            ColorCorrection::Draw(pSwapChain);
+        }
+        SMAA_AA::bDrewThisFrame = false;
         if (eGameType & MGS3)
         {
             MGS3FilmGrain::EndPresent();
@@ -459,7 +483,6 @@ ColorCorrection::Draw(pSwapChain);
         g_preMenuFired = false;
         g_D3D11Hooks.FrameCount++;
     }
-
 
     HRESULT __stdcall HookedResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
     {

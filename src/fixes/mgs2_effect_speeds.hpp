@@ -13,4 +13,4 @@ public:
 
 };
 
-inline EffectSpeedFix g_EffectSpeedFix;
+inline EffectSpeedFix MGS2_EffectSpeedFix;
