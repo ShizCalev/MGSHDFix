@@ -95,6 +95,7 @@ public:
     [[nodiscard]] std::string GetGameMode() const;
     [[nodiscard]] const char* GetCurrentStage() const;
     // the asset region folder the loader reads from: "us", "jp" or "eu"
+    // equivalent to FS_BP_GetCurrentRegionFolder()
     [[nodiscard]] const char* MGS2_RegionDir() const;
     [[nodiscard]] bool IsStage(const char* stageConst) const;
     [[nodiscard]] bool IsAnyStage(std::initializer_list<const char*> stages) const;
