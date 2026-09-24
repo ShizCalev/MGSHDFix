@@ -369,6 +369,7 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_city_glow.cpp">
+      <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_light_stain.cpp">
       <Filter>Fixes</Filter>
@@ -404,7 +405,12 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_demo_bind_pose_marine.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_solidus_pipe.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp">
@@ -857,7 +863,12 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_bind_pose_marine.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_solidus_pipe.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp">
@@ -879,6 +890,8 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_city_glow.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\fixes\mgs2_light_stain.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>

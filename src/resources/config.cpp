@@ -79,6 +79,7 @@
 #include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
+#include "mgs2_solidus_pipe.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -793,6 +794,7 @@ void Config::Read()
                 &MGS2TankerFog::bEnabled,
                 &MGS2_DemoBindPoseMarine::bEnabled,
                 &MGS2_DemoLazyMarine::bEnabled,
+                &MGS2_SolidusPipe::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)
