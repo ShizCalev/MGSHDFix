@@ -76,7 +76,10 @@
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_ng_cutscene_skips.hpp"
+#include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
+#include "mgs2_solidus_pipe.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -91,7 +94,11 @@
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
+#include "mgs2_city_glow.hpp"
 #include "mgs2_light_stain.hpp"
+#include "mgs2_fast_doors.hpp"
+#include "mgs2_area_prefetch.hpp"
+#include "mgs2_override_probe_cache.hpp"
 #include "mgs2_credits_smoke.hpp"
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
@@ -771,6 +778,7 @@ void Config::Read()
                 &MGS2_ContrastShader::bEnabled,
                 &MGS2_AiRayVision::bEnabled,
                 &MGS2_TitleLightning::bEnabled,
+                &MGS2_CityGlow::bEnabled,
                 &MGS2_LightStain::bEnabled,
                 &MGS2_CreditsSmoke::bEnabled,
                 &MGS2_Crossfade::bEnabled,
@@ -785,7 +793,9 @@ void Config::Read()
                 &MGS2FixedAlpha::bEnabled,
                 &MGS2TankerFog::bEnabled,
                 &MGS2ThermalHeat::bEnabled,
+                &MGS2_DemoBindPoseMarine::bEnabled,
                 &MGS2_DemoLazyMarine::bEnabled,
+                &MGS2_SolidusPipe::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)
@@ -988,6 +998,31 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, MGS2_RestoreElevatorGlitch::bEnabled);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, MGS2_OverrideProbeCache::bEnabled);
+    LOG_CONFIG(ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, MGS2_OverrideProbeCache::bEnabled);
+
+    {
+        std::string sLoadOptimizations = ConfigKeys::MGS2_LoadOptimizations_Option_Off;
+        ConfigHelper::getValue(ini, ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations);
+        const bool full = sLoadOptimizations == ConfigKeys::MGS2_LoadOptimizations_Option_Full;
+        const bool preload = full || sLoadOptimizations == ConfigKeys::MGS2_LoadOptimizations_Option_Preload;
+        if (!preload && sLoadOptimizations != ConfigKeys::MGS2_LoadOptimizations_Option_Off)
+        {
+            spdlog::warn("Unknown value for {}: {}, using {}", ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations, ConfigKeys::MGS2_LoadOptimizations_Option_Off);
+        }
+        MGS2_AreaPrefetch::bEnabled = preload;
+        MGS2_FastDoors::bEnabled = full;
+        LOG_CONFIG(ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, sLoadOptimizations);
+    }
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, MGS2NGCutsceneSkips::bStillman);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, MGS2NGCutsceneSkips::bOlgaTaunt);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, MGS2NGCutsceneSkips::bEnding);
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
+    LOG_CONFIG(ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, MGS2NGCutsceneSkips::bSwordTraining);
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_RestoreActionLevelSelection_Section, ConfigKeys::MGS2_RestoreActionLevelSelection_Setting, MGS2_RestoreActionLevelSelection::bEnabled);

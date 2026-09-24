@@ -16,7 +16,9 @@
     <ClCompile Include="src\fixes\color_correction.cpp" />
     <ClCompile Include="src\features\mgs2_vamp_punch_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_glass_dmapack_overflow.cpp" />
+    <ClCompile Include="src\fixes\mgs2_demo_bind_pose_marine.cpp" />
     <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp" />
+    <ClCompile Include="src\fixes\mgs2_solidus_pipe.cpp" />
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_newscrconcentrateblur.cpp" />
     <ClCompile Include="src\fixes\mgs2_enhanced_demos.cpp" />
@@ -25,6 +27,7 @@
     <ClCompile Include="src\resources\game_funcs.cpp" />
     <ClCompile Include="src\resources\mgs2_script_patches.cpp" />
     <ClCompile Include="src\features\mgs2_snake_tales_radar.cpp" />
+    <ClCompile Include="src\features\mgs2_ng_cutscene_skips.cpp" />
     <ClCompile Include="src\features\expand_bp_assets.cpp" />
     <ClCompile Include="src\features\mgs2_restore_sol_radar.cpp" />
     <ClCompile Include="src\features\mgs2_restore_elevator_glitch.cpp" />
@@ -37,7 +40,11 @@
     <ClCompile Include="src\fixes\playtime_fixes.cpp" />
     <ClCompile Include="src\fixes\mgs2_ai_ray_vision.cpp" />
     <ClCompile Include="src\fixes\mgs2_title_lightning.cpp" />
+    <ClCompile Include="src\fixes\mgs2_city_glow.cpp" />
     <ClCompile Include="src\fixes\mgs2_light_stain.cpp" />
+    <ClCompile Include="src\fixes\mgs2_override_probe_cache.cpp" />
+    <ClCompile Include="src\features\mgs2_fast_doors.cpp" />
+    <ClCompile Include="src\features\mgs2_area_prefetch.cpp" />
     <ClCompile Include="src\fixes\mgs2_credits_smoke.cpp" />
     <ClCompile Include="src\fixes\mgs2_contrast_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_shimmer.cpp" />
@@ -177,7 +184,9 @@
     <ClInclude Include="src\fixes\screenspace_fixes.hpp" />
     <ClInclude Include="src\fixes\mgs2_tanker_snake_snap.hpp" />
     <ClInclude Include="src\fixes\mgs2_glass_dmapack_overflow.hpp" />
+    <ClInclude Include="src\fixes\mgs2_demo_bind_pose_marine.hpp" />
     <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp" />
+    <ClInclude Include="src\fixes\mgs2_solidus_pipe.hpp" />
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp" />
     <ClInclude Include="src\resources\game_strings.hpp" />
     <ClInclude Include="src\fixes\caption_replacements.hpp" />
@@ -197,6 +206,7 @@
     <ClInclude Include="src\resources\game_funcs.hpp" />
     <ClInclude Include="src\resources\mgs2_script_patches.hpp" />
     <ClInclude Include="src\features\mgs2_snake_tales_radar.hpp" />
+    <ClInclude Include="src\features\mgs2_ng_cutscene_skips.hpp" />
     <ClInclude Include="src\features\expand_bp_assets.hpp" />
     <ClInclude Include="src\features\mgs2_restore_sol_radar.hpp" />
     <ClInclude Include="src\features\mgs2_restore_elevator_glitch.hpp" />
@@ -209,7 +219,11 @@
     <ClInclude Include="src\fixes\playtime_fixes.hpp" />
     <ClInclude Include="src\fixes\mgs2_ai_ray_vision.hpp" />
     <ClInclude Include="src\fixes\mgs2_title_lightning.hpp" />
+    <ClInclude Include="src\fixes\mgs2_city_glow.hpp" />
     <ClInclude Include="src\fixes\mgs2_light_stain.hpp" />
+    <ClInclude Include="src\fixes\mgs2_override_probe_cache.hpp" />
+    <ClInclude Include="src\features\mgs2_fast_doors.hpp" />
+    <ClInclude Include="src\features\mgs2_area_prefetch.hpp" />
     <ClInclude Include="src\fixes\mgs2_credits_smoke.hpp" />
     <ClInclude Include="src\fixes\mgs2_contrast_fix.hpp" />
     <ClInclude Include="src\fixes\mgs2_shimmer.hpp" />
