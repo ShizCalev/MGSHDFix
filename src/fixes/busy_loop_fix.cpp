@@ -21,7 +21,7 @@ static bool g_waited = false;
 
 // Left for the game's own loop to spin out, so a slightly late wake can't push us
 // past the frame deadline.
-static constexpr double kSpinMarginMs = 1.0;
+static constexpr double kSpinMarginMs = 3.0;
 
 // A bad clock read must not park the game.
 static constexpr double kMaxWaitMs = 50.0;

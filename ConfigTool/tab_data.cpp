@@ -27,6 +27,12 @@
 #include "tab_data.hpp"
 #include <d3d11.h>
 
+#if defined(MGS3_FPS_DEV)
+constexpr int kFirstPersonViewGameFlags = MGS2 | MGS3;
+#else
+constexpr int kFirstPersonViewGameFlags = MGS2;
+#endif
+
 #include "config_keys.hpp"
 
 const std::vector<std::pair<wxString, std::vector<Field>>> kTabs = {
@@ -188,7 +194,7 @@ std::nullopt, false, Field::Bool, false},
           std::nullopt, false, Field::Bool, true },
 
         { (MGS2), ConfigKeys::MGS2_SoftParticles_Section, ConfigKeys::MGS2_SoftParticles_Setting, ConfigKeys::MGS2_SoftParticles_Help, ConfigKeys::MGS2_SoftParticles_Tooltip,
-          std::nullopt, false, Field::Bool, true },
+          std::nullopt, false, Field::Bool, false },
 
         { (MGS2), ConfigKeys::MGS2_HeavyBandana_Section, ConfigKeys::MGS2_HeavyBandana_Setting, ConfigKeys::MGS2_HeavyBandana_Help, ConfigKeys::MGS2_HeavyBandana_Tooltip,
           std::nullopt, false, Field::Bool, false },
@@ -317,23 +323,37 @@ std::nullopt, false, Field::Int, 100, 1, 100},
     { wxString("Restoration"), {
 
 
-        { (MGS2), ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting, ConfigKeys::MGS2_Restore_VFX_Help, ConfigKeys::MGS2_Restore_VFX_Tooltip,
+        { (MGS2|MGS3), ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting, ConfigKeys::Restore_VFX_Help, ConfigKeys::Restore_VFX_Tooltip,
           std::nullopt, false, Field::Bool, true },
 
         {(MGS2), ConfigKeys::MotionBlur_Section, ConfigKeys::MotionBlur_Setting, ConfigKeys::MotionBlur_Help, ConfigKeys::MotionBlur_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MotionBlur_Option_Full, {ConfigKeys::MotionBlur_Option_Full, ConfigKeys::MotionBlur_Option_CutscenesOnly, ConfigKeys::MotionBlur_Option_Disabled} },
 
         { (MGS2|MGS3), ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, ConfigKeys::FixDepthOfField_Help, ConfigKeys::FixDepthOfField_Tooltip,
-          std::nullopt, false, Field::Bool, true },
+          std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::FixDepthOfField_Option_Quality,
+          {ConfigKeys::FixDepthOfField_Option_Quality, ConfigKeys::FixDepthOfField_Option_Performance, ConfigKeys::FixDepthOfField_Option_Disabled},
+          0.0, std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(), {},
+          {{"true", ConfigKeys::FixDepthOfField_Option_Quality}, {"false", ConfigKeys::FixDepthOfField_Option_Disabled}} },
 
-        { (MGS2|MGS3), ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, ConfigKeys::DepthOfFieldBlurUvMultiplier_Help, ConfigKeys::DepthOfFieldBlurUvMultiplier_Tooltip,
-          std::make_pair(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting), false, Field::Float, 0, 0, 0, "", {}, 10.0, 0.0, 30.0 },
 
         { (MGS3), ConfigKeys::MGS3_Restore_Film_Grain_Section, ConfigKeys::MGS3_Restore_Film_Grain_Setting, ConfigKeys::MGS3_Restore_Film_Grain_Help, ConfigKeys::MGS3_Restore_Film_Grain_Tooltip,
           std::nullopt, false, Field::Bool, true },
 
+        { (MGS2|MGS3), ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, ConfigKeys::DepthOfFieldBlurUvMultiplier_Help, ConfigKeys::DepthOfFieldBlurUvMultiplier_Tooltip,
+          std::make_pair(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting), false, Field::Float, 0, 0, 0, "", {}, 10.0, 0.0, 30.0,
+          {ConfigKeys::FixDepthOfField_Option_Quality, ConfigKeys::FixDepthOfField_Option_Performance} },
+
+        { (MGS3), ConfigKeys::MGS3_GlowOverbright_Section, ConfigKeys::MGS3_GlowOverbright_Setting, ConfigKeys::MGS3_GlowOverbright_Help, ConfigKeys::MGS3_GlowOverbright_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
+        { (MGS3), ConfigKeys::MGS3_MapRelight_Section, ConfigKeys::MGS3_MapRelight_Setting, ConfigKeys::MGS3_MapRelight_Help, ConfigKeys::MGS3_MapRelight_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
 
         { (MGS2|MGS3), ConfigKeys::Restore_Reverb_Level_Section, "", "", "",
+        std::nullopt, false, Field::Spacer },
+
+        { (MGS3), ConfigKeys::Restore_Reverb_Level_Section, "", "", "",
         std::nullopt, false, Field::Spacer },
 
         { (MGS2|MGS3), ConfigKeys::Restore_Reverb_Level_Section, ConfigKeys::Restore_Reverb_Level_Setting, ConfigKeys::Restore_Reverb_Level_Help, ConfigKeys::Restore_Reverb_Level_Tooltip,
@@ -409,17 +429,17 @@ std::nullopt, false, Field::Int, 100, 1, 100},
           std::make_pair(ConfigKeys::MGS2_First_Person_View_Hold_Button_Section, ConfigKeys::MGS2_First_Person_View_Hold_Button_Setting), false, Field::Hotkey, 0, 0, 0, "Up" },
         
 
-        { (MGS2), ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting, ConfigKeys::MGS2_First_Person_View_Enabled_Help, ConfigKeys::MGS2_First_Person_View_Enabled_Tooltip,
+        { (kFirstPersonViewGameFlags), ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting, ConfigKeys::MGS2_First_Person_View_Enabled_Help, ConfigKeys::MGS2_First_Person_View_Enabled_Tooltip,
           std::nullopt, false, Field::Bool, false },
 
         { (MGS2), ConfigKeys::MGS2_First_Person_View_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_ToggleKey_Setting, ConfigKeys::MGS2_First_Person_View_ToggleKey_Help, ConfigKeys::MGS2_First_Person_View_ToggleKey_Tooltip,
           std::make_pair(ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting), false, Field::Hotkey, 0, 0, 0, "Right" },
 
 
-        { (MGS2), ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Section, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Setting, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Help, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Tooltip,
+        { (kFirstPersonViewGameFlags), ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Section, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Setting, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Help, ConfigKeys::MGS2_First_Person_View_Movement_Enabled_By_Default_Tooltip,
           std::make_pair(ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting), false, Field::Bool, true },
 
-        { (MGS2), ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Setting, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Help, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Tooltip,
+        { (kFirstPersonViewGameFlags), ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Section, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Setting, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Help, ConfigKeys::MGS2_First_Person_View_Movement_ToggleKey_Tooltip,
           std::make_pair(ConfigKeys::MGS2_First_Person_View_Enabled_Section, ConfigKeys::MGS2_First_Person_View_Enabled_Setting), false, Field::Hotkey, 0, 0, 0, "Down" },
         
 
@@ -486,10 +506,10 @@ std::nullopt, false, Field::Int, 100, 1, 100},
           std::nullopt, false, Field::Bool, true},
 
         { (MGS2|MGS3), ConfigKeys::ToggleRainShader_Section, ConfigKeys::ToggleRainShader_Setting, ConfigKeys::ToggleRainShader_Help, ConfigKeys::ToggleRainShader_Tooltip,
-          std::make_pair(ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting), false, Field::Hotkey, 0, 0, 0, "Insert" },
+          std::make_pair(ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting), false, Field::Hotkey, 0, 0, 0, "Insert" },
 
         { (MGS2|MGS3), ConfigKeys::CycleWireframeMode_Section, ConfigKeys::CycleWireframeMode_Setting, ConfigKeys::CycleWireframeMode_Help, ConfigKeys::CycleWireframeMode_Tooltip,
-          std::make_pair(ConfigKeys::MGS2_Restore_VFX_Section, ConfigKeys::MGS2_Restore_VFX_Setting), false, Field::Hotkey, 0, 0, 0, "End"},
+          std::make_pair(ConfigKeys::Restore_VFX_Section, ConfigKeys::Restore_VFX_Setting), false, Field::Hotkey, 0, 0, 0, "End"},
 
         { (MGS2|MGS3), ConfigKeys::DevMenuHotkey_Section, ConfigKeys::DevMenuHotkey_Setting, ConfigKeys::DevMenuHotkey_Help, ConfigKeys::DevMenuHotkey_Tooltip,
           std::make_pair(ConfigKeys::Debugging_Start_In_Dev_Menu_Section, ConfigKeys::Debugging_Start_In_Dev_Menu_Setting), false, Field::Hotkey, 0, 0, 0, "F8" },

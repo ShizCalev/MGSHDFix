@@ -9,4 +9,7 @@ public:
     static bool CompileShaders();
     static inline bool bInitialized   = false;
     static inline bool bEnabled = false;
+    // Fold the colour correction curve into the final pass (MGS3: both run at Present anyway).
+    static inline bool bApplyGammaCurve = false;
+    static inline bool bDrewThisFrame = false;
 };

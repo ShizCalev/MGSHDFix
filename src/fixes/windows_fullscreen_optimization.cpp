@@ -23,7 +23,7 @@ void FixFullscreenOptimization::Fix()
     spdlog::info("[Registry Compat Fix] {} fullscreen optimization registry fix for {}", shouldApply ? "Applying" : "Reverting", (sExePath / sExeName).string());
     HKEY hKey;
     const char* subKey = R"(Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers)";
-    LONG result = RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ | KEY_WRITE, &hKey);
+    LONG result = RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, nullptr, 0, KEY_READ | KEY_WRITE, nullptr, &hKey, nullptr);
     if (result != ERROR_SUCCESS)
     {
         spdlog::error("[Registry Compat Fix] Failed to open registry key: {}", subKey);

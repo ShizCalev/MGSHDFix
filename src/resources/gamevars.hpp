@@ -59,6 +59,7 @@ enum class MGS2GameMode
     Tanker,
     Plant,
     Alternate,
+    SnakeTales,
 
     VRSneaking,
     VRVariety,
@@ -171,6 +172,9 @@ public:
 
     [[nodiscard]] const FVECTOR* GM_CameraTarget() const { return p_GM_CameraTarget; }
     [[nodiscard]] const FVECTOR* ArmCamShift() const { return p_ArmCamShift; }
+#if defined(MGS3_FPS_DEV)
+    [[nodiscard]] int32_t* gBP_1stPersonCamera_EnableMovement() const { return p_gBP_1stPersonCamera_EnableMovement; }
+#endif
 
 
 private:
@@ -206,6 +210,9 @@ private:
     int* p_HZX_CurrentGroupID = nullptr;
     FVECTOR* p_GM_CameraTarget = nullptr;
     FVECTOR* p_ArmCamShift = nullptr;
+#if defined(MGS3_FPS_DEV)
+    int32_t* p_gBP_1stPersonCamera_EnableMovement = nullptr;
+#endif
 
 };
 

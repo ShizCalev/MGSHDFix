@@ -268,7 +268,7 @@ void MGS2_ThirdPersonFreecam::HandleLevelTransition()
         return;
     }
 
-    isMainGameOrAlternate = ((g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Plant) || (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Tanker) || (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Alternate));
+    isMainGameOrAlternate = ((g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Plant) || (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Tanker) || (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::Alternate) || (g_GameVars.MGS2_GetGameMode() == MGS2GameMode::SnakeTales));
 
     isW45a = (g_GameVars.IsStage(MGS2Stages::W45A) || g_GameVars.IsStage(MGS2Stages::A45A));
 

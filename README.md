@@ -66,7 +66,7 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 - Option to enable Bluepoint's cancelled Subsistence style Third Person view camera.
 - Option to enable Bluepoint's cancelled First Person Shooter camera.
 - Option to restore 2001 Japanese Sons of Liberty phone ringtone.
-- Option to restore PlayStation 2 Solidus choking durations & health reduction (rebalanced in the HDC.)
+- Option to restore PlayStation 2 Solidus choking durations, health loss / regain speed, and health reduction (rebalanced in the HDC.)
 - Option to force Snake / Raiden to wear their sunglasses (and outright disable their sunglasses.)
 - Option to force Real Time Clock based hostage Easter Egg.
 - Option to restore grenade cooking (having detonation timer start while the grenade is still held.)
@@ -183,7 +183,11 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 - Fixes codec's CRT vertical scanline effect running at the wrong speed.
 - Softens shadow edges to match their appearance on the PS2.
 - Fixed incorrect scanline effect scaling & color during several cutscenes.
+- Restored the codec's coming-into-focus depth of field effects at the start & end of codec calls. [2011 HDC]
+- Restored the screen after-image / blur effect after firing the stinger. [2011 HDC]
+- Fixed dogtag / items that are dropped from guards having a wider than intended arc - which would sometimes cause the dogtags/item to fall off ledges. [2023 MC]
 
+	
 #### MGS3 Specific Bug Fixes:
 - Restores the PlayStation 2's original cutscene camera/viewport height, fixing the 2011 HD Collection bug that cropped roughly the bottom 10% of the image in all cutscenes. (Notably, this issue was officially fixed in both the 3DS remake and Delta.)
 - Fixes water reflections (MGS3). See [PR #71](https://github.com/ShizCalev/MGSHDFix/pull/71) for a breakdown of the issue.

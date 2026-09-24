@@ -16,6 +16,7 @@ namespace
     std::mutex gLock;
     std::unordered_set<void*> gMasks;
     std::atomic<bool> gArmed{ false };
+    std::atomic<bool> gStageHasFogMask{ false };
 
     // Prim.fx reads TEXCOORD0 as u_v_dx_dy; dx/dy nudge the vertex in view space.
     struct FogVertex
@@ -173,8 +174,10 @@ namespace
         }
         if (SUCCEEDED(dev->CreateShaderResourceView(tex.Get(), nullptr, gThinnedSRV.ReleaseAndGetAddressOf())))
         {
-            spdlog::info("MGS2TankerFog: sea fog mask thinned, {}x{}, {} mips.",
-                desc.Width, desc.Height, desc.MipLevels);
+            if (g_Logging.bVerboseLogging)
+            {
+                spdlog::info("MGS2TankerFog: sea fog mask thinned, {}x{}, {} mips.", desc.Width, desc.Height, desc.MipLevels);
+            }
         }
     }
 
@@ -183,7 +186,7 @@ namespace
     {
         // Every mip has to be thinned too, or the curtain changes as it minifies.
         static ID3D11Resource* collecting = nullptr;
-        if (dst && data && !box)
+        if (gStageHasFogMask.load(std::memory_order_relaxed) && dst && data && !box)
         {
             ComPtr<ID3D11Texture2D> tex;
             if (SUCCEEDED(dst->QueryInterface(IID_PPV_ARGS(tex.GetAddressOf()))) && tex)
@@ -415,8 +418,8 @@ namespace
         UINT startIndex, INT baseVertex)
     {
         ComPtr<ID3D11ShaderResourceView> theirs;
-        if (!gArmed.load(std::memory_order_relaxed) || indexCount != 6 || !gThinnedSRV
-            || !BoundToFogMask(ctx, theirs))
+        if (!gStageHasFogMask.load(std::memory_order_relaxed) || !gArmed.load(std::memory_order_relaxed)
+            || indexCount != 6 || !gThinnedSRV || !BoundToFogMask(ctx, theirs))
         {
             gDrawIndexedHook.stdcall<void>(ctx, indexCount, startIndex, baseVertex);
             return;
@@ -491,8 +494,28 @@ namespace
     }
 }
 
+void MGS2TankerFog::HandleLevelTransition()
+{
+    if (!(eGameType & MGS2) || !bEnabled)
+    {
+        return;
+    }
+
+    // tanker exterior / lower deck
+    gStageHasFogMask.store(g_GameVars.IsAnyStage({
+        MGS2Stages::W00A,
+        MGS2Stages::A00A,
+        MGS2Stages::D00T, MGS2Stages::D01T
+    }), std::memory_order_relaxed);
+}
+
 void MGS2TankerFog::OnPresent()
 {
+    if (!gStageHasFogMask.load(std::memory_order_relaxed))
+    {
+        return;
+    }
+
     gBandsDrawn.store(false, std::memory_order_relaxed);
     gCurtain = 0;
 
