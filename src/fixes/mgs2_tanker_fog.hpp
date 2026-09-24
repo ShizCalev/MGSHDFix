@@ -5,4 +5,6 @@ namespace MGS2TankerFog
     inline bool bEnabled = true;
     void OnDeviceReady();
     void OnPresent();
+
+    void HandleLevelTransition();
 }
