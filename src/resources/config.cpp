@@ -76,6 +76,7 @@
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -91,6 +92,8 @@
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
 #include "mgs2_city_glow.hpp"
+#include "mgs2_light_stain.hpp"
+#include "mgs2_credits_smoke.hpp"
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
@@ -770,6 +773,8 @@ void Config::Read()
                 &MGS2_AiRayVision::bEnabled,
                 &MGS2_TitleLightning::bEnabled,
                 &MGS2_CityGlow::bEnabled,
+                &MGS2_LightStain::bEnabled,
+                &MGS2_CreditsSmoke::bEnabled,
                 &MGS2_Crossfade::bEnabled,
                 &MGS2ConcentrateBlur::bEnabled,
                 &MGS2RailgunBeam::bEnabled,
@@ -781,6 +786,7 @@ void Config::Read()
                 &MGS2CodecBand::bEnabled,
                 &MGS2FixedAlpha::bEnabled,
                 &MGS2TankerFog::bEnabled,
+                &MGS2_DemoLazyMarine::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)

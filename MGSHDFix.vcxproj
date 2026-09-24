@@ -16,6 +16,7 @@
     <ClCompile Include="src\fixes\color_correction.cpp" />
     <ClCompile Include="src\features\mgs2_vamp_punch_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_glass_dmapack_overflow.cpp" />
+    <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp" />
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_newscrconcentrateblur.cpp" />
     <ClCompile Include="src\fixes\mgs2_enhanced_demos.cpp" />
@@ -37,6 +38,8 @@
     <ClCompile Include="src\fixes\mgs2_ai_ray_vision.cpp" />
     <ClCompile Include="src\fixes\mgs2_title_lightning.cpp" />
     <ClCompile Include="src\fixes\mgs2_city_glow.cpp" />
+    <ClCompile Include="src\fixes\mgs2_light_stain.cpp" />
+    <ClCompile Include="src\fixes\mgs2_credits_smoke.cpp" />
     <ClCompile Include="src\fixes\mgs2_contrast_fix.cpp" />
     <ClCompile Include="src\fixes\mgs2_shimmer.cpp" />
     <ClCompile Include="src\fixes\mgs2_crossfade.cpp" />
@@ -174,6 +177,7 @@
     <ClInclude Include="src\fixes\screenspace_fixes.hpp" />
     <ClInclude Include="src\fixes\mgs2_tanker_snake_snap.hpp" />
     <ClInclude Include="src\fixes\mgs2_glass_dmapack_overflow.hpp" />
+    <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp" />
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp" />
     <ClInclude Include="src\resources\game_strings.hpp" />
     <ClInclude Include="src\fixes\caption_replacements.hpp" />
@@ -206,6 +210,8 @@
     <ClInclude Include="src\fixes\mgs2_ai_ray_vision.hpp" />
     <ClInclude Include="src\fixes\mgs2_title_lightning.hpp" />
     <ClInclude Include="src\fixes\mgs2_city_glow.hpp" />
+    <ClInclude Include="src\fixes\mgs2_light_stain.hpp" />
+    <ClInclude Include="src\fixes\mgs2_credits_smoke.hpp" />
     <ClInclude Include="src\fixes\mgs2_contrast_fix.hpp" />
     <ClInclude Include="src\fixes\mgs2_shimmer.hpp" />
     <ClInclude Include="src\fixes\mgs2_shimmer_noise_map.hpp" />
