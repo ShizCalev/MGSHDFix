@@ -76,6 +76,7 @@
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_radar_fixes.hpp"
 #include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
@@ -510,6 +511,12 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
     LOG_CONFIG(ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Section, ConfigKeys::MGS2_LaserOriginFix_FixM9FPV_Setting, ResolutionScalingFixes::bFixM92FPV);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_RadarOffAlert_Section, ConfigKeys::MGS2_RadarOffAlert_Setting, MGS2_RadarFixes::bShowAlertWithRadarOff);
+    LOG_CONFIG(ConfigKeys::MGS2_RadarOffAlert_Section, ConfigKeys::MGS2_RadarOffAlert_Setting, MGS2_RadarFixes::bShowAlertWithRadarOff);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MGS2_KeepSavedRadarType_Section, ConfigKeys::MGS2_KeepSavedRadarType_Setting, MGS2_RadarFixes::bKeepSavedRadarType);
+    LOG_CONFIG(ConfigKeys::MGS2_KeepSavedRadarType_Section, ConfigKeys::MGS2_KeepSavedRadarType_Setting, MGS2_RadarFixes::bKeepSavedRadarType);
 
     ConfigHelper::getValue(ini, ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, MGS2ItemTossFix::bEnabled);
     LOG_CONFIG(ConfigKeys::MGS2_ItemTossFix_Section, ConfigKeys::MGS2_ItemTossFix_Setting, MGS2ItemTossFix::bEnabled);

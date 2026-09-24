@@ -64,6 +64,7 @@
 #include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_solidus_pipe.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_radar_fixes.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
 #include "line_scaling.hpp"
@@ -617,6 +618,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_DemoLazyMarine::Initialize());
         INITIALIZE(MGS2_SolidusPipe::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
+        INITIALIZE(MGS2_RadarFixes::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
         INITIALIZE(MGS2BladeAnywhere::Initialize());
         INITIALIZE(MGS2_RestoreDogtags::Initialize());
