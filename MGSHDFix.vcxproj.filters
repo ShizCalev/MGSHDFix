@@ -368,6 +368,8 @@
     <ClCompile Include="src\fixes\mgs2_title_lightning.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_city_glow.cpp">
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_light_stain.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -876,6 +878,7 @@
     <ClInclude Include="src\fixes\mgs2_title_lightning.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_city_glow.hpp">
     <ClInclude Include="src\fixes\mgs2_light_stain.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>

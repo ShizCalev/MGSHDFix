@@ -93,6 +93,7 @@
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
+#include "mgs2_city_glow.hpp"
 #include "mgs2_light_stain.hpp"
 #include "mgs2_fast_doors.hpp"
 #include "mgs2_area_prefetch.hpp"
@@ -776,6 +777,7 @@ void Config::Read()
                 &MGS2_ContrastShader::bEnabled,
                 &MGS2_AiRayVision::bEnabled,
                 &MGS2_TitleLightning::bEnabled,
+                &MGS2_CityGlow::bEnabled,
                 &MGS2_LightStain::bEnabled,
                 &MGS2_CreditsSmoke::bEnabled,
                 &MGS2_Crossfade::bEnabled,

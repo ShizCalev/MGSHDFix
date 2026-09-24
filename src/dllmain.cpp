@@ -117,6 +117,7 @@
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
+#include "mgs2_city_glow.hpp"
 #include "mgs2_light_stain.hpp"
 #include "mgs2_override_probe_cache.hpp"
 #include "mgs2_fast_doors.hpp"
@@ -684,6 +685,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_ContrastShader::Setup());
         INITIALIZE(MGS2_AiRayVision::Setup());
         INITIALIZE(MGS2_TitleLightning::Setup());
+        INITIALIZE(MGS2_CityGlow::Setup());
         INITIALIZE(MGS2_LightStain::Setup());
         INITIALIZE(MGS2_OverrideProbeCache::Setup());
         INITIALIZE(MGS2_FastDoors::Setup());

@@ -39,6 +39,7 @@
     <ClCompile Include="src\fixes\playtime_fixes.cpp" />
     <ClCompile Include="src\fixes\mgs2_ai_ray_vision.cpp" />
     <ClCompile Include="src\fixes\mgs2_title_lightning.cpp" />
+    <ClCompile Include="src\fixes\mgs2_city_glow.cpp" />
     <ClCompile Include="src\fixes\mgs2_light_stain.cpp" />
     <ClCompile Include="src\fixes\mgs2_override_probe_cache.cpp" />
     <ClCompile Include="src\features\mgs2_fast_doors.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="src\fixes\playtime_fixes.hpp" />
     <ClInclude Include="src\fixes\mgs2_ai_ray_vision.hpp" />
     <ClInclude Include="src\fixes\mgs2_title_lightning.hpp" />
+    <ClInclude Include="src\fixes\mgs2_city_glow.hpp" />
     <ClInclude Include="src\fixes\mgs2_light_stain.hpp" />
     <ClInclude Include="src\fixes\mgs2_override_probe_cache.hpp" />
     <ClInclude Include="src\features\mgs2_fast_doors.hpp" />
