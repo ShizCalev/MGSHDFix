@@ -443,6 +443,11 @@ namespace
     }
 }
 
+bool MGS2BloodStains::InOverlay()
+{
+    return g_inMyDraw;
+}
+
 void MGS2BloodStains::Init()
 {
     if (!(eGameType & MGS2) || !bEnabled)
