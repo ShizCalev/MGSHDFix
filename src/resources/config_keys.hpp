@@ -863,7 +863,7 @@ namespace ConfigKeys
     constexpr const char* MGS2_SkipEnding_Help = "";
     constexpr const char* MGS2_SkipEnding_Tooltip = "Makes the proposal scene and the staff roll skippable.\n"
         "\n"
-        "A skipped part still counts in full on the game clock, so the recorded play time is unchanged.\n"
+        "The time saved by the skip will be automatically added to IGT, so final play-time will not differ from if you watched the full thing.\n"
         "\n"
         "Check that your category allows it.";
 
