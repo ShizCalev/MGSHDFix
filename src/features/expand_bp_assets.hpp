@@ -12,6 +12,9 @@ namespace BP_FileSys
 {
     std::filesystem::path GetActiveAssetPath(const std::string& relativePath);
 
+    // Ultimate ASI Loader's overload folder: its files stand in for the game's at the same relative path. Empty without one.
+    const std::filesystem::path& LoaderOverloadRoot();
+
     // CTXR header, https://github.com/316austin316/CTXR-Converter/blob/main/ctxr_utils.py
     struct CTXRHeader
     {

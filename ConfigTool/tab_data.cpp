@@ -253,6 +253,9 @@ std::nullopt, false, Field::Bool, false},
           std::nullopt, false, Field::Bool, false },
 
 
+        { (MGS2), ConfigKeys::MGS2_OverrideLookupCache_Section, ConfigKeys::MGS2_OverrideLookupCache_Setting, ConfigKeys::MGS2_OverrideLookupCache_Help, ConfigKeys::MGS2_OverrideLookupCache_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
         { (MGS2), ConfigKeys::MGS2Sunglasses_Section, ConfigKeys::MGS2Sunglasses_Setting, ConfigKeys::MGS2Sunglasses_Help, ConfigKeys::MGS2Sunglasses_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MGS2Sunglasses_Option_Normal, {ConfigKeys::MGS2Sunglasses_Option_Normal,ConfigKeys::MGS2Sunglasses_Option_Always, ConfigKeys::MGS2Sunglasses_Option_Never } },
 
@@ -303,6 +306,8 @@ std::nullopt, false, Field::Int, 100, 1, 100},
         { (MGS2 | MGS3), ConfigKeys::Caption_Background_Opacity_Section, ConfigKeys::Caption_Background_Opacity_Setting, ConfigKeys::Caption_Background_Opacity_Help, ConfigKeys::Caption_Background_Opacity_Tooltip,
           std::nullopt, false, Field::Int, 100, 0, 100 },
 
+    }},
+    { wxString("Speedrunner"), {
         { (MGS2 | MGS3), ConfigKeys::ShowSpeedrunnerOverlay_Section, ConfigKeys::ShowSpeedrunnerOverlay_Setting, ConfigKeys::ShowSpeedrunnerOverlay_Help, ConfigKeys::ShowSpeedrunnerOverlay_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::ShowSpeedrunnerOverlay_Option_Disabled, {ConfigKeys::ShowSpeedrunnerOverlay_Option_Disabled, ConfigKeys::ShowSpeedrunnerOverlay_Option_TopLeft, ConfigKeys::ShowSpeedrunnerOverlay_Option_TopRight, ConfigKeys::ShowSpeedrunnerOverlay_Option_BottomLeft, ConfigKeys::ShowSpeedrunnerOverlay_Option_BottomRight} },
 
@@ -314,10 +319,24 @@ std::nullopt, false, Field::Int, 100, 1, 100},
 
         { (MGS2), ConfigKeys::MGS2_RestoreElevatorGlitch_Section, ConfigKeys::MGS2_RestoreElevatorGlitch_Setting, ConfigKeys::MGS2_RestoreElevatorGlitch_Help, ConfigKeys::MGS2_RestoreElevatorGlitch_Tooltip,
           std::nullopt, false, Field::Bool, false },
+        { (MGS2), ConfigKeys::MGS2_LoadOptimizations_Section, ConfigKeys::MGS2_LoadOptimizations_Setting, ConfigKeys::MGS2_LoadOptimizations_Help, ConfigKeys::MGS2_LoadOptimizations_Tooltip,
+          std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MGS2_LoadOptimizations_Option_Off, {ConfigKeys::MGS2_LoadOptimizations_Option_Off, ConfigKeys::MGS2_LoadOptimizations_Option_Preload, ConfigKeys::MGS2_LoadOptimizations_Option_Full} },
 
 
-                    { (MGS2), ConfigKeys::MGS2_Hostage_Type_Section, ConfigKeys::MGS2_Hostage_Type_Setting, ConfigKeys::MGS2_Hostage_Type_Help, ConfigKeys::MGS2_Hostage_Type_Tooltip,
+        { (MGS2), ConfigKeys::MGS2_Hostage_Type_Section, ConfigKeys::MGS2_Hostage_Type_Setting, ConfigKeys::MGS2_Hostage_Type_Help, ConfigKeys::MGS2_Hostage_Type_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::MGS2_Hostage_Type_Option_Normal, {ConfigKeys::MGS2_Hostage_Type_Option_Normal, ConfigKeys::MGS2_Hostage_Type_Option_OnePM, ConfigKeys::MGS2_Hostage_Type_Option_TenPM, ConfigKeys::MGS2_Hostage_Type_Option_Midnight,} },
+
+        { (MGS2), ConfigKeys::MGS2_SkipStillman_Section, ConfigKeys::MGS2_SkipStillman_Setting, ConfigKeys::MGS2_SkipStillman_Help, ConfigKeys::MGS2_SkipStillman_Tooltip,
+          std::nullopt, false, Field::Bool, false },
+
+        { (MGS2), ConfigKeys::MGS2_SkipOlgaTaunt_Section, ConfigKeys::MGS2_SkipOlgaTaunt_Setting, ConfigKeys::MGS2_SkipOlgaTaunt_Help, ConfigKeys::MGS2_SkipOlgaTaunt_Tooltip,
+          std::nullopt, false, Field::Bool, false },
+
+        { (MGS2), ConfigKeys::MGS2_SkipSwordTraining_Section, ConfigKeys::MGS2_SkipSwordTraining_Setting, ConfigKeys::MGS2_SkipSwordTraining_Help, ConfigKeys::MGS2_SkipSwordTraining_Tooltip,
+          std::nullopt, false, Field::Bool, false },
+
+        { (MGS2), ConfigKeys::MGS2_SkipEnding_Section, ConfigKeys::MGS2_SkipEnding_Setting, ConfigKeys::MGS2_SkipEnding_Help, ConfigKeys::MGS2_SkipEnding_Tooltip,
+          std::nullopt, false, Field::Bool, false },
 
     }},
     { wxString("Restoration"), {

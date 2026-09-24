@@ -12,6 +12,8 @@
 #include "mgs2_rotor_procession.hpp"
 #include "mgs2_tanker_fog.hpp"
 #include "mgs2_title_lightning.hpp"
+#include "mgs2_override_probe_cache.hpp"
+#include "mgs2_area_prefetch.hpp"
 #include "mgs2_sunglasses.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
 #include "mgs3_linkvarbuf.hpp"
@@ -28,6 +30,14 @@ void GameVars::Initialize()
         scriptedSequenceFlag = reinterpret_cast<int*>(Memory::GetRelativeOffset(Memory::PatternScan(baseModule, "44 39 35 ?? ?? ?? ?? 89 15", "MGS 2: GameVars: scriptedSequenceFlag") + 3));
         actorWaitValue = reinterpret_cast<double*>(Memory::GetRelativeOffset(Memory::PatternScan(baseModule, "66 0F 2F 05 ?? ?? ?? ?? 73 ?? 33 C0", "MGS 2: GameVars: actorWaitValue") + 4));
         currentStage = reinterpret_cast<char const*>(Memory::GetRelativeOffset(Memory::PatternScan(baseModule, "4C 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05", "MGS 2: GameVars: currentStage") + 3));
+        if (uint8_t* region = Memory::PatternScan(baseModule, "4C 63 05 ?? ?? ?? ?? 48 8D 1D", "MGS 2: GameVars: region index"))
+        {
+            p_RegionIndex = reinterpret_cast<int*>(Memory::GetRelativeOffset(region + 3));
+        }
+        if (uint8_t* dirs = Memory::PatternScan(baseModule, "48 8D 1D ?? ?? ?? ?? 4C 8B CF", "MGS 2: GameVars: region dirs"))
+        {
+            p_RegionDirs = reinterpret_cast<const char* const*>(Memory::GetRelativeOffset(dirs + 3));
+        }
 
         GM_WaterLevel = reinterpret_cast<float*>(Memory::GetRelativeOffset(Memory::PatternScan(baseModule, "F3 0F 5C 05 ?? ?? ?? ?? F3 41 0F 5C F3", "MGS 2: GameVars: GM_WaterLevel") + 4));
 
@@ -180,6 +190,15 @@ double GameVars::ActorWaitMultiplier() const
     return actorWaitValue == nullptr ? 1.0 : ((1.0/60) / *actorWaitValue);
 }
 
+const char* GameVars::MGS2_RegionDir() const
+{
+    if (!p_RegionIndex || !p_RegionDirs || *p_RegionIndex < 0 || *p_RegionIndex > 2)
+    {
+        return "eu";
+    }
+    return p_RegionDirs[*p_RegionIndex];
+}
+
 const char* GameVars::GetCurrentStage() const
 {
     return currentStage == nullptr ? "nullptr" : currentStage;
@@ -263,6 +282,8 @@ void GameVars::OnLevelTransition()
         MGS2RotorProcession::HandleLevelTransition();
         MGS2TankerFog::HandleLevelTransition();
         MGS2_TitleLightning::HandleLevelTransition();
+        MGS2_OverrideProbeCache::HandleLevelTransition();
+        MGS2_AreaPrefetch::HandleLevelTransition();
 
     }
     else if (eGameType & MGS3)

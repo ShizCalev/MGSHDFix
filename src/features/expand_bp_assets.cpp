@@ -396,6 +396,11 @@ namespace {
 
 }
 
+const std::filesystem::path& BP_FileSys::LoaderOverloadRoot()
+{
+    return OverloadRoot();
+}
+
 void BP_FileSys::AddUniversalStageLines(std::vector<std::string> manifestLines, std::vector<std::string> bpAssetsLines)
 {
 	for (auto& l : manifestLines) gUniversalManifest.push_back(std::move(l));
