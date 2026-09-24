@@ -4,8 +4,12 @@
 #include "common.hpp"
 #include "logging.hpp"
 #include "gamevars.hpp"
+#include "game_stages.hpp"
 #include "expand_bp_assets.hpp"
 #include "mgs2_linkvarbuf.hpp"
+#include "mgs2_status_flags.hpp"
+
+#include <algorithm>
 
 
 namespace
@@ -163,7 +167,7 @@ namespace
     }
 
     // Hand the pick back as bare hands; CheckChangeWeapon() finishes the swap by itself next tick.
-    void SurrenderBlade()
+    void SurrenderBlade(bool missing = true)
     {
         MGS2_LinkVarBuf::GM_Weapon = kWpNone;
         *g_pullOutFlag = 0;
@@ -174,13 +178,67 @@ namespace
         }
         short& state = MGS2_LinkVarBuf::GM_PlayerStateFlag.get();
         state = static_cast<short>(state & ~kBladeLatch);
-        spdlog::warn("MGS2: Blade Anywhere: No blade to hold on stage {} - unarmed instead.", g_stage);
+        if (missing)
+        {
+            spdlog::warn("MGS2: Blade Anywhere: No blade to hold on stage {} - unarmed instead.", g_stage);
+        }
+    }
+
+    // Naked Raiden's motion file has no sword-carry moves, so he uses his normal ones instead.
+    struct BladeSlot { int index; short stock; short naked; };
+    constexpr BladeSlot kBladeSlots[] = {
+        { 0, 203, 0 }, { 1, 203, 0 },       // stand
+        { 3, 204, 17 },                     // walk
+        { 4, 205, 18 }, { 5, 205, 18 },     // run
+        { 12, 224, 7 }, { 13, 225, 8 }, { 14, 226, 9 }, { 15, 227, 117 },   // crouch
+    };
+    short* g_bladeSet = nullptr;
+
+    // Is he using the naked motion file? w43a loads it by name, the other naked stages by resident.
+    bool OnNakedArchive(uintptr_t work)
+    {
+        using namespace MGS2_Characters;
+        constexpr int kRaiNaked = GameVars::GV_StrCode("rai_naked");
+        if (work != 0 && g_orgMotion != 0 && *reinterpret_cast<int*>(work + g_orgMotion) == kRaiNaked)
+        {
+            return true;
+        }
+        return IsCurrentlyCharacter(PlayerCharacter::NakedRaiden);
+    }
+
+    void FitBladeSet(uintptr_t work)
+    {
+        if (g_bladeSet == nullptr)
+        {
+            return;
+        }
+
+        const bool naked = OnNakedArchive(work);
+        for (const BladeSlot& slot : kBladeSlots)
+        {
+            const short want = naked ? slot.naked : slot.stock;
+            if (g_bladeSet[slot.index] != want)
+            {
+                Memory::Write(reinterpret_cast<uintptr_t>(&g_bladeSet[slot.index]), want);
+            }
+        }
+    }
+
+    // Naked in w43a: Snake is about to give him the sword, and arriving with one soft locks the scene.
+    bool BeforeSnakesGift(uintptr_t work)
+    {
+        return g_GameVars.IsStage(MGS2Stages::W43A) && OnNakedArchive(work);
     }
 
     // The model is only ever built here, and there is no second chance: event.c commits work->weapon
     // even with no constructor, and picking the same weapon again is a no-op. So register first.
     void __fastcall SetWeapon_hooked(uintptr_t work, int no_change)
     {
+        FitBladeSet(work);
+        if (MGS2_LinkVarBuf::GM_Weapon == kWpBlade && BeforeSnakesGift(work))
+        {
+            SurrenderBlade(false);
+        }
         if (MGS2_LinkVarBuf::GM_Weapon == kWpBlade && *g_bladeMngAlive == 0)
         {
             ArmBlade();
@@ -231,6 +289,20 @@ namespace
             return;
         }
 
+        // No sword until Snake hands it over.
+        if (BeforeSnakesGift(work))
+        {
+            if (MGS2_LinkVarBuf::GM_Weapon == kWpBlade)
+            {
+                SurrenderBlade(false);
+            }
+            for (int16_t* owned : weapons)
+            {
+                owned[kWpBlade] = -1;
+            }
+            return;
+        }
+
         // Kept topped up every tick: a room restores the loadout from the save, the blade is not in it,
         // and an unowned weapon is an unselectable one.
         for (size_t set = 0; set < std::size(weapons); set++)
@@ -278,6 +350,21 @@ void MGS2BladeAnywhere::Initialize()
     {
         spdlog::info("MGS2: Blade Anywhere: Globals not resolved, skipping.");
         return;
+    }
+
+    if (uint8_t* set = Memory::PatternScan(baseModule, "48 8D 15 ?? ?? ?? ?? 48 89 5C 24 ?? B9", "MGS2: Blade Anywhere: sonoyama\\plugin\\bladeply.c -> BladeSet[]"))
+    {
+        short* table = reinterpret_cast<short*>(Memory::GetRipRelativeAddress(set, 3, 7));
+        const bool stock = std::all_of(std::begin(kBladeSlots), std::end(kBladeSlots),
+            [table](const BladeSlot& slot) { return table[slot.index] == slot.stock; });
+        if (stock)
+        {
+            g_bladeSet = table;
+        }
+        else
+        {
+            spdlog::warn("MGS2: Blade Anywhere: Unknown blade motion table, naked Raiden fix skipped.");
+        }
     }
 
     g_setWeapon_hook = safetyhook::create_inline(reinterpret_cast<void*>(setWeapon),
