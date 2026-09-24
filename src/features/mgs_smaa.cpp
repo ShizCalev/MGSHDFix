@@ -21,7 +21,7 @@ static const char* kSMAAShader = R"(
 #define SMAA_INCLUDE_PS                       1
 #define SMAA_HLSL_4_1                         1
 
-cbuffer SMAACB : register(b0) { float4 SMAA_RT_METRICS; }
+cbuffer SMAACB : register(b0) { float4 SMAA_RT_METRICS; float4 SMAA_EXTRA; }   // EXTRA.x: apply the gamma curve here
 
 Texture2D colorTex  : register(t0);
 Texture2D edgesTex  : register(t1);
@@ -65,10 +65,34 @@ void NeighborhoodVS(uint id : SV_VertexID,
     svPos = float4(uv * float2(2, -2) + float2(-1, 1), 0, 1);
     SMAANeighborhoodBlendingVS(uv, off);
 }
+// Same curve as color_correction.cpp, applied here so it needs no pass of its own.
+float3 ApplyGammaCurve(float3 color)
+{
+    static const float3 coefLuma = float3(0.212656, 0.715158, 0.072186);
+    const float kVibrance = 0.15;
+    float luma = dot(coefLuma, color);
+    float max_color = max(color.r, max(color.g, color.b));
+    float min_color = min(color.r, min(color.g, color.b));
+    float color_saturation = max_color - min_color;
+    color = lerp(luma, color, 1.0 + (kVibrance * (1.0 - (sign(kVibrance) * color_saturation))));
+    const float kContrast = 0.225;
+    luma = dot(coefLuma, color);
+    float3 chroma = color - luma;
+    float s = luma;
+    s = s * s * s * (s * (s * 6.0 - 15.0) + 10.0);
+    luma = lerp(luma, s, kContrast);
+    return luma + chroma;
+}
+
 float4 NeighborhoodPS(float4 pos : SV_Position,
     float2 uv : TEXCOORD0, float4 off : TEXCOORD1) : SV_Target
 {
-    return SMAANeighborhoodBlendingPS(uv, off, colorTex, blendTex);
+    float4 color = SMAANeighborhoodBlendingPS(uv, off, colorTex, blendTex);
+    if (SMAA_EXTRA.x > 0.5)
+    {
+        color.rgb = ApplyGammaCurve(color.rgb);
+    }
+    return color;
 }
 
 )";
@@ -222,7 +246,7 @@ void SMAA_AA::Init()
 
     {
         D3D11_BUFFER_DESC cbd = {};
-        cbd.ByteWidth = 16;
+        cbd.ByteWidth = 32;
         cbd.Usage = D3D11_USAGE_DYNAMIC;
         cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -370,14 +394,15 @@ void SMAA_AA::Draw(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView*
     {
         D3D11_MAPPED_SUBRESOURCE m;
         ctx->Map(cbSMAA.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &m);
-        float data[4] =
+        float data[8] =
         {
             1.f / bbDesc.Width,
             1.f / bbDesc.Height,
             static_cast<float>(bbDesc.Width),
-            static_cast<float>(bbDesc.Height)
+            static_cast<float>(bbDesc.Height),
+            bApplyGammaCurve ? 1.f : 0.f, 0.f, 0.f, 0.f
         };
-        memcpy(m.pData, data, 16);
+        memcpy(m.pData, data, 32);
         ctx->Unmap(cbSMAA.Get(), 0);
     }
 
@@ -478,6 +503,7 @@ void SMAA_AA::Draw(ID3D11RenderTargetView* sceneColor, ID3D11ShaderResourceView*
     }
 
     // ---- Pass 3: neighborhood blending -> backbuffer ----
+    bDrewThisFrame = true;
     {
         ctx->OMSetRenderTargets(1, &sceneColor, nullptr);
         ctx->VSSetShader(vsNeighbor.Get(), nullptr, 0);

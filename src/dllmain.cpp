@@ -60,6 +60,7 @@
 #include "mgs2_flare_occlusion.hpp"
 #include "mgs2_tanker_snake_snap.hpp"
 #include "mgs2_glass_dmapack_overflow.hpp"
+#include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_item_toss_fix.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
@@ -114,6 +115,9 @@
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
+#include "mgs2_title_lightning.hpp"
+#include "mgs2_light_stain.hpp"
+#include "mgs2_credits_smoke.hpp"
 #include "mgs2_parrot_radar_fix.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
@@ -545,6 +549,7 @@ void afterPresent()
         MGS2_Crossfade::Initialize();
         g_MGS2UnderwaterFilterFix.InstallD3D11StateHooks();
         MGS2_AiRayVision::Init();
+        MGS2_TitleLightning::Init();
         MGS2DemoBlur::Init();
         MGS2GasHaze::Init();
         MGS2SoftShadows::Init();
@@ -602,6 +607,7 @@ static void InitializeSubsystems()
     if (eGameType & MGS2)
     {
         INITIALIZE(MGS2_GlassDmapackOverflow::Initialize());
+        INITIALIZE(MGS2_DemoLazyMarine::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
         INITIALIZE(MGS2BladeAnywhere::Initialize());
@@ -672,6 +678,9 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_CodecBackground::Setup());
         INITIALIZE(MGS2_ContrastShader::Setup());
         INITIALIZE(MGS2_AiRayVision::Setup());
+        INITIALIZE(MGS2_TitleLightning::Setup());
+        INITIALIZE(MGS2_LightStain::Setup());
+        INITIALIZE(MGS2_CreditsSmoke::Setup());
         INITIALIZE(MGS2FixedAlpha::Setup());
         INITIALIZE(MGS2ConcentrateBlur::Initialize());
         INITIALIZE(MGS2EnhancedDemos::Initialize());

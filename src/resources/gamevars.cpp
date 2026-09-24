@@ -11,6 +11,7 @@
 #include "mgs2_first_person_view_mode.hpp"
 #include "mgs2_rotor_procession.hpp"
 #include "mgs2_tanker_fog.hpp"
+#include "mgs2_title_lightning.hpp"
 #include "mgs2_sunglasses.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
 #include "mgs3_linkvarbuf.hpp"
@@ -261,6 +262,7 @@ void GameVars::OnLevelTransition()
         D3D11TextOverlay::HandleLevelTransition();
         MGS2RotorProcession::HandleLevelTransition();
         MGS2TankerFog::HandleLevelTransition();
+        MGS2_TitleLightning::HandleLevelTransition();
 
     }
     else if (eGameType & MGS3)

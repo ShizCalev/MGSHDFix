@@ -281,7 +281,12 @@ namespace ConfigKeys
     constexpr const char* FixDepthOfField_Help = "(Performance Heavy)";
     constexpr const char* FixDepthOfField_Tooltip = "Restores depth of field blur at higher resolutions.\n"
                                                     "\n"
-                                                    "Also restores close-up depth of field / camera blur, which was outright disabled/broken by the HD Collection.";
+                                                    "Also restores close-up depth of field / camera blur, which was outright disabled/broken by the HD Collection.\n"
+                                                    "\n"
+                                                    "Performance runs the blur at half the size Quality uses. Sharp areas look the same and it costs less.";
+    constexpr const char* FixDepthOfField_Option_Disabled = "Disabled";
+    constexpr const char* FixDepthOfField_Option_Performance = "Performance";
+    constexpr const char* FixDepthOfField_Option_Quality = "Quality";
 
 
     constexpr const char* MotionBlur_Section = "Bugfixes";

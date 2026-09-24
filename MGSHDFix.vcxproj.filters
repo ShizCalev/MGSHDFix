@@ -365,6 +365,14 @@
     <ClCompile Include="src\fixes\mgs2_ai_ray_vision.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_title_lightning.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_light_stain.cpp">
+      <Filter>Fixes</Filter>
+    <ClCompile Include="src\fixes\mgs2_credits_smoke.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_bandana_mass.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -381,6 +389,9 @@
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_glass_dmapack_overflow.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp">
@@ -832,6 +843,9 @@
     <ClInclude Include="src\fixes\mgs2_glass_dmapack_overflow.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
@@ -845,6 +859,14 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_ai_ray_vision.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_title_lightning.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_light_stain.hpp">
+      <Filter>Fixes\Headers</Filter>
+    <ClInclude Include="src\fixes\mgs2_credits_smoke.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_scanline_scale.hpp">

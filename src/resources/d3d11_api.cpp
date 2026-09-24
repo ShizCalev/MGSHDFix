@@ -453,7 +453,12 @@ namespace
                 ComPtr<ID3D11RenderTargetView> bbRTV;
                 g_D3D11Hooks.d3dDevice->CreateRenderTargetView(bb.Get(), nullptr, bbRTV.GetAddressOf());
                 if (bbRTV)
+                {
+                    // SMAA's last pass applies the gamma curve too, so the separate one is skipped.
+                    SMAA_AA::bApplyGammaCurve = ColorCorrection::bShaderLoaded;
+                    SMAA_AA::bDrewThisFrame = false;
                     SMAA_AA::Draw(bbRTV.Get(), nullptr);
+                }
             }
         }
         else if (eGameType & MG)
@@ -461,7 +466,11 @@ namespace
             MG1_DisplayScaling::Draw(pSwapChain);
         }
 
-ColorCorrection::Draw(pSwapChain);
+        if (!((eGameType & MGS3) && SMAA_AA::bDrewThisFrame && SMAA_AA::bApplyGammaCurve))
+        {
+            ColorCorrection::Draw(pSwapChain);
+        }
+        SMAA_AA::bDrewThisFrame = false;
         if (eGameType & MGS3)
         {
             MGS3FilmGrain::EndPresent();
@@ -474,7 +483,6 @@ ColorCorrection::Draw(pSwapChain);
         g_preMenuFired = false;
         g_D3D11Hooks.FrameCount++;
     }
-
 
     HRESULT __stdcall HookedResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
     {

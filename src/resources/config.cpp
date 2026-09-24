@@ -76,6 +76,7 @@
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
 #include "mgs2_bandana_mass.hpp"
@@ -89,6 +90,9 @@
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
+#include "mgs2_title_lightning.hpp"
+#include "mgs2_light_stain.hpp"
+#include "mgs2_credits_smoke.hpp"
 #include "mgs2_newscrconcentrateblur.hpp"
 #include "mgs2_restore_dogtag_viewer.hpp"
 #include "mgs2_vamp_punch_fix.hpp"
@@ -766,6 +770,9 @@ void Config::Read()
                 &MGS2GasHaze::bEnabled,
                 &MGS2_ContrastShader::bEnabled,
                 &MGS2_AiRayVision::bEnabled,
+                &MGS2_TitleLightning::bEnabled,
+                &MGS2_LightStain::bEnabled,
+                &MGS2_CreditsSmoke::bEnabled,
                 &MGS2_Crossfade::bEnabled,
                 &MGS2ConcentrateBlur::bEnabled,
                 &MGS2RailgunBeam::bEnabled,
@@ -778,6 +785,7 @@ void Config::Read()
                 &MGS2FixedAlpha::bEnabled,
                 &MGS2TankerFog::bEnabled,
                 &MGS2ThermalHeat::bEnabled,
+                &MGS2_DemoLazyMarine::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)
@@ -820,11 +828,24 @@ void Config::Read()
 
 
 
-            ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+            {
+                std::string sDof;
+                ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+                // older settings files carry the checkbox's true/false
+                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Quality; }
+                if (sDof == "false" || sDof == "0") { sDof = ConfigKeys::FixDepthOfField_Option_Disabled; }
+                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Performance && sDof != ConfigKeys::FixDepthOfField_Option_Quality)
+                {
+                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Quality);
+                    sDof = ConfigKeys::FixDepthOfField_Option_Quality;
+                }
+                g_DepthOfFieldFixes.bEnabled = sDof != ConfigKeys::FixDepthOfField_Option_Disabled;
+                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Performance;
 #if defined(BEFORE_COMPARISON_PICS)
-            g_DepthOfFieldFixes.bEnabled = false;
+                g_DepthOfFieldFixes.bEnabled = false;
 #endif
-            LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+                LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+            }
 
             ConfigHelper::getValue(ini, ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
             LOG_CONFIG(ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
@@ -875,11 +896,24 @@ void Config::Read()
             MGS3FilmGrain::mode = bFilmGrainEnabled ? MGS3FilmGrain::Mode::On : MGS3FilmGrain::Mode::Off;
             LOG_CONFIG(ConfigKeys::MGS3_Restore_Film_Grain_Section, ConfigKeys::MGS3_Restore_Film_Grain_Setting, bFilmGrainEnabled);
 
-            ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+            {
+                std::string sDof;
+                ConfigHelper::getValue(ini, ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+                // older settings files carry the checkbox's true/false
+                if (sDof == "true" || sDof == "1") { sDof = ConfigKeys::FixDepthOfField_Option_Quality; }
+                if (sDof == "false" || sDof == "0") { sDof = ConfigKeys::FixDepthOfField_Option_Disabled; }
+                if (sDof != ConfigKeys::FixDepthOfField_Option_Disabled && sDof != ConfigKeys::FixDepthOfField_Option_Performance && sDof != ConfigKeys::FixDepthOfField_Option_Quality)
+                {
+                    spdlog::warn("Invalid config value for {}: {} - using {}", ConfigKeys::FixDepthOfField_Setting, sDof, ConfigKeys::FixDepthOfField_Option_Quality);
+                    sDof = ConfigKeys::FixDepthOfField_Option_Quality;
+                }
+                g_DepthOfFieldFixes.bEnabled = sDof != ConfigKeys::FixDepthOfField_Option_Disabled;
+                g_DepthOfFieldFixes.bHalfRes = sDof == ConfigKeys::FixDepthOfField_Option_Performance;
 #if defined(BEFORE_COMPARISON_PICS)
-            g_DepthOfFieldFixes.bEnabled = false;
-#endif 
-            LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, g_DepthOfFieldFixes.bEnabled);
+                g_DepthOfFieldFixes.bEnabled = false;
+#endif
+                LOG_CONFIG(ConfigKeys::FixDepthOfField_Section, ConfigKeys::FixDepthOfField_Setting, sDof);
+            }
             
             ConfigHelper::getValue(ini, ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
             LOG_CONFIG(ConfigKeys::DepthOfFieldBlurUvMultiplier_Section, ConfigKeys::DepthOfFieldBlurUvMultiplier_Setting, g_DepthOfFieldFixes.fBlurUvMultiplier);
