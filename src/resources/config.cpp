@@ -76,6 +76,7 @@
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_snake_tales_radar.hpp"
 #include "mgs2_thermal_goggles.hpp"
@@ -784,6 +785,7 @@ void Config::Read()
                 &MGS2CodecBand::bEnabled,
                 &MGS2FixedAlpha::bEnabled,
                 &MGS2TankerFog::bEnabled,
+                &MGS2_DemoBindPoseMarine::bEnabled,
                 &MGS2_DemoLazyMarine::bEnabled,
             };
 
