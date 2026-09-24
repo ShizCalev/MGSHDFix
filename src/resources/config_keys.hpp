@@ -814,6 +814,13 @@ namespace ConfigKeys
     constexpr const char* MGS2BladeAnywhere_Tooltip = "Makes the High-Frequency Blade usable on every stage.\n"
         "Loads its models and motions everywhere, arms the blade plugin, and adds it to the inventory.";
 
+    constexpr const char* MGS2_OverrideLookupCache_Section = "Various";
+    constexpr const char* MGS2_OverrideLookupCache_Setting = "Cache Override File Lookups";
+    constexpr const char* MGS2_OverrideLookupCache_Help = "";
+    constexpr const char* MGS2_OverrideLookupCache_Tooltip = "Every file an area loads is first looked for in up to five override folders. On Linux / Steam Deck each miss is slow, adding 4-6 seconds to every load.\n"
+        "\n"
+        "This reads each folder once and answers from that. Override files added while the game runs are picked up on the next load.";
+
     constexpr const char* MGS2Sunglasses_Section = "Various";
     constexpr const char* MGS2Sunglasses_Setting = "Force Sunglasses";
     constexpr const char* MGS2Sunglasses_Help = "";
@@ -849,6 +856,49 @@ namespace ConfigKeys
     constexpr const char* MGS2_RestoreElevatorGlitch_Tooltip = "Speedrun opt-in. Re-enables the Sons of Liberty floor-clip: going prone at an elevator call button and operating it forces a stand-up with the player's origin left on the floor, clipping through it.\n"
                                                                "\n"
                                                                "Substance gated elevator operation to standing/squat to patch this out. Off by default.";
+
+    constexpr const char* MGS2_SkipStillman_Section = "Skips";
+    constexpr const char* MGS2_SkipStillman_Setting = "Stillman";
+    constexpr const char* MGS2_SkipStillman_Help = "";
+    constexpr const char* MGS2_SkipStillman_Tooltip = "Makes the two Peter Stillman cutscenes in the Shell 1 Core skippable in New Game playthroughs.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipOlgaTaunt_Section = "Skips";
+    constexpr const char* MGS2_SkipOlgaTaunt_Setting = "Olga Taunt";
+    constexpr const char* MGS2_SkipOlgaTaunt_Help = "";
+    constexpr const char* MGS2_SkipOlgaTaunt_Tooltip = "Makes Olga's two mid-fight monologues skippable in New Game playthroughs.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipEnding_Section = "Skips";
+    constexpr const char* MGS2_SkipEnding_Setting = "Ending";
+    constexpr const char* MGS2_SkipEnding_Help = "";
+    constexpr const char* MGS2_SkipEnding_Tooltip = "Makes the proposal scene and the staff roll skippable.\n"
+        "\n"
+        "The time saved by the skip will be automatically added to IGT, so final play-time will not differ from if you watched the full thing.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_SkipSwordTraining_Section = "Skips";
+    constexpr const char* MGS2_SkipSwordTraining_Setting = "Sword Training";
+    constexpr const char* MGS2_SkipSwordTraining_Help = "";
+    constexpr const char* MGS2_SkipSwordTraining_Tooltip = "Removes the 45 second wait in Snake's sword training, so you can move on right after your first swing.\n"
+        "\n"
+        "Check that your category allows it.";
+
+    constexpr const char* MGS2_LoadOptimizations_Section = "Speedrunner Settings";
+    constexpr const char* MGS2_LoadOptimizations_Setting = "Load Optimizations";
+    constexpr const char* MGS2_LoadOptimizations_Help = "";
+    constexpr const char* MGS2_LoadOptimizations_Tooltip = "Preload Only: once an area has loaded, the areas its doors lead to are read in the background, so walking through a door loads like a revisit.\n"
+        "\n"
+        "Full: also fades the music out in an eighth of a second when you go through a door, and skips the area name on the black screen; the name still shows as the next area fades in. "
+        "The next area can't load its sounds until the old music stops, so this saves about a second per door.\n"
+        "\n"
+        "Check that your category allows it.";
+    constexpr const char* MGS2_LoadOptimizations_Option_Off = "Off";
+    constexpr const char* MGS2_LoadOptimizations_Option_Preload = "Preload Only";
+    constexpr const char* MGS2_LoadOptimizations_Option_Full = "Full";
 
     constexpr const char* ShowSpeedrunnerOverlay_Section = "Speedrunner Settings";
     constexpr const char* ShowSpeedrunnerOverlay_Setting = "Gameplay Stats Overlay";

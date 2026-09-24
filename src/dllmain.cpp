@@ -60,7 +60,9 @@
 #include "mgs2_flare_occlusion.hpp"
 #include "mgs2_tanker_snake_snap.hpp"
 #include "mgs2_glass_dmapack_overflow.hpp"
+#include "mgs2_demo_bind_pose_marine.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
+#include "mgs2_solidus_pipe.hpp"
 #include "mgs2_item_toss_fix.hpp"
 #include "mgs2_radar_fixes.hpp"
 #include "cpu_core_limit.hpp"
@@ -117,11 +119,16 @@
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
 #include "mgs2_title_lightning.hpp"
+#include "mgs2_city_glow.hpp"
 #include "mgs2_light_stain.hpp"
+#include "mgs2_override_probe_cache.hpp"
+#include "mgs2_fast_doors.hpp"
+#include "mgs2_area_prefetch.hpp"
 #include "mgs2_credits_smoke.hpp"
 #include "mgs2_parrot_radar_fix.hpp"
 #include "mgs2_restore_sol_radar.hpp"
 #include "mgs2_restore_elevator_glitch.hpp"
+#include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_shimmer.hpp"
 #include "mgs2_crossfade.hpp"
 #include "photo_camera.hpp"
@@ -607,7 +614,9 @@ static void InitializeSubsystems()
     if (eGameType & MGS2)
     {
         INITIALIZE(MGS2_GlassDmapackOverflow::Initialize());
+        INITIALIZE(MGS2_DemoBindPoseMarine::Initialize());
         INITIALIZE(MGS2_DemoLazyMarine::Initialize());
+        INITIALIZE(MGS2_SolidusPipe::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
         INITIALIZE(MGS2_RadarFixes::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());
@@ -618,6 +627,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_RestoreActionLevelSelection::Apply());
         INITIALIZE(MGS2_RestoreSoLRadar::Apply());
         INITIALIZE(MGS2_RestoreElevatorGlitch::Initialize());
+        INITIALIZE(MGS2NGCutsceneSkips::Initialize());
         INITIALIZE(MGS2_ThirdPersonFreecam::Activate());
         INITIALIZE(MGS2_Hostage_Type_Easter_Egg::Force());
         INITIALIZE(MGS2_First_Person_View::Activate());
@@ -679,7 +689,11 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_ContrastShader::Setup());
         INITIALIZE(MGS2_AiRayVision::Setup());
         INITIALIZE(MGS2_TitleLightning::Setup());
+        INITIALIZE(MGS2_CityGlow::Setup());
         INITIALIZE(MGS2_LightStain::Setup());
+        INITIALIZE(MGS2_OverrideProbeCache::Setup());
+        INITIALIZE(MGS2_FastDoors::Setup());
+        INITIALIZE(MGS2_AreaPrefetch::Setup());
         INITIALIZE(MGS2_CreditsSmoke::Setup());
         INITIALIZE(MGS2FixedAlpha::Setup());
         INITIALIZE(MGS2ConcentrateBlur::Initialize());
