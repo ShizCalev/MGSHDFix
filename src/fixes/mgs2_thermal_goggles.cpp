@@ -35,7 +35,7 @@ namespace
     }
 
     constexpr uint32_t irSubstance[8] = { //Substance vanilla.
-        IRColor("#0000ff"),
+        IRColor("#0080ff"),
         IRColor("#00ffff"),
         IRColor("#00ff80"),
         IRColor("#00ff00"),
