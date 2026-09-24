@@ -211,7 +211,8 @@ private:
     X(NewSplushSurface2Man, "48 89 5C 24 ?? 48 89 74 24 ?? 48 89 4C 24", "MGS 2: Effect Speed Fix : user\\okajima\\effect2\\splush_surface_gravity_man.c -> NewSplushSurface2Man()") \
     X(NewTraffic_Flush, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 41 56 48 83 EC ?? 48 8B 51", "MGS 2: Effect Speed Fix : NewTraffic_Flush") \
     X(NewDebris_Tex, "40 57 48 83 EC ?? 48 89 5C 24 ?? 48 8B F9 48 89 6C 24", "MGS 2: Effect Speed Fix : user\\okajima\\effect2\\debris_tex.c -> NewDebris_Tex()") \
-    X(NewFortSplineBulletDemo, NEW_FORT_SPLINE_BULLET_DEMO_PATTERN, "MGS 2: Effect Speed Fix : user\\morita\\demo_fort\\fort_b_line.c() -> Act()")
+    X(NewFortSplineBulletDemo, NEW_FORT_SPLINE_BULLET_DEMO_PATTERN, "MGS 2: Effect Speed Fix : user\\morita\\demo_fort\\fort_b_line.c() -> Act()") \
+    X(Act_GeorgeBonbori, "40 56 48 81 EC 30 01 00 00", "MGS 2: Effect Speed Fix : user\\okajima\\effect\\george_bonbori.c -> Act()")
 
 // Same, but these also run during gameplay firing, so not gated to cutscenes.
 #define MGS2_RAILGUN_PLAYTIME_SKIPS_ALWAYS(X) \
