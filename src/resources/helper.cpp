@@ -16,6 +16,16 @@ namespace
     DWORD gSha1HashObjectSize = 0;
     std::mutex gSha1ProviderMutex;
 
+    // First hit per signature, for when another fix has since hooked over it.
+    std::mutex gScanCacheMutex;
+    std::unordered_map<std::string, std::uint8_t*> gScanCache;
+    thread_local bool gScanFromCache = false;
+
+    std::string ScanKey(void* module, const char* signature)
+    {
+        return std::to_string(reinterpret_cast<uintptr_t>(module)) + '|' + signature;
+    }
+
     bool ParseSHA1Hex(std::string_view value, Util::SHA1Hash& output)
     {
         if (value.size() != output.size() * 2)
@@ -252,6 +262,7 @@ namespace Memory
     // https://github.com/OneshotGH/CSGOSimple-master/blob/master/CSGOSimple/helpers/utils.cpp
     std::uint8_t* PatternScanSilent(void* module, const char* signature)
     {
+        gScanFromCache = false;
         static auto pattern_to_byte = [](const char* pattern) {
             auto bytes = std::vector<int>{};
             auto start = const_cast<char*>(pattern);
@@ -290,16 +301,29 @@ namespace Memory
                 }
             }
             if (found) {
+                std::scoped_lock lock(gScanCacheMutex);
+                gScanCache.try_emplace(ScanKey(module, signature), &scanBytes[i]);
                 return &scanBytes[i];
             }
         }
-        return nullptr;
+        std::scoped_lock lock(gScanCacheMutex);
+        const auto cached = gScanCache.find(ScanKey(module, signature));
+        if (cached == gScanCache.end())
+        {
+            return nullptr;
+        }
+        gScanFromCache = true;
+        return cached->second;
     }
 
     std::uint8_t* PatternScan(void* module, const char* signature, const char* prefix)
     {
         std::uint8_t* foundPattern = PatternScanSilent(module, signature);
-        if (foundPattern)
+        if (foundPattern && gScanFromCache)
+        {
+            spdlog::warn("{}: Pattern scan hit an already hooked function, using its first match. Address: {:s}+{:X}", prefix, sExeName.c_str(), (uintptr_t)foundPattern - (uintptr_t)baseModule);
+        }
+        else if (foundPattern)
         {
             if (g_Logging.bVerboseLogging)
             {
