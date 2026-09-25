@@ -20,6 +20,23 @@ namespace
     constexpr size_t kR2 = 11;          // libgv.h PAD_PRESS_R2
     constexpr size_t kSquare = 7;
 
+    // attack.c gates Square on PL_PAD_WEAPON_TH 24 (lower the gun) and TH2 60, 120 in MGS 3 (rapid
+    // fire). Reduce Pressure Sensitivity bends the value on its way in, so the game's compares stay.
+    constexpr int kWeaponLower = 24;
+    constexpr int kWeaponLowerReduced = 50;
+    constexpr int kWeaponFireLift = 20;
+    int WeaponFire() { return (eGameType & MGS3) ? 120 : 60; }
+
+    uint8_t SquareForGame(uint8_t raw)
+    {
+        if (!PressureInputs::bReduceSensitivity) return raw;
+        const int th2 = WeaponFire();
+        const int fire = th2 + kWeaponFireLift;
+        if (raw <= kWeaponLowerReduced) return static_cast<uint8_t>(raw * kWeaponLower / kWeaponLowerReduced);
+        if (raw <= fire) return static_cast<uint8_t>(kWeaponLower + (raw - kWeaponLowerReduced) * (th2 - kWeaponLower) / (fire - kWeaponLowerReduced));
+        return static_cast<uint8_t>(th2 + (raw - fire) * (255 - th2) / (255 - fire));
+    }
+
     // pressure[] slot -> index within the report's pressure block, for each block order.
     // Our slots run R L U D TRI CIR CRO SQU L1 R1 L2 R2.
     constexpr int kSdfOrder[kSlots] = { 3, 5, 2, 4, 8, 9, 10, 11, 6, 7, 0, 1 };
@@ -404,7 +421,7 @@ namespace
         {
             // Write the zero too. The button bit outlives the pressure, so skipping it leaves
             // setup_pressure's 0xFF and every release reads as a full press.
-            pressure[s] = now[s];
+            pressure[s] = (s == kSquare) ? SquareForGame(now[s]) : now[s];
         }
     }
 
@@ -475,7 +492,8 @@ namespace
         ReadPad(now);
         for (size_t i = 0; i < kPadSlots; ++i)
         {
-            gPadPressure[i] = now[kPadPressureSrc[i]];
+            const size_t src = static_cast<size_t>(kPadPressureSrc[i]);
+            gPadPressure[i] = (src == kSquare) ? SquareForGame(now[src]) : now[src];
         }
     }
 
@@ -699,7 +717,7 @@ namespace
                 ReadPad(now);
                 for (size_t s = 0; s < kSlots; ++s)
                 {
-                    gMgs3Pressure[s] = now[s];
+                    gMgs3Pressure[s] = (s == kSquare) ? SquareForGame(now[s]) : now[s];
                 }
             });
             LOG_HOOK(padHook, "MGS 3: Pressure Inputs - Pad Writer")
@@ -998,6 +1016,16 @@ namespace
         });
 
     }
+}
+
+uint8_t PressureInputs::WeaponLowerGate()
+{
+    return static_cast<uint8_t>(bReduceSensitivity ? kWeaponLowerReduced : kWeaponLower);
+}
+
+uint8_t PressureInputs::WeaponFireGate()
+{
+    return static_cast<uint8_t>(WeaponFire() + (bReduceSensitivity ? kWeaponFireLift : 0));
 }
 
 void PressureInputs::ReadPad(uint8_t (&out)[kPadSlots])

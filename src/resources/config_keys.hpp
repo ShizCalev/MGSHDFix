@@ -705,6 +705,14 @@ namespace ConfigKeys
         "\n"
         "Requires a DualShock 2 or 3 w/ DsHidMini in SDF or SXS mode.";
 
+    constexpr const char* ReducePressureSensitivity_Section = "Controller Settings";
+    constexpr const char* ReducePressureSensitivity_Setting = "Reduce Pressure Sensitivity";
+    constexpr const char* ReducePressureSensitivity_Help = "";
+    constexpr const char* ReducePressureSensitivity_Tooltip =
+        "Makes a drawn weapon easier to hold without firing and easier to lower: the gun drops below 50 instead of 24, and rapid fire needs a firmer press.\n"
+        "\n"
+        "The pressure overlay's Square ticks turn cyan to show the changed gates.";
+
     constexpr const char* PressureSensitiveFacebuttons_Section = "Controller Settings";
     constexpr const char* PressureSensitiveFacebuttons_Setting = "Dualshock 2 && 3 Controller Support";
     constexpr const char* PressureSensitiveFacebuttons_Help = "(Pressure Sensitive Buttons)";
