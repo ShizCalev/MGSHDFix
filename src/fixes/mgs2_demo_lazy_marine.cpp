@@ -2,6 +2,7 @@
 #include "mgs2_demo_lazy_marine.hpp"
 
 #include "common.hpp"
+#include "game_funcs.hpp"
 #include "gamevars.hpp"
 #include "game_stages.hpp"
 #include "helper.hpp"
@@ -216,9 +217,7 @@ void MGS2_DemoLazyMarine::Initialize()
     uint8_t* getMotion = Memory::PatternScan(baseModule,
         "40 53 48 83 EC ?? 8B D9 E8 ?? ?? ?? ?? 48 85 C0 74 ?? 48 8D 90",
         "MGS 2: Lazy Marine | demo_mtn.c -> DM_GetMotionData()");
-    uint8_t* exec = Memory::PatternScan(baseModule,
-        "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 33 C0 48 8D 2D",
-        "MGS 2: Lazy Marine | demo_pkt.c -> DM_ExecDemoStream()");
+    uint8_t* exec = MGS2_GameFuncs::DM_ExecDemoStream;
     if (!getMotion || !exec)
     {
         return;

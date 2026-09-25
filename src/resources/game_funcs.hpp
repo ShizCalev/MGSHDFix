@@ -36,6 +36,10 @@ namespace Shared_Gamefuncs
 namespace MGS2_GameFuncs
 {
     void HookGameFuncs();
+
+    // More than one fix hooks these, so they're scanned once here, before any of those hooks go in.
+    inline uint8_t* DM_ExecDemoStream = nullptr;
+    inline uint8_t* BP_UpdatePreshadeBuffer = nullptr;
     
     using GM_SeSet_t = int64_t(__fastcall*)(int a1, uint8_t a2, int16_t a3);
     inline GM_SeSet_t GM_SeSet = nullptr;

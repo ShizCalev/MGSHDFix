@@ -2,6 +2,7 @@
 #include "mgs2_light_stain.hpp"
 
 #include "common.hpp"
+#include "game_funcs.hpp"
 #include "logging.hpp"
 
 #include <unordered_set>
@@ -69,8 +70,7 @@ void MGS2_LightStain::Setup()
         return;
     }
 
-    uint8_t* compose = Memory::PatternScan(baseModule, "40 57 48 83 EC ?? 48 0F BF 41",
-        "MGS2: Light Stain: BP_UpdatePreshadeBuffer()");
+    uint8_t* compose = MGS2_GameFuncs::BP_UpdatePreshadeBuffer;
     uint8_t* tmpLight = Memory::PatternScan(baseModule, "4C 8B DC 48 83 EC ?? 83 3D ?? ?? ?? ?? 00",
         "MGS2: Light Stain: libdg\\pshade.c -> DG_TmpLightPreshadeChanl()");
     uint8_t* composeLit = Memory::PatternScan(baseModule, "E8 ?? ?? ?? ?? 33 C0 48 8B 54 24",

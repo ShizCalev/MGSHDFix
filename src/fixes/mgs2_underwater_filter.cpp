@@ -20,8 +20,6 @@ namespace
     SafetyHookInline OMSetRenderTargets_hook {};
     SafetyHookInline PSSetShaderResources_hook {};
     SafetyHookInline Draw_hook {};
-    std::array<SafetyHookMid, 8> ScrWaterDmapackCreateHooks {};
-    int ScrWaterDmapackCreateHookCount = 0;
     std::mutex gHookMutex;
 
     constexpr int kDmapackNormal = 0x0001;
@@ -200,25 +198,6 @@ namespace
         }
 
         return true;
-    }
-
-    template<size_t N>
-    bool ContainsBytes(const uint8_t* begin, const uint8_t* end, const uint8_t (&pattern)[N])
-    {
-        if (!begin || !end || begin >= end || N == 0)
-        {
-            return false;
-        }
-
-        for (const uint8_t* cursor = begin; cursor + N <= end; ++cursor)
-        {
-            if (std::memcmp(cursor, pattern, N) == 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     void* ReadWorkPointer(uint8_t* bytes, ptrdiff_t offset)
@@ -1489,94 +1468,6 @@ namespace
         g_MGS2UnderwaterFilterFix.PatchWork(work);
         return work;
     }
-
-    void PatchScrWaterDmapackCreateArgs(SafetyHookContext& ctx)
-    {
-        if (IsDemo())
-        {
-            return;
-        }
-
-        const int flag = static_cast<int>(ctx.rcx);
-        const int phase = static_cast<int>(ctx.rdx);
-        const int priority = static_cast<int>(ctx.r8);
-        constexpr int originalScrWaterFlag = kDmapackNormal | kDmapackInvisible0 | kDmapackInvisible1;
-        if ((flag & originalScrWaterFlag) != originalScrWaterFlag ||
-            phase != kDmapackPhaseAfter ||
-            priority != kOriginalScrWaterPriority)
-        {
-            return;
-        }
-
-        ctx.rcx = static_cast<uint64_t>(flag | kDmapackMenu | kDmapackInvisibleMenu);
-        ctx.r8 = kScrWaterPriority;
-
-        static bool logged = false;
-        if (!logged)
-        {
-            logged = true;
-            spdlog::info(
-                "MGS 2: Underwater Filter Fix: ScrWater dmapack create args patched, flag 0x{:X}->0x{:X}, priority {}->{}.",
-                flag,
-                static_cast<int>(ctx.rcx),
-                priority,
-                kScrWaterPriority);
-        }
-    }
-
-    bool LooksLikeScrWaterDmapackCreateCall(uint8_t* functionBegin, uint8_t* call)
-    {
-        constexpr uint8_t movR8d144[] = { 0x41, 0xB8, 0x90, 0x00, 0x00, 0x00 };
-        constexpr uint8_t movEdx4[] = { 0xBA, 0x04, 0x00, 0x00, 0x00 };
-        constexpr uint8_t movEcx49[] = { 0xB9, 0x31, 0x00, 0x00, 0x00 };
-
-        const size_t lookBack = std::min<size_t>(static_cast<size_t>(call - functionBegin), 0x60);
-        const uint8_t* begin = call - lookBack;
-        return ContainsBytes(begin, call, movR8d144) &&
-            ContainsBytes(begin, call, movEdx4) &&
-            ContainsBytes(begin, call, movEcx49);
-    }
-
-    void HookScrWaterDmapackCreateCalls(void* newScrWater)
-    {
-        if (!newScrWater)
-        {
-            return;
-        }
-
-        auto* bytes = static_cast<uint8_t*>(newScrWater);
-        constexpr size_t scanSize = 0x8000;
-        if (!IsReadable(bytes, scanSize))
-        {
-            spdlog::warn("MGS 2: Underwater Filter Fix: NewScrWater body was not readable; dmapack create hook skipped.");
-            return;
-        }
-
-        for (size_t offset = 0; offset + 5 <= scanSize && ScrWaterDmapackCreateHookCount < static_cast<int>(ScrWaterDmapackCreateHooks.size()); ++offset)
-        {
-            uint8_t* call = bytes + offset;
-            if (*call != 0xE8 || !LooksLikeScrWaterDmapackCreateCall(bytes, call))
-            {
-                continue;
-            }
-
-            SafetyHookMid& hook = ScrWaterDmapackCreateHooks[ScrWaterDmapackCreateHookCount++];
-            hook = safetyhook::create_mid(call, [](SafetyHookContext& ctx) {
-                PatchScrWaterDmapackCreateArgs(ctx);
-            });
-
-            LOG_HOOK(hook, "MGS 2: Underwater Filter Fix: ScrWater dmapack create")
-            spdlog::info(
-                "MGS 2: Underwater Filter Fix: ScrWater dmapack create hook target {}+0x{:X}.",
-                sExeName,
-                reinterpret_cast<uintptr_t>(call) - reinterpret_cast<uintptr_t>(baseModule));
-        }
-
-        if (ScrWaterDmapackCreateHookCount == 0)
-        {
-            spdlog::warn("MGS 2: Underwater Filter Fix: no ScrWater dmapack create call was found; queued priority remains unchanged.");
-        }
-    }
 }
 
 void MGS2UnderwaterFilterFix::InstallD3D11StateHooks()
@@ -1628,7 +1519,6 @@ void MGS2UnderwaterFilterFix::Initialize()
         NewScrWater_hook = safetyhook::create_inline(NewScrWater_scan, reinterpret_cast<void*>(NewScrWater_Hook));
         LOG_HOOK(NewScrWater_hook, "MGS 2: Underwater Filter Fix: NewScrWater");
         spdlog::info("MGS 2: Underwater Filter Fix: NewScrWater hook target {}.", fmt::ptr(NewScrWater_scan));
-        HookScrWaterDmapackCreateCalls(NewScrWater_scan);
     }
 
 }
