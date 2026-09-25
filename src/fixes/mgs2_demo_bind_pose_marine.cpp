@@ -2,6 +2,7 @@
 #include "mgs2_demo_bind_pose_marine.hpp"
 
 #include "common.hpp"
+#include "game_funcs.hpp"
 #include "gamevars.hpp"
 #include "game_stages.hpp"
 #include "helper.hpp"
@@ -57,9 +58,7 @@ void MGS2_DemoBindPoseMarine::Initialize()
     uint8_t* setInvisible = Memory::PatternScan(baseModule,
         "48 89 5C 24 ?? 57 48 83 EC ?? 48 63 FA 8B D9",
         "MGS 2: Bind Pose Marine | demo_obj.c -> DM_SetObjectInvisible()");
-    uint8_t* exec = Memory::PatternScan(baseModule,
-        "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 33 C0 48 8D 2D",
-        "MGS 2: Bind Pose Marine | demo_pkt.c -> DM_ExecDemoStream()");
+    uint8_t* exec = MGS2_GameFuncs::DM_ExecDemoStream;
     if (!setInvisible || !exec)
     {
         return;

@@ -2,6 +2,7 @@
 #include "mgs2_solidus_pipe.hpp"
 
 #include "common.hpp"
+#include "game_funcs.hpp"
 #include "gamevars.hpp"
 #include "helper.hpp"
 #include "logging.hpp"
@@ -70,9 +71,7 @@ void MGS2_SolidusPipe::Initialize()
         return;
     }
 
-    uint8_t* compose = Memory::PatternScan(baseModule,
-        "40 57 48 83 EC ?? 48 0F BF 41",
-        "MGS 2: Solidus Pipe | system\\libdg\\pshade.c -> preshade colour composer");
+    uint8_t* compose = MGS2_GameFuncs::BP_UpdatePreshadeBuffer;
     if (compose)
     {
         h_Compose = safetyhook::create_inline(reinterpret_cast<void*>(compose), Compose_hook);
