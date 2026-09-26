@@ -11,7 +11,7 @@ namespace
     constexpr uint32_t kObjectPacket = 4;
     constexpr uint32_t kTermSeq = 0;
     constexpr uint32_t kTermFrame = 1;
-    constexpr int32_t  kM92Sub = 0x5176B7;       // GV_StrCode("m92_sub")
+    constexpr int32_t  kM92Sub = GameVars::GV_StrCode("m92_sub");
     constexpr int32_t  kFlagJointed = 0x01;      // DG_FLAG_SHADE | DG_FLAG_FINISHCALC, same lighting as one-piece
 
     SafetyHookInline h_ExecDemoStream {};
