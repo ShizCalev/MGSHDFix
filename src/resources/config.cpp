@@ -79,6 +79,7 @@
 #include "mgs2_radar_fixes.hpp"
 #include "mgs2_ng_cutscene_skips.hpp"
 #include "mgs2_demo_bind_pose_marine.hpp"
+#include "mgs2_demo_m9_hammer.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_solidus_pipe.hpp"
 #include "mgs2_snake_tales_radar.hpp"
@@ -803,6 +804,7 @@ void Config::Read()
                 &MGS2_DemoBindPoseMarine::bEnabled,
                 &MGS2_DemoLazyMarine::bEnabled,
                 &MGS2_SolidusPipe::bEnabled,
+                &MGS2_DemoM9Hammer::bEnabled,
             };
 
             for (bool* pEnabled : vfxToggles)
