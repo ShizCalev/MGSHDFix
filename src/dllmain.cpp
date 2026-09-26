@@ -61,6 +61,7 @@
 #include "mgs2_tanker_snake_snap.hpp"
 #include "mgs2_glass_dmapack_overflow.hpp"
 #include "mgs2_demo_bind_pose_marine.hpp"
+#include "mgs2_demo_m9_hammer.hpp"
 #include "mgs2_demo_lazy_marine.hpp"
 #include "mgs2_solidus_pipe.hpp"
 #include "mgs2_item_toss_fix.hpp"
@@ -618,6 +619,7 @@ static void InitializeSubsystems()
         INITIALIZE(MGS2_DemoBindPoseMarine::Initialize());
         INITIALIZE(MGS2_DemoLazyMarine::Initialize());
         INITIALIZE(MGS2_SolidusPipe::Initialize());
+        INITIALIZE(MGS2_DemoM9Hammer::Initialize());
         INITIALIZE(MGS2ItemTossFix::Initialize());
         INITIALIZE(MGS2_RadarFixes::Initialize());
         INITIALIZE(g_MGS2Sunglasses.Initialize());

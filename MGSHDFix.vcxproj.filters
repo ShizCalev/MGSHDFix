@@ -410,6 +410,9 @@
     <ClCompile Include="src\fixes\mgs2_demo_bind_pose_marine.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mgs2_demo_m9_hammer.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_demo_lazy_marine.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -872,6 +875,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_bind_pose_marine.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mgs2_demo_m9_hammer.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_demo_lazy_marine.hpp">
