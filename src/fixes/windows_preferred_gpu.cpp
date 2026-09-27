@@ -6,7 +6,7 @@
 
 void HighPerformanceGpu::Fix()
 {
-    if (Util::IsSteamOS() || !(eGameType & (LAUNCHER | MG | MGS2 | MGS3)))
+    if (Util::IsLinux() || !(eGameType & (LAUNCHER | MG | MGS2 | MGS3)))
     {
         return;
     }

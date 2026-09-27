@@ -384,7 +384,7 @@ void BugfixMods::Check()
 
                         if (bEnableVisibleWarnings)
                         {
-                            if (Util::IsSteamOS())
+                            if (Util::IsLinux())
                             {
                                 std::cout
                                     << "\n================ MGSHDFix WARNING ================\n\n"

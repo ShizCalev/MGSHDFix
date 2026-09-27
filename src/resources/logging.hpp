@@ -5,7 +5,7 @@
 class Logging final
 {
 private:
-    static std::string GetSteamOSVersion();
+    static std::string GetLinuxOSVersion();
 public:
     static void ShowConsole();
     static void Initialize();

@@ -6,7 +6,7 @@
 
 void FixFullscreenOptimization::Fix()
 {
-    if (Util::IsSteamOS() || !(eGameType & (MG | MGS2 | MGS3)))
+    if (Util::IsLinux() || !(eGameType & (MG | MGS2 | MGS3)))
     {
         return;
     }

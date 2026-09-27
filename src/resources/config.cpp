@@ -344,7 +344,7 @@ void Config::Read()
         std::cout << "ERROR: File not found: " << (sExePath / sFixPath / sConfigFile).string() << std::endl;
         std::cout << "ERROR: Make sure that you've run the " << sFixName + " Config Tool" << " (in your game's /plugins folder) to generate your settings file." << std::endl;
         std::cout << "ERROR: And that " << sConfigFile << " is located in " << sExePath / sFixPath << "\n" << std::endl;
-        if (Util::IsSteamOS())
+        if (Util::IsLinux())
         {
             std::cout << "ERROR: When launching the MGSHDFix Config Tool.exe on SteamOS, a protontricks window will open.\n"
                 "ERROR: Simply select ANY game that's in the list and hit OK.\n"
@@ -740,7 +740,7 @@ void Config::Read()
             ConfigHelper::getValue(ini, ConfigKeys::SuppressAlternativeActions_Section, ConfigKeys::SuppressAlternativeActions_Setting, PressureInputs::bSuppressAlternates);
             LOG_CONFIG(ConfigKeys::SuppressAlternativeActions_Section, ConfigKeys::SuppressAlternativeActions_Setting, PressureInputs::bSuppressAlternates);
 
-            if (!Util::IsSteamOS())
+            if (!Util::IsLinux())
             {
                 ConfigHelper::getValue(ini, ConfigKeys::Ds3RumbleStrength_Section, ConfigKeys::Ds3RumbleStrength_Setting, Ds3Rumble::iStrength);
                 Ds3Rumble::iStrength = std::clamp(Ds3Rumble::iStrength, 0, 200);

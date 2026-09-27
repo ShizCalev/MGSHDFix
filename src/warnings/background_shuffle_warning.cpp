@@ -11,7 +11,7 @@ void BackgroundShuffleWarning::Check()
         spdlog::info("Background Shuffle Warning: Disabled via config, skipping check.");
         return;
 	}
-	if (Util::IsSteamOS())
+	if (Util::IsLinux())
 	{
 		return;
 	}
