@@ -6,6 +6,8 @@
 #include "helper.hpp"
 #include "logging.hpp"
 
+#include "gamevars.hpp"
+
 namespace
 {
     constexpr uint32_t kObjectPacket = 4;
