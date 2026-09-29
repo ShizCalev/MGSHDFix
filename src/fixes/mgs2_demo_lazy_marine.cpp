@@ -23,7 +23,6 @@ namespace
         int16_t rot[4];
         int pad[2];
         float motion[1][4];     // per joint: quat xyzw, then translation
-    };
 
     constexpr int kMarine = 7;
     constexpr int kJoints = 21;

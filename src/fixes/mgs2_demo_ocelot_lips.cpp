@@ -12,16 +12,6 @@
 
 namespace
 {
-    // the cutscene's pose for one character
-    struct DemoMotion
-    {
-        uint8_t header[0x10];
-        int objectId, motionType, startJoint, nJoints;
-        float pos[4];
-        int16_t rot[4];
-        int pad[2];
-        float motion[1][4];     // per joint: rotation, then position
-    };
 
     constexpr int kOcelot = 49;
     constexpr int kJoints = 88;

@@ -1,5 +1,16 @@
 #pragma once
 
+
+struct DemoMotion
+{
+    uint8_t header[0x10];
+    int objectId, motionType, startJoint, nJoints;
+    float pos[4];
+    int16_t rot[4];
+    int pad[2];
+    float motion[1][4];     // per joint: rotation, then position
+};
+
 // MGS2: lets cutscene fixes edit each frame as it plays, all through one hook.
 namespace MGS2_DemoPatches
 {
