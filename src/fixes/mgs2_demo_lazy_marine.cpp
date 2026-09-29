@@ -14,16 +14,6 @@
 
 namespace
 {
-    // demo_mtn.c's expanded DEMO_MOTION, one per object; the object actor reads it every frame.
-    struct DemoMotion
-    {
-        uint8_t header[0x10];
-        int objectId, motionType, startJoint, nJoints;
-        float pos[4];
-        int16_t rot[4];
-        int pad[2];
-        float motion[1][4];     // per joint: quat xyzw, then translation
-
     constexpr int kMarine = 7;
     constexpr int kJoints = 21;
     constexpr int kCycleFirst = 3923;       // his cleanest full stride: 105 frames
