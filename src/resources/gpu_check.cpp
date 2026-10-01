@@ -9,6 +9,8 @@
 #define MINIMUM_GPU_NAME "NVIDIA GeForce GTX 970"
 #endif
 
+#define MGSHDFIX_MIN_PERFORMANCE_TIER 170
+
 constexpr auto LATEST_NVIDIA_DRIVER_VERSION = "32.0.15.8129";
 constexpr auto LATEST_AMD_DRIVER_VERSION = "32.0.21025.10016";
 
@@ -351,8 +353,11 @@ void CheckMinimumGPU(const std::string& gpuName, bool logDriver, UINT product, U
         spdlog::warn("GPU WARNING: {} ({}) was not recognized.", sanitizedName, vendor);
         spdlog::warn("GPU WARNING: The game requires a minimum of a {} or equivalent.", MINIMUM_GPU_NAME);
         spdlog::warn("GPU WARNING: Degraded performance (ie \"Snake moving in slow motion\") and crashing likely to occur.");
+        spdlog::warn("GPU WARNING: Some MGSHDFix features (such as Depth of Field fix) will be limited to performance mode or disabled automatically.");
+        spdlog::warn("GPU WARNING: Please report your GPU model along with your logs on the MGSHDFix GitHub if you believe this is a mistake!");
         spdlog::warn("=====================================    GPU WARNING     =====================================");
         spdlog::warn("");
+        GPU_Checker::bForcePerformanceMode = true;
         alreadyWarned = true;
         return;
     }
@@ -366,8 +371,10 @@ void CheckMinimumGPU(const std::string& gpuName, bool logDriver, UINT product, U
         int percent = tier * 100 / kMinimumTier;
         spdlog::warn("GPU WARNING: Estimated performance compared to a {}: {}%", MINIMUM_GPU_NAME, percent);
         spdlog::warn("GPU WARNING: Degraded performance (ie \"Snake moving in slow motion\") and crashing likely to occur.");
+        spdlog::warn("GPU WARNING: Some MGSHDFix features (such as Depth of Field fix) will be limited to performance mode or disabled automatically.");
         spdlog::warn("=====================================    GPU WARNING     =====================================");
         spdlog::warn("");
+        GPU_Checker::bForcePerformanceMode = true;
         alreadyWarned = true;
         return;
     }
@@ -393,5 +400,14 @@ void CheckMinimumGPU(const std::string& gpuName, bool logDriver, UINT product, U
         alreadyWarned = true;
     }
 
+    if (tier < MGSHDFIX_MIN_PERFORMANCE_TIER)
+    {
+        spdlog::info("=====================================    PERFORMANCE NOTICE     =====================================");
+        spdlog::info("GPU NOTICE: {} detected. This GPU is below the optimal performance tier ({} < {}).", sanitizedName, tier, MGSHDFIX_MIN_PERFORMANCE_TIER);
+        spdlog::info("GPU NOTICE: Some MGSHDFix features (such as Depth of Field fix) will be limited to performance mode or disabled automatically.");
+        spdlog::info("=====================================    PERFORMANCE NOTICE     =====================================");
+        GPU_Checker::bForcePerformanceMode = true;
+        alreadyWarned = true;
+    }
 
 }

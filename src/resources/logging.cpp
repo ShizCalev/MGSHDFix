@@ -267,6 +267,8 @@ void Logging::LogSysInfo()
     else if (Util::IsSteamDeck())
     {
         spdlog::info("System Details - Steam Deck / Proton.");
+        spdlog::info("System Details - Some graphical fixes & enhancements (such as Depth of Field & Soft Particles) will be limited to performance mode or disabled automatically.");
+        GPU_Checker::bForcePerformanceMode = true;
     }
     else if (Util::IsLinux())
     {

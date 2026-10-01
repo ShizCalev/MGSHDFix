@@ -4,6 +4,7 @@
 #include "distance_culling.hpp"
 
 #include "gamevars.hpp"
+#include "gpu_check.hpp"
 #include "input_handler.hpp"
 #include "logging.hpp"
 
@@ -15,6 +16,30 @@ namespace
 #else
     bool log_bird = true;
 #endif
+
+    bool bPainOrBossStages = false;
+
+}
+
+void DistanceCulling::HandleLevelTransition()
+{
+    if (!(eGameType & MGS3))
+    {
+        return;
+    }
+
+    if (!GPU_Checker::bForcePerformanceMode)
+    {
+        return;
+    }
+
+    bPainOrBossStages = g_GameVars.IsAnyStage({ MGS3Stages::S201A,   //boss flower arena
+                                                      MGS3Stages::S201A_0, //boss flower arena
+                                                      MGS3Stages::S201A_1, //boss flower arena
+                                                      MGS3Stages::S032B,        //pain cave arena
+                                                      MGS3Stages::S032B_0 });   //pain cave arena
+
+        
 }
 
 void DistanceCulling::Initialize() const
@@ -90,8 +115,11 @@ void DistanceCulling::Initialize() const
     {
         if (bForceGrassAlways || fGrassDistanceScalar != 1.0f)
         {
-            //todo - disable automatically if Util::IsSteamDeck() in the boss's arena.
             MAKE_HOOK_MID(baseModule, "F3 0F 11 83 ?? ?? ?? ?? 41 8B FC", "MGS3: Grass Farclip", {
+                if (GPU_Checker::bForcePerformanceMode && bPainOrBossStages)
+                {
+                    return;
+                }
                ctx.xmm0.f32[0] = g_DistanceCulling.bForceGrassAlways ? std::numeric_limits<float>::max() : ctx.xmm0.f32[0] * g_DistanceCulling.fGrassDistanceScalar;
                 })
 

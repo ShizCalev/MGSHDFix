@@ -5,6 +5,8 @@ class DistanceCulling final
 public:
     void Initialize() const;
 
+    static void HandleLevelTransition();
+
     bool bMGS2_ForceNPCLOD = true;
     bool bAlwaysRenderShellCasings = true;
 
