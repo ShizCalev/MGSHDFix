@@ -116,6 +116,7 @@ namespace MG2_LinkVarBuf
     inline ScriptGlobalValue<77>   GM_SnakeRoomX;
     inline ScriptGlobalValue<78>   GM_SnakeRoomY;
     inline ScriptGlobalValue<79>   GM_SnakeRoom;
+    inline ScriptGlobalValue<219>  GM_ScriptedCall;
     inline ScriptGlobalValue<222>  GM_Frequency;
     inline ScriptGlobalValue<223>  GM_ContactSlot;
     inline ScriptGlobalValue<224>  GM_ReplyIndex;

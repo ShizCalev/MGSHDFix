@@ -90,6 +90,12 @@ namespace MG1_Gamefuncs
 
 namespace MG2_Gamefuncs
 {
+    using AVS_GetLocalizedString_t = const char* (__fastcall*)(unsigned int nBlock, int nIndex, int* pLength);
+    inline AVS_GetLocalizedString_t pfnAVS_GetLocalizedString = nullptr;
+
+    using ScriptCommand_t = int(__fastcall*)(int* pScript, uint8_t nCommand, int* pArgs, char* pStrings, int nCount);
+    inline ScriptCommand_t pfnScriptCommand = nullptr;
+
     using HasItem_t = int(__fastcall*)(int itemId);
     inline HasItem_t HasItem = nullptr;
 
