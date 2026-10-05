@@ -11,6 +11,10 @@ inline bool bIsLauncher = false;
 inline HMODULE baseModule = GetModuleHandle(NULL);
 inline HMODULE engineModule;
 inline HMODULE unityPlayer;
+inline HMODULE mg1Module;
+inline HMODULE mg2Module;
+
+inline constexpr uint64_t kRflagsZeroFlag = 0x40;
 
 
 struct GameInfo

@@ -44,6 +44,33 @@ namespace Memory
         return *field;
     }
 
+    inline uint16_t ReadBE16(const uint8_t* p)
+    {
+        uint16_t nValue;
+        memcpy(&nValue, p, sizeof(nValue));
+        return _byteswap_ushort(nValue);
+    }
+
+    inline uint32_t ReadBE32(const uint8_t* p)
+    {
+        uint32_t nValue;
+        memcpy(&nValue, p, sizeof(nValue));
+        return _byteswap_ulong(nValue);
+    }
+
+    inline uint32_t ReadLE32(const uint8_t* p)
+    {
+        uint32_t nValue;
+        memcpy(&nValue, p, sizeof(nValue));
+        return nValue;
+    }
+
+    inline void WriteBE16(uint8_t* p, uint16_t nValue)
+    {
+        nValue = _byteswap_ushort(nValue);
+        memcpy(p, &nValue, sizeof(nValue));
+    }
+
     uintptr_t GetAbsolute(uintptr_t address) noexcept;
 
     uintptr_t GetRelativeOffset(uint8_t* addr) noexcept;

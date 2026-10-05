@@ -503,3 +503,49 @@ namespace MG1Stages
     MG1_STAGE_LIST
 #undef X
 }
+
+inline constexpr const char* g_MG1StageNames[] =
+{
+    "Infiltration Point",
+    "Building 1: West Elevator 1F",
+    "Building 1: East Elevator 2F",
+    "Building 1: West Elevator 3F",
+    "Building 1: East Elevator B1",
+    "Desert 1",
+    "",
+    "Building 1: 1F Courtyard",
+    "Building 2: 1F Entrance",
+    "Building 2: North Elevator 2F",
+    "Building 2: North Elevator B1",
+    "Desert 2",
+    "",
+    "Building 2: North Elevator Roof",
+    "Building 3: 1F Entrance",
+    "Building 3: Elevator B100",
+    "",
+    "",
+};
+
+inline constexpr const char* g_MG2AreaNames[] =
+{
+    "Infiltration Point",
+    "Zanzibar Bldg. Front Door",
+    "Zanzibar Bldg. 1F Elevator",
+    "Zanzibar Bldg. 3F",
+    "Zanzibar Bldg. 4F",
+    "",
+    "",
+    "Armory / Swamp",
+    "Lost Woods",
+    "",
+    "Highland",
+    "Nariko Desert",
+    "Tower Bldg. Front Door",
+    "Tower Bldg. Roof",
+    "Tower Bldg. 20F Elevator",
+    "Bridge of Sorrow",
+    "",
+    "Rendezvous Point",
+    "Detention Camp",
+    "Underground Base",
+};

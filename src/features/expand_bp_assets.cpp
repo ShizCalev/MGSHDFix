@@ -538,37 +538,23 @@ namespace
 {
 	constexpr size_t kCTXRHeaderSize = 128;
 
-	uint16_t ReadBE16(const uint8_t* p)
-	{
-		uint16_t v;
-		memcpy(&v, p, sizeof(v));
-		return _byteswap_ushort(v);
-	}
-
-	uint32_t ReadBE32(const uint8_t* p)
-	{
-		uint32_t v;
-		memcpy(&v, p, sizeof(v));
-		return _byteswap_ulong(v);
-	}
-
 	// buf must be at least kCTXRHeaderSize bytes and start with the "TXTR" magic.
 	BP_FileSys::CTXRHeader ParseCTXRHeader(const uint8_t* buf)
 	{
 		BP_FileSys::CTXRHeader h;
-		h.version         = ReadBE32(buf + 0x04);
-		h.width           = ReadBE16(buf + 0x08);
-		h.height          = ReadBE16(buf + 0x0A);
-		h.depth           = ReadBE16(buf + 0x0C);
-		h.format          = ReadBE32(buf + 0x0E);
+		h.version         = Memory::ReadBE32(buf + 0x04);
+		h.width           = Memory::ReadBE16(buf + 0x08);
+		h.height          = Memory::ReadBE16(buf + 0x0A);
+		h.depth           = Memory::ReadBE16(buf + 0x0C);
+		h.format          = Memory::ReadBE32(buf + 0x0E);
 		h.hasAlpha        = buf[0x12] != 0;
-		h.additionalFlags = ReadBE32(buf + 0x13);
-		h.minRGBA         = ReadBE32(buf + 0x17);
-		h.maxRGBA         = ReadBE32(buf + 0x1B);
+		h.additionalFlags = Memory::ReadBE32(buf + 0x13);
+		h.minRGBA         = Memory::ReadBE32(buf + 0x17);
+		h.maxRGBA         = Memory::ReadBE32(buf + 0x1B);
 		h.filterHint      = static_cast<int8_t>(buf[0x1F]);
 		h.alphaRefValue   = buf[0x20];
 		h.maxLODOffset    = static_cast<int8_t>(buf[0x21]);
-		h.type            = ReadBE32(buf + 0x22);
+		h.type            = Memory::ReadBE32(buf + 0x22);
 		h.numLevels       = buf[0x26];
 		return h;
 	}
@@ -606,7 +592,7 @@ std::optional<uint64_t> BP_FileSys::HashCTXRTexture(const std::filesystem::path&
 		return std::nullopt;
 	}
 
-	const size_t mip0Size = ReadBE32(&data[kCTXRHeaderSize]);
+	const size_t mip0Size = Memory::ReadBE32(&data[kCTXRHeaderSize]);
 	const size_t mip0Start = kCTXRHeaderSize + 4;
 	if (mip0Start + mip0Size > data.size())
 	{

@@ -275,6 +275,18 @@ void MG1_Gamefuncs::HookGameFuncs()
 }
 
 
+void MG1_Gamefuncs::HookDllGameFuncs()
+{
+    TestFlag = reinterpret_cast<TestFlag_t>(Memory::PatternScan(mg1Module, "40 53 48 83 EC ?? 48 63 D9 E8 ?? ?? ?? ?? 4C 8B C3", "MG1: TestFlag()"));
+}
+
+
+void MG2_Gamefuncs::HookDllGameFuncs()
+{
+    HasItem = reinterpret_cast<HasItem_t>(Memory::PatternScan(mg2Module, "40 53 48 83 EC ?? 8B D9 83 F9 ?? 48 8B 0D ?? ?? ?? ?? 7D ?? E8 ?? ?? ?? ?? 8B CB", "MG2: HasItem()"));
+}
+
+
 void MGS3_Gamefuncs::HookGameFuncs()
 {
     using namespace Shared_Gamefuncs;

@@ -78,8 +78,22 @@ namespace MGS2_GameFuncs
 
 namespace MG1_Gamefuncs
 {
-    
+    using TestFlag_t = int(__fastcall*)(int flag);
+    inline TestFlag_t TestFlag = nullptr;   // equiv of gcl varbuf
+
     void HookGameFuncs();
+
+    void HookDllGameFuncs();
+}
+
+
+
+namespace MG2_Gamefuncs
+{
+    using HasItem_t = int(__fastcall*)(int itemId);
+    inline HasItem_t HasItem = nullptr;
+
+    void HookDllGameFuncs();
 }
 
 

@@ -1,0 +1,20 @@
+#pragma once
+
+enum MG2ItemIndex : uint8_t
+{
+    MG2_ITEM_INDEX_CARD_1 = 17,
+    MG2_ITEM_INDEX_CARD_2 = 18,
+    MG2_ITEM_INDEX_CARD_3 = 19,
+    MG2_ITEM_INDEX_CARD_4 = 20,
+    MG2_ITEM_INDEX_CARD_5 = 21,
+    MG2_ITEM_INDEX_CARD_6 = 22,
+    MG2_ITEM_INDEX_CARD_7 = 23,
+    MG2_ITEM_INDEX_CARD_8 = 24,
+    MG2_ITEM_INDEX_CARD_9 = 25,
+
+    MG2_ITEM_INDEX_MASTER_CARD_LOW = 26,    // opens card levels 1 -> 3
+    MG2_ITEM_INDEX_MASTER_CARD_MID = 27,    // 4 -> 6
+    MG2_ITEM_INDEX_MASTER_CARD_HIGH = 28,   // 7 -> 9
+
+    MG2_ITEM_INDEX_MAX_CARD_LEVEL = 9,
+};
