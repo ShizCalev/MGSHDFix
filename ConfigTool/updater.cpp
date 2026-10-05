@@ -59,8 +59,6 @@ bool LatestVersionChecker::checkForUpdates()
 
 #else // At least one repo URL is defined
 
-#include <windows.h>
-#include <winhttp.h>
 
 #pragma comment(lib, "winhttp.lib")
 

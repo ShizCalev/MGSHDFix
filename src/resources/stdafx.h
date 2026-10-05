@@ -65,3 +65,8 @@
 #include <mutex>
 #include <set>
 #include <thread>
+
+#include <hidsdi.h>
+#include <hidpi.h>
+#include <timeapi.h>
+#include <smmintrin.h>

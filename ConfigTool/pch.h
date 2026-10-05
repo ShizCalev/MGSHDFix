@@ -29,3 +29,6 @@
 #include <optional>
 #include <regex>
 #include <sstream>
+
+#include <winhttp.h>
+#include <d3d11.h>

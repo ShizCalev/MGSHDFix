@@ -3,7 +3,6 @@
 #include "busy_loop_fix.hpp"
 #include "logging.hpp"
 #include "helper.hpp"
-#include <timeapi.h>
 #include <gamevars.hpp>
 
 #pragma comment(lib, "winmm.lib")

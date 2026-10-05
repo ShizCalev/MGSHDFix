@@ -5,7 +5,6 @@
 #include "logging.hpp"
 #include "d3d11_api.hpp"
 
-#include <smmintrin.h>
 
 //mgs2x\source\user\takabe\effect1\raster.c -> NewRasterEffect() | (mgs2x\source\user\skoba\weapon\equip_layout.c -> NewDEMO_Equip() / mgs2x\source\user\skoba\weapon\vtr_layout.c -> NewVtrSight() / mgs2x\source\user\skoba\weapon\ray_layout.c -> NewRaySight())
 

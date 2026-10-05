@@ -5,7 +5,6 @@
 #include "logging.hpp"
 #include "gamevars.hpp"
 
-#include <hidsdi.h>
 #pragma comment(lib, "hid.lib")
 
 // libgv\pad.c -> setup_pressure() flattens GV_PAD.pressure[12] to 0xFF/0x00 for any pad the engine

@@ -5,8 +5,6 @@
 #include "common.hpp"
 #include "logging.hpp"
 
-#include <hidsdi.h>
-#include <hidpi.h>
 #pragma comment(lib, "hid.lib")
 
 // The MC only rumbles through ISteamInput, which cannot see a DsHidMini DualShock 3; tap the
