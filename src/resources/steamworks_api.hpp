@@ -1,7 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <cstdint>
 
 #pragma warning(push)
 #pragma warning(disable:4828)

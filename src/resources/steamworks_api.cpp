@@ -226,11 +226,6 @@ void SteamAPI::Setup() const
 #include <setupapi.h>
 #include <cfgmgr32.h>
 #include <spdlog/spdlog.h>
-#include <string>
-#include <map>
-#include <vector>
-#include <regex>
-#include <algorithm>
 
 #pragma comment(lib, "setupapi.lib")
 

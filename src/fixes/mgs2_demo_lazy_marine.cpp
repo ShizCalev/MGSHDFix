@@ -8,9 +8,6 @@
 #include "logging.hpp"
 #include "mgs2_demo_patches.hpp"
 
-#include <algorithm>
-#include <array>
-#include <cmath>
 
 namespace
 {

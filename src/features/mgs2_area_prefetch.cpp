@@ -7,14 +7,6 @@
 #include "mgs2_override_probe_cache.hpp"
 #include "expand_bp_assets.hpp"
 
-#include <algorithm>
-#include <atomic>
-#include <condition_variable>
-#include <fstream>
-#include <functional>
-#include <mutex>
-#include <thread>
-#include <unordered_set>
 
 // A first visit through a door mostly waits on cold files. The stage script names every area its doors lead to,
 // so once an area is up, read those areas' files in the background, picked the way the loader picks them.

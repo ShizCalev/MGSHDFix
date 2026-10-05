@@ -4,11 +4,6 @@
 #include "logging.hpp"
 #include "mgs3_film_grain.hpp"
 
-#include <array>
-#include <atomic>
-#include <cmath>
-#include <cstring>
-#include <vector>
 
 namespace
 {

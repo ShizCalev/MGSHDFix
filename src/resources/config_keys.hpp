@@ -3,8 +3,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <string>
-#include <initializer_list>
 
 namespace ConfigKeys
 {

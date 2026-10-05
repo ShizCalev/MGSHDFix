@@ -9,7 +9,6 @@
 #include "mgs2_linkvarbuf.hpp"
 #include "mgs2_status_flags.hpp"
 
-#include <algorithm>
 
 
 namespace

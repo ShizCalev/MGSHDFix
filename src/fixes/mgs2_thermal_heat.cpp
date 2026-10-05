@@ -6,7 +6,6 @@
 #include "d3d11_api.hpp"
 #include "mgs2_blood_stains.hpp"
 
-#include <algorithm>
 
 using Microsoft::WRL::ComPtr;
 

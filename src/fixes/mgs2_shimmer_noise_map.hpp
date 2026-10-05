@@ -1,8 +1,5 @@
 #pragma once
 
-#include <array>
-#include <cstddef>
-#include <cstdint>
 
 namespace mgs2_shimmer_noise_map
 {

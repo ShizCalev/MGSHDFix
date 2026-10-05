@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "mgs2_rotor_procession.hpp"
 
-#include <cmath>
-#include <unordered_map>
 
 #include "common.hpp"
 #include "logging.hpp"

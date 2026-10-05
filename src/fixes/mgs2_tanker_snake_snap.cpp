@@ -7,8 +7,6 @@
 #include "logging.hpp"
 #include "d3d11_api.hpp"
 
-#include <unordered_map>
-#include <cmath>
 
 namespace
 {

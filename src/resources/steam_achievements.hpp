@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 
 // ==============================
 // Metal Gear 1 & 2

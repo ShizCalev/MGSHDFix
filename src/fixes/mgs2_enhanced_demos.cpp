@@ -7,8 +7,6 @@
 #include "game_funcs.hpp"
 #include "gamevars.hpp"
 
-#include <unordered_map>
-#include <vector>
 
 // Cutscene mod support: any effect chara id works in any stage, and the effect prim
 // pool is bigger for dense scenes. Stock demos are unaffected.
