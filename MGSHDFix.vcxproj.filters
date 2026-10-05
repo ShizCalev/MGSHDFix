@@ -233,6 +233,9 @@
     <ClCompile Include="src\fixes\mgs2_parrot_radar_fix.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\mg1_telescope_hud_fix.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_hostage_model.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -701,6 +704,9 @@
       <Filter>Features\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_parrot_radar_fix.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\mg1_telescope_hud_fix.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\playtime_fixes.hpp">

@@ -41,6 +41,7 @@
     <ClCompile Include="src\fixes\mgs2_hostage_model.cpp" />
     <ClCompile Include="src\fixes\mgs2_ray_photo_voice.cpp" />
     <ClCompile Include="src\fixes\mgs2_parrot_radar_fix.cpp" />
+    <ClCompile Include="src\fixes\mg1_telescope_hud_fix.cpp" />
     <ClCompile Include="src\fixes\playtime_fixes.cpp" />
     <ClCompile Include="src\fixes\mgs2_ai_ray_vision.cpp" />
     <ClCompile Include="src\fixes\mgs2_title_lightning.cpp" />
@@ -225,6 +226,7 @@
     <ClInclude Include="src\fixes\mgs2_hostage_model.hpp" />
     <ClInclude Include="src\fixes\mgs2_ray_photo_voice.hpp" />
     <ClInclude Include="src\fixes\mgs2_parrot_radar_fix.hpp" />
+    <ClInclude Include="src\fixes\mg1_telescope_hud_fix.hpp" />
     <ClInclude Include="src\fixes\playtime_fixes.hpp" />
     <ClInclude Include="src\fixes\mgs2_ai_ray_vision.hpp" />
     <ClInclude Include="src\fixes\mgs2_title_lightning.hpp" />

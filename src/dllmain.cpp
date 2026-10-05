@@ -146,6 +146,8 @@
 #include "mgs_smaa.hpp"
 #include "caption_replacements.hpp"
 #include "mg1_linkvarbuf.hpp"
+#include "game_funcs.hpp"
+#include "mg1_telescope_hud_fix.hpp"
 #include "mg2_linkvarbuf.hpp"
 #include "screenspace_fixes.hpp"
 #include "windows_preferred_gpu.hpp"
@@ -155,14 +157,39 @@
 namespace
 {
 
+    bool HasGameModule(HMODULE hModule, const char* szName)
+    {
+        if (hModule)
+        {
+            return true;
+        }
+
+        const std::string sMessage = std::string("fuck, ") + szName + " module wasn't found. yell at shiz on github.";
+        MessageBoxA(nullptr, sMessage.c_str(), "MGSHDFix", MB_OK | MB_ICONERROR);
+        return false;
+    }
+
     void InitMG1()
     {
+        mg1Module = GetModuleHandleW(L"mg1.dll");
+        if (!HasGameModule(mg1Module, "mg1"))
+        {
+            return;
+        }
         MG1_LinkVarBuf::Initialize();
+        MG1_Gamefuncs::HookDllGameFuncs();
+        MG1_TelescopeHudFix::Apply();
     }
 
     void InitMG2()
     {
+        mg2Module = GetModuleHandleW(L"mg2.dll");
+        if (!HasGameModule(mg2Module, "mg2"))
+        {
+            return;
+        }
         MG2_LinkVarBuf::Initialize();
+        MG2_Gamefuncs::HookDllGameFuncs();
     }
 
 }
