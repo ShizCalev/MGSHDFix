@@ -72,6 +72,14 @@ const std::vector<std::pair<wxString, std::vector<Field>>> kTabs = {
         { (MG|MGS2|MGS3), ConfigKeys::BusyLoopFix_Section, ConfigKeys::BusyLoopFix_Setting, ConfigKeys::BusyLoopFix_Help, ConfigKeys::BusyLoopFix_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::BusyLoopFix_Option_Full, {ConfigKeys::BusyLoopFix_Option_Full, ConfigKeys::BusyLoopFix_Option_Half, ConfigKeys::BusyLoopFix_Option_Disabled} },
 
+
+
+                { (MG), ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, ConfigKeys::MG1_Door_Cards_Enabled_Help, ConfigKeys::MG1_Door_Cards_Enabled_Tooltip,
+          std::nullopt, false, Field::Bool, false },
+
+
+
+
         { (MG|MGS2|MGS3), ConfigKeys::ForceStereoAudio_Section, ConfigKeys::ForceStereoAudio_Setting, ConfigKeys::ForceStereoAudio_Help, ConfigKeys::ForceStereoAudio_Tooltip,
           std::nullopt, false, Field::Choice, 0, 0, 0, "", {ConfigKeys::ForceStereoAudio_Option_Stereo, ConfigKeys::ForceStereoAudio_Option_Surround} },
 

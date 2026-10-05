@@ -128,6 +128,13 @@ namespace ConfigKeys
     constexpr const char* MG1_Correct_Aspect_Ratio_Enabled_Tooltip = "Corrects the viewport's dimensions from the MSX2's raw internal aspect ratio (64:53 / 256x212) to the intended CRT aspect ratio of 4:3.";
 
 
+    constexpr const char* MG1_Door_Cards_Enabled_Section = "Tweaks and Restoration";
+    constexpr const char* MG1_Door_Cards_Enabled_Setting = "Doors Check Inventory for Keycards (MG1)";
+    constexpr const char* MG1_Door_Cards_Enabled_Help = "(Suggested ON)";
+    constexpr const char* MG1_Door_Cards_Enabled_Tooltip = "Makes doors automatically open up based on the keycards in your inventory (the same way keycards work in MGS1/MGS2), instead of only for the card you have equipped.\n"
+        "\n"
+        "This is obviously significantly faster (and safer in gas areas) than doing manual inventory management, so check if your speedrunning category's rules allow it.";
+
     constexpr const char* Caption_Scale_Section = "Caption Settings";
     constexpr const char* Caption_Scale_Setting = "Caption Size (%)";
     constexpr const char* Caption_Scale_Help = "";

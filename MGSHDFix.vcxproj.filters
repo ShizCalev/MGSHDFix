@@ -392,6 +392,9 @@
     <ClCompile Include="src\features\mgs2_fast_doors.cpp">
       <Filter>Features</Filter>
     </ClCompile>
+    <ClCompile Include="src\features\mg1_door_cards.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
     <ClCompile Include="src\features\mgs2_area_prefetch.cpp">
       <Filter>Features</Filter>
     </ClCompile>
@@ -685,6 +688,9 @@
     <ClInclude Include="src\resources\mgs2_equipment_enums.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\resources\mg1_gamevar_enums.hpp">
+      <Filter>APIs\Headers</Filter>
+    </ClInclude>
     <ClInclude Include="src\resources\game_stages.hpp">
       <Filter>APIs\Headers</Filter>
     </ClInclude>
@@ -941,6 +947,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\features\mgs2_fast_doors.hpp">
+      <Filter>Features\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mg1_door_cards.hpp">
       <Filter>Features\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\features\mgs2_area_prefetch.hpp">

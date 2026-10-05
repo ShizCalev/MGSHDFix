@@ -147,6 +147,7 @@
 #include "caption_replacements.hpp"
 #include "mg1_linkvarbuf.hpp"
 #include "game_funcs.hpp"
+#include "mg1_door_cards.hpp"
 #include "mg1_telescope_hud_fix.hpp"
 #include "mg2_linkvarbuf.hpp"
 #include "screenspace_fixes.hpp"
@@ -178,6 +179,7 @@ namespace
         }
         MG1_LinkVarBuf::Initialize();
         MG1_Gamefuncs::HookDllGameFuncs();
+        MG1_DoorCards::Initialize();
         MG1_TelescopeHudFix::Apply();
     }
 

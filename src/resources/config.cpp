@@ -94,6 +94,7 @@
 #include "d3d11_text_overlay.hpp"
 #include "game_funcs.hpp"
 #include "mg1_display_scaling.hpp"
+#include "mg1_door_cards.hpp"
 #include "mgs2_codec_background.hpp"
 #include "mgs2_contrast_fix.hpp"
 #include "mgs2_ai_ray_vision.hpp"
@@ -1345,6 +1346,9 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MG1_Correct_Aspect_Ratio_Enabled_Section, ConfigKeys::MG1_Correct_Aspect_Ratio_Enabled_Setting, MG1_DisplayScaling::bCorrectTo4x3);
     LOG_CONFIG(ConfigKeys::MG1_Correct_Aspect_Ratio_Enabled_Section, ConfigKeys::MG1_Correct_Aspect_Ratio_Enabled_Setting, MG1_DisplayScaling::bCorrectTo4x3);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, MG1_DoorCards::bEnabled);
+    LOG_CONFIG(ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, MG1_DoorCards::bEnabled);
 
 
 
