@@ -7,6 +7,7 @@
 #include "scene_depth.hpp"
 
 #include "expand_bp_assets.hpp"
+#include "gpu_check.hpp"
 
 // Sprites get sliced by the z-test. Puffs fade out near the scene behind them.
 // A lamp stays whole as long as its light can be seen.
@@ -394,6 +395,13 @@ void MGS2SoftParticles::OnDeviceReady()
 {
     if (!(eGameType & MGS2) || !bEnabled)
     {
+        return;
+    }
+
+    if (GPU_Checker::bForcePerformanceMode)
+    {
+        spdlog::info("MGS2SoftParticles: GPU below optimal performance tier. Soft particles are disabled for performance.");
+        bEnabled = false;
         return;
     }
 

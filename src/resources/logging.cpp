@@ -159,7 +159,7 @@ void Logging::Initialize()
     spdlog::info("---------- Logging loaded in: {} ms ----------", duration);
 }
 
-std::string Logging::GetSteamOSVersion()
+std::string Logging::GetLinuxOSVersion()
 {
     std::ifstream os_release("/etc/os-release");
     std::string line;
@@ -174,10 +174,11 @@ std::string Logging::GetSteamOSVersion()
             {
                 return line.substr(first_quote + 1, last_quote - first_quote - 1);
             }
-            return line.substr(13); // fallback
+            return line.substr(12); // fallback
         }
     }
-    return "SteamOS (Unknown Version)";
+
+    return "Linux (Unknown Distro)";
 }
 
 ///Prints CPU, GPU, and RAM info to the log to expedite common troubleshooting.
@@ -207,9 +208,13 @@ void Logging::LogSysInfo()
     std::vector<std::string> uniqueGpus;
     std::unordered_set<std::string> seenGpus;
 
-    if (Util::IsSteamOS())
+    if (Util::IsSteamDeck())
     {
         spdlog::info("System Details - Detected Steam Deck (SteamOS / Proton).");
+    }
+    else if (Util::IsLinux())
+    {
+        spdlog::info("System Details - Detected Linux / Wine.");
     }
     else
     {
@@ -259,9 +264,15 @@ void Logging::LogSysInfo()
     {
         CheckMinimumGPU(uniqueGpus[0], false, 0, 0, 0, 0);
     }
-    else if (Util::IsSteamOS())
+    else if (Util::IsSteamDeck())
     {
-        spdlog::info("System Details - SteamOS / Wine.");
+        spdlog::info("System Details - Steam Deck / Proton.");
+        spdlog::info("System Details - Some graphical fixes & enhancements (such as Depth of Field & Soft Particles) will be limited to performance mode or disabled automatically.");
+        GPU_Checker::bForcePerformanceMode = true;
+    }
+    else if (Util::IsLinux())
+    {
+        spdlog::info("System Details - Linux / Wine.");
     }
     else if (uniqueGpus.size() == 0)
     {
@@ -285,9 +296,9 @@ void Logging::LogSysInfo()
     DWORD windowsBuildNumber = 0;
     bool isWindows11 = false;
 
-    if (Util::IsSteamOS())
+    if (Util::IsLinux())
     {
-        os = GetSteamOSVersion();
+        os = GetLinuxOSVersion();
     }
     else
     {
@@ -354,7 +365,7 @@ void Logging::LogSysInfo()
     if (!os.empty())
     {
         spdlog::info("System Details - OS:  {}", os);
-        if (!Util::IsSteamOS())
+        if (!Util::IsLinux())
         {
             constexpr auto MinimumWindows10Version = "10.0.19045.6332"; //September 9, 2025 / 22H2 / KB5065429
             constexpr auto MinimumWindows11Version = "10.0.26100.4946"; //August 12, 2025 / 24H2 / KB5063878

@@ -4,13 +4,15 @@
 #include "common.hpp"
 #include "custom_resolution_and_borderless.hpp"
 #include "d3d11_api.hpp"
-#include "gamevars.hpp"
 #include "helper.hpp"
 #include "scene_depth.hpp"
 #ifndef RELEASE_BUILD
 #include "input_handler.hpp"
 #endif
 #include "logging.hpp"
+
+#include "gpu_check.hpp"
+
 
 namespace
 {
@@ -3682,6 +3684,13 @@ void DepthOfFieldFixes::OnDeviceReady()
     if (!(eGameType & (MGS2 | MGS3)) || !bEnabled)
     {
         return;
+    }
+
+
+    if (!bHalfRes && GPU_Checker::bForcePerformanceMode)
+    {
+        spdlog::info("Depth of Field: GPU is below optimal performance tier. Depth of Field will be limited to performance mode");
+        bHalfRes = true;
     }
 
     const ULONGLONG started = GetTickCount64();

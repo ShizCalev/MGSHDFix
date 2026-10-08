@@ -95,6 +95,29 @@ namespace
         hashObjectSize = gSha1HashObjectSize;
         return true;
     }
+
+
+    bool IsRunningUnderWine()
+    {
+        static bool bCheckedWine = false;
+        static bool bIsWine = false;
+
+        if (bCheckedWine)
+        {
+            return bIsWine;
+        }
+
+        bCheckedWine = true;
+
+        const HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+        if (!ntdll)
+        {
+            return false;
+        }
+
+        bIsWine = GetProcAddress(ntdll, "wine_get_version") != nullptr;
+        return bIsWine;
+    }
 }
 
 namespace Memory
@@ -716,13 +739,6 @@ namespace Util
         return "File description not found.";
     }
 
-    bool IsRunningUnderWine()
-    {
-        HMODULE ntdll = GetModuleHandleA("ntdll.dll");
-        if (!ntdll) return false;
-        return GetProcAddress(ntdll, "wine_get_version") != nullptr;
-    }
-
     ///Scans all valid ASI directories for any .asi files matching the fileName.
     bool CheckForASIFiles(std::string fileName, bool checkForDuplicates, bool setFixPath, const char* checkCreationDate)
     {
@@ -796,21 +812,28 @@ namespace Util
         return "UNKNOWN";
     }
 
-    bool IsSteamOS()
+
+    bool IsSteamDeck()
     {
         static bool bCheckedSteamDeck = false;
+
         static bool bIsSteamDeck = false;
         if (bCheckedSteamDeck)
         {
             return bIsSteamDeck;
         }
+
         bCheckedSteamDeck = true;
-        // Check for Proton/Steam Deck environment variables
-        if (std::getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH") || std::getenv("STEAM_COMPAT_DATA_PATH") || std::getenv("XDG_SESSION_TYPE"))
-        {
-            bIsSteamDeck = true;
-        }
+
+        const char* steamDeck = std::getenv("SteamDeck");
+        bIsSteamDeck = steamDeck && std::strcmp(steamDeck, "1") == 0;
+
         return bIsSteamDeck;
+    }
+
+    bool IsLinux()
+    {
+        return IsSteamDeck() || IsRunningUnderWine();
     }
 
     std::string StripQuotes(const std::string& value)

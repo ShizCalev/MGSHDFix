@@ -4,6 +4,7 @@
 
 #include "d3d11_text_overlay.hpp"
 #include "depth_of_field.hpp"
+#include "distance_culling.hpp"
 #include "game_funcs.hpp"
 #include "keep_aiming_after_firing.hpp"
 #include "logging.hpp"
@@ -323,6 +324,8 @@ void GameVars::OnLevelTransition()
         MGS2_TitleLightning::HandleLevelTransition();
         MGS2_OverrideProbeCache::HandleLevelTransition();
         MGS2_AreaPrefetch::HandleLevelTransition();
+        DistanceCulling::HandleLevelTransition();
+
 
     }
     else if (eGameType & MGS3)

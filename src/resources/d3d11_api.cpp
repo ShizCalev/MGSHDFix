@@ -367,7 +367,7 @@ namespace
                             UINT subVersion = HIWORD(driverVersion.LowPart);
                             UINT build = LOWORD(driverVersion.LowPart);
 
-                            if (!Util::IsSteamOS())
+                            if (!Util::IsLinux())
                             {
                                 CheckMinimumGPU(gpuName, true, product, version, subVersion, build);
                             }
