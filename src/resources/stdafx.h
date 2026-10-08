@@ -44,6 +44,13 @@
 #include <numbers>
 #include <bcrypt.h> //sha256
 #include <limits>
+#include <atomic>
+#include <memory>
+#include <cmath>
+#include <cwctype>
+#include <thread>
+#include <charconv>
+#include <deque>
 
 
 #include <shellapi.h> //ShellExecuteA
