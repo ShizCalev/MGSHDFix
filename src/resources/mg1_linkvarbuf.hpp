@@ -40,6 +40,7 @@ namespace MG1_LinkVarBuf
     inline int32_t* pTelescopeMode = nullptr;
     inline int32_t* pBossSurvival = nullptr;
     inline int32_t* pGuardCount = nullptr;
+    inline int* pTextFade = nullptr;
 
     template <int32_t*& Ptr>
     struct GlobalValue
@@ -247,6 +248,12 @@ namespace MG1_LinkVarBuf
 
     inline void Initialize()
     {
+        uint8_t* pTextFadeScan = Memory::PatternScan(mg1Module, "44 8B 0D ?? ?? ?? ?? 41 81 F9", "MG1: ComposeFrame() : text layer fade");
+        if (pTextFadeScan)
+        {
+            pTextFade = reinterpret_cast<int*>(Memory::GetRipRelativeAddress(pTextFadeScan, 3, 7));
+        }
+
         playStats = reinterpret_cast<PlayStats*>(Memory::GetRelativeOffset(Memory::PatternScan(mg1Module, "48 63 05 ?? ?? ?? ?? 48 6B C8", "MG1: playStats (GM_PlayTime)") + 3));
 
         roomPosition = reinterpret_cast<RoomPosition*>(Memory::GetRelativeOffset(Memory::PatternScan(mg1Module, "8B 15 ?? ?? ?? ?? 48 8B C8", "MG1: roomPosition (GM_Stage)") + 2));

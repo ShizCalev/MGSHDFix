@@ -39,6 +39,8 @@ namespace MG2_LinkVarBuf
     inline PlayStats* playStats = nullptr;
     inline int32_t* pScriptGlobals = nullptr;
     inline uintptr_t* pSpriteLists = nullptr;
+    inline int* pTextFade = nullptr;
+
 
     template <typename T, uintptr_t Offset>
     struct StateVarValue
@@ -203,6 +205,12 @@ namespace MG2_LinkVarBuf
         pScriptGlobals = reinterpret_cast<int32_t*>(Memory::GetRelativeOffset(Memory::PatternScan(mg2Module, "4C 8D 25 ?? ?? ?? ?? 8D 42", "MG2: pScriptGlobals (GM_Scene)") + 3));
 
         pSpriteLists = reinterpret_cast<uintptr_t*>(Memory::GetRelativeOffset(Memory::PatternScan(mg2Module, "48 8D 05 ?? ?? ?? ?? 48 63 DA", "MG2: pSpriteLists (GetSprite)") + 3));
+
+        uint8_t* pTextFadeScan = Memory::PatternScan(mg2Module, "44 8B 0D ?? ?? ?? ?? 41 81 F9", "MG2: text layer fade");
+        if (pTextFadeScan)
+        {
+            pTextFade = reinterpret_cast<int*>(Memory::GetRipRelativeAddress(pTextFadeScan, 3, 7));
+        }
 
         spdlog::info("GameVars: MG2 stateSlot address is mg2.dll+{:X}", (uintptr_t)stateSlot - (uintptr_t)mg2Module);
         spdlog::info("GameVars: MG2 playStats address is mg2.dll+{:X}", (uintptr_t)playStats - (uintptr_t)mg2Module);
