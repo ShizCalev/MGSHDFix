@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-#include <cstdlib>
 
 #include "expand_bp_assets.hpp"
 

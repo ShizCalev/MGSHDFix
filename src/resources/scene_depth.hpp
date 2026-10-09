@@ -1,7 +1,5 @@
 #pragma once
 
-#include <d3d11.h>
-#include <wrl/client.h>
 
 // Shared read access to the scene depth buffer, for fixes that need scene distance (occlusion, soft
 // particles, depth fog). The game's depth is DSV-only (not shader-readable), so we copy whatever depth

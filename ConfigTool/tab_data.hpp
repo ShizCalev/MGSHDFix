@@ -24,9 +24,7 @@
 // ============================================================================
 #pragma once
 
-#include <vector>
 #include <wx/string.h>
-#include <optional>
 
 enum ConfigGameFlag
 {

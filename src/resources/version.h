@@ -1,6 +1,5 @@
 ﻿#pragma once
 // ReSharper disable CppClangTidyModernizeMacroToEnum
-#include <string>
 
 // Core name & version
 #define FIX_NAME "MGSHDFix"

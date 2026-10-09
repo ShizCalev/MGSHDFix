@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "mgs2_demo_blur.hpp"
-#include <algorithm>
 
 #include "common.hpp"
 #include "d3d11_api.hpp"

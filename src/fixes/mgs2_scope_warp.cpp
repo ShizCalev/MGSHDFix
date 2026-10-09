@@ -6,9 +6,6 @@
 #include "logging.hpp"
 #include "mgs2_autopacket.hpp"
 
-#include <cmath>
-#include <cstdint>
-#include <cstring>
 
 // scr_sight builds the scope lens on the PS2 crack_pack path (dmapack->packet[]), which the D3D
 // backend never draws, so the fish-eye is invisible. scr_goggles uses the autopacket path and works.

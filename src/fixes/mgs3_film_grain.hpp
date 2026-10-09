@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 
 struct IDXGISwapChain;
 struct ID3D11DeviceContext;

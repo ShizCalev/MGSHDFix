@@ -39,6 +39,7 @@
 #include <functional>
 #include <optional>
 #include <array>
+#include <atomic>
 #include <unordered_set>
 #include <unordered_map>
 #include <numbers>
@@ -55,3 +56,17 @@
 
 #include <hidusage.h>
 #include <Xinput.h> //not actually using xinput, as steam input blocks it out - just using the VK defs for the input handler.
+
+#include <cmath>
+#include <condition_variable>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <mutex>
+#include <set>
+#include <thread>
+
+#include <hidsdi.h>
+#include <hidpi.h>
+#include <timeapi.h>
+#include <smmintrin.h>

@@ -25,7 +25,6 @@
 // ReSharper disable CppClangTidyClangDiagnosticMissingFieldInitializers
 #include "pch.h"
 #include "tab_data.hpp"
-#include <d3d11.h>
 
 #if defined(MGS3_FPS_DEV)
 constexpr int kFirstPersonViewGameFlags = MGS2 | MGS3;

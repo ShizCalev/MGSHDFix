@@ -5,10 +5,6 @@
 #include "logging.hpp"
 #include "expand_bp_assets.hpp"
 
-#include <atomic>
-#include <mutex>
-#include <unordered_map>
-#include <unordered_set>
 
 // Every asset a stage loads is first looked for in up to five override folders. Nearly all miss, and under Proton
 // each miss makes Wine scan the whole folder, seconds per load. Read each folder once and answer from that.

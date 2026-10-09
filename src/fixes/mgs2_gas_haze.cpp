@@ -10,7 +10,6 @@
 #include "gamevars.hpp"
 #include "mgs2_status_flags.hpp"
 
-#include <set>
 
 using namespace MGS2_StatusFlags;
 

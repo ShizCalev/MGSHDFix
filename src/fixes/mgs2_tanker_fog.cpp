@@ -7,9 +7,6 @@
 #include "d3d11_api.hpp"
 #include "expand_bp_assets.hpp"
 
-#include <atomic>
-#include <mutex>
-#include <unordered_set>
 
 namespace
 {

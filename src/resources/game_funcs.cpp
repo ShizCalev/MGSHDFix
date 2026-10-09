@@ -283,6 +283,9 @@ void MG1_Gamefuncs::HookDllGameFuncs()
 
 void MG2_Gamefuncs::HookDllGameFuncs()
 {
+    pfnAVS_GetLocalizedString = reinterpret_cast<AVS_GetLocalizedString_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 8B FA", "MG2: AVS_GetLocalizedString()"));
+    pfnScriptCommand = reinterpret_cast<ScriptCommand_t>(Memory::PatternScan(mg2Module, "40 55 53 56", "MG2: ScriptCommand()"));
+
     HasItem = reinterpret_cast<HasItem_t>(Memory::PatternScan(mg2Module, "40 53 48 83 EC ?? 8B D9 83 F9 ?? 48 8B 0D ?? ?? ?? ?? 7D ?? E8 ?? ?? ?? ?? 8B CB", "MG2: HasItem()"));
 }
 

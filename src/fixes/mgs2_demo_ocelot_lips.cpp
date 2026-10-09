@@ -8,7 +8,6 @@
 #include "logging.hpp"
 #include "mgs2_demo_patches.hpp"
 
-#include <cmath>
 
 namespace
 {

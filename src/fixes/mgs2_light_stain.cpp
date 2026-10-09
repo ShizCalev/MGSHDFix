@@ -5,7 +5,6 @@
 #include "game_funcs.hpp"
 #include "logging.hpp"
 
-#include <unordered_set>
 
 // Sparks and electricity light the walls around them. The PS2 lit a throwaway copy of the wall's colours each frame;
 // the port writes them into the wall itself and never puts the originals back, so the last glow stays painted on.

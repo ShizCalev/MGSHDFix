@@ -4,7 +4,6 @@
 #include "common.hpp"
 #include "logging.hpp"
 
-#include <atomic>
 
 // A door fades the music out over a second, and the next area can't load its sounds until it stops. The PS2's disc
 // load hid that; on PC the black screen just waits. Fade it in an eighth of a second and skip the name on the black.

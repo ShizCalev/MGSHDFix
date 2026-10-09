@@ -5,10 +5,6 @@
 #include "d3d11_api.hpp"
 #include "logging.hpp"
 #include "gamevars.hpp"
-#include <d3d11.h>
-#include <wrl/client.h>
-#include <set>
-#include <mutex>
 using Microsoft::WRL::ComPtr;
 
 namespace

@@ -7,7 +7,6 @@
 
 #include "logging.hpp"
 
-#include <atomic>
 
 // L2 on the title calls down lightning: a grey sheet flips the picture to a negative for a few frames.
 // It asks for double strength, which D3D11 flattens back to one, so the sheet just paints the title grey.

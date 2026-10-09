@@ -21,3 +21,14 @@
 #include <algorithm>
 #include <thread>
 #include <atomic>
+
+#include <chrono>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <optional>
+#include <regex>
+#include <sstream>
+
+#include <winhttp.h>
+#include <d3d11.h>
