@@ -73,7 +73,11 @@ Files without a track gain tag will be played at their original volume regardles
 
 <br />
 
-## Mod Developmenrt
+<br />
+
+
+
+# Mod Developmenrt
 
 Everything passed this point is intended for mod development using our replacement system:
 
@@ -113,7 +117,7 @@ Each track supports a separate JSON file. Loop points must be a timestamp within
 
 <br />
 
-### (Optional) Metadata JSON
+## (Optional) Metadata JSON
 
 MGSHDFix supports more comprehensive metadata json files which include the recording's sample rate, the first non-silent frame (for future seamless playback/silence trimming), and length for file validation:
 
