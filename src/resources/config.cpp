@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "loose_audio_overrides.hpp"
 #include "fixes/mgs2_railgun_beam.hpp"
 
 #include "common.hpp"
@@ -388,6 +389,14 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::VerboseLogging_Section, ConfigKeys::VerboseLogging_Setting, g_Logging.bVerboseLogging);
     LOG_CONFIG(ConfigKeys::VerboseLogging_Section, ConfigKeys::VerboseLogging_Setting, g_Logging.bVerboseLogging);
+
+    ConfigHelper::getValue(ini, ConfigKeys::LooseAudioDebugLogging_Section, ConfigKeys::LooseAudioDebugLogging_Setting, LooseAudioOverrides::sDebugLogging);
+    if (LooseAudioOverrides::sDebugLogging != ConfigKeys::LooseAudioDebugLogging_Disabled && LooseAudioOverrides::sDebugLogging != ConfigKeys::LooseAudioDebugLogging_Trims && LooseAudioOverrides::sDebugLogging != ConfigKeys::LooseAudioDebugLogging_Full)
+    {
+        spdlog::warn("MG1/2: Loose Audio : Invalid logging mode; falling back to Disabled.");
+        LooseAudioOverrides::sDebugLogging = ConfigKeys::LooseAudioDebugLogging_Disabled;
+    }
+    LOG_CONFIG(ConfigKeys::LooseAudioDebugLogging_Section, ConfigKeys::LooseAudioDebugLogging_Setting, LooseAudioOverrides::sDebugLogging);
 
 
     ConfigHelper::getValue(ini, ConfigKeys::ForceWindowSize_Section, ConfigKeys::ForceWindowSize_Setting, CustomResolutionAndBorderless::bOutputResolution);
@@ -1349,6 +1358,18 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, MG1_DoorCards::bEnabled);
     LOG_CONFIG(ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, MG1_DoorCards::bEnabled);
+
+
+
+    ConfigHelper::getValue(ini, ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioOverrides_Setting, LooseAudioOverrides::bEnabled);
+    LOG_CONFIG(ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioOverrides_Setting, LooseAudioOverrides::bEnabled);
+    ConfigHelper::getValue(ini, ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioLoudness_Setting, LooseAudioOverrides::sLoudnessMode);
+    if (LooseAudioOverrides::sLoudnessMode != ConfigKeys::LooseAudioLoudness_Off && LooseAudioOverrides::sLoudnessMode != ConfigKeys::LooseAudioLoudness_Gain && LooseAudioOverrides::sLoudnessMode != ConfigKeys::LooseAudioLoudness_Limiter)
+    {
+        spdlog::warn("MG1/2: Loose Audio : Invalid loudness mode; falling back to Use File Volume.");
+        LooseAudioOverrides::sLoudnessMode = ConfigKeys::LooseAudioLoudness_Off;
+    }
+    LOG_CONFIG(ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioLoudness_Setting, LooseAudioOverrides::sLoudnessMode);
 
 
 

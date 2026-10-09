@@ -13,6 +13,7 @@
     <ClCompile Include="src\fixes\caption_replacements.cpp" />
     <ClCompile Include="src\features\mg1_display_scaling.cpp" />
     <ClCompile Include="src\features\mg1_door_cards.cpp" />
+    <ClCompile Include="src\features\loose_audio_overrides.cpp" />
     <ClCompile Include="src\features\mgs_smaa.cpp" />
     <ClCompile Include="src\fixes\color_correction.cpp" />
     <ClCompile Include="src\features\mgs2_vamp_punch_fix.cpp" />
@@ -207,6 +208,11 @@
     <ClInclude Include="src\resources\mgs3_linkvarbuf.hpp" />
     <ClInclude Include="src\features\mg1_display_scaling.hpp" />
     <ClInclude Include="src\features\mg1_door_cards.hpp" />
+    <ClInclude Include="src\features\loose_audio_overrides.hpp" />
+    <ClInclude Include="src\features\loose_audio_overrides_data.hpp" />
+    <ClInclude Include="external\dr_libs\dr_flac.h" />
+    <ClInclude Include="external\dr_libs\dr_mp3.h" />
+    <ClInclude Include="external\dr_libs\dr_wav.h" />
     <ClInclude Include="src\features\mgs_smaa.hpp" />
     <ClInclude Include="src\fixes\color_correction.hpp" />
     <ClInclude Include="src\features\mgs2_vamp_punch_fix.hpp" />
@@ -390,7 +396,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.asi</TargetExt>
-    <ExternalIncludePath>external\smaa;external\SteamworksSDK\public\steam;external\stb;external\inipp;external\spdlog\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);external\zydis\include;external\zydis\dependencies\zycore\include;external\safetyhook\include</ExternalIncludePath>
+    <ExternalIncludePath>$(ProjectDir)external\dr_libs;external\smaa;external\SteamworksSDK\public\steam;external\stb;external\inipp;external\spdlog\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);external\zydis\include;external\zydis\dependencies\zycore\include;external\safetyhook\include</ExternalIncludePath>
     <IntDir>Intermediate\$(ProjectName)\$(Platform)\Release\</IntDir>
     <CustomBuildAfterTargets />
     <OutDir>$(SolutionDir)$(Platform)\Release\</OutDir>

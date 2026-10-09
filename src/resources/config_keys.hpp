@@ -1171,6 +1171,18 @@ namespace ConfigKeys
     constexpr const char* VerboseLogging_Help = "";
     constexpr const char* VerboseLogging_Tooltip = "Enables verbose logging for debugging purposes.";
 
+    constexpr const char* LooseAudioDebugLogging_Section = "Debugging";
+    constexpr const char* LooseAudioDebugLogging_Setting = "Loose Audio Debug Logging";
+    constexpr const char* LooseAudioDebugLogging_Help = "";
+    constexpr const char* LooseAudioDebugLogging_Disabled = "Disabled";
+    constexpr const char* LooseAudioDebugLogging_Trims = "Trims and Padding";
+    constexpr const char* LooseAudioDebugLogging_Full = "Full Logging";
+    constexpr const char* LooseAudioDebugLogging_Tooltip = "Disabled: No audio load messages.\n"
+                                                         "Trims and Padding: Only logs files shortened or padded to match the game.\n"
+                                                         "Full Logging: Also logs matched lengths, custom loops and file indexing.\n"
+                                                         "\n"
+                                                         "Warnings and errors are always logged. Restart the game after changing this setting.";
+
     constexpr const char* Debugging_Start_In_Dev_Menu_Section = "Debugging";
     constexpr const char* Debugging_Start_In_Dev_Menu_Setting = "Start Game in Developer Menu";
     constexpr const char* Debugging_Start_In_Dev_Menu_Help = "";
@@ -1184,7 +1196,39 @@ namespace ConfigKeys
                                                                   "Afevis's Alternative Titlecards and loading screens mod is also supported.";
 
     
-        
+
+
+    constexpr const char* LooseAudioOverrides_Section = "Modloading Support";
+    constexpr const char* LooseAudioOverrides_Setting = "Load Loose Audio Files";
+    constexpr const char* LooseAudioOverrides_Help = "(More support coming!)";
+
+    constexpr const char* LooseAudioOverrides_Tooltip = "Allows loading loose .flac|.wav|.ogg|.mp3 files placed beside .sdt files.\n"
+        "\n"
+        "Supports FLAC, 16-bit PCM WAV, OGG Vorbis and MP3. (Mono/stereo, 44.1 & 48 kHz)\n"
+        "\n"
+        "In event multiple files exist, they're preferred in this order: FLAC > WAV > OGG > MP3.\n"
+        "\n"
+        "More setup instructions can be found on our GitHub repo!";
+
+
+
+    constexpr const char* LooseAudioLoudness_Setting = "Replacement Audio Normalization";
+    constexpr const char* LooseAudioLoudness_Off = "Use File Volume";
+    constexpr const char* LooseAudioLoudness_Gain = "Match Game Volume";
+    constexpr const char* LooseAudioLoudness_Limiter = "ReplayGain + Limiter";
+    constexpr const char* LooseAudioLoudness_Tooltip = "Uses ReplayGain tags to bring replacement audio up to the Master Collection's vanilla audio volume levels.\n"
+        "\n"
+		"\n"
+        "Use File Volume: No volume adjustment.\n"
+		"\n"
+        "Match Game Volume: Raises the file's volume towards the ReplayGain tag's level until it would cause clipping. (Slightly quieter than vanilla audio levels, but high tones sound 1:1 with the original file.)\n"
+		"\n"
+        "Normalize File Volume: Raises the file's volume exactly to the ReplayGain tag's level, clamping any peaks beyond it that would cause clipping. (Closer to vanilla audio levels, but high tones get squished a little.)\n"
+        "\n"
+		"\n"
+        "No affect on files without ReplayGain tags.";
+
+
 
 
 

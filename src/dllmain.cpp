@@ -150,6 +150,7 @@
 #include "mg1_door_cards.hpp"
 #include "mg1_telescope_hud_fix.hpp"
 #include "mg2_linkvarbuf.hpp"
+#include "loose_audio_overrides.hpp"
 #include "screenspace_fixes.hpp"
 #include "windows_preferred_gpu.hpp"
 //#include "texture_buffer_size.hpp" //disabled for now, the vanilla limit was increased to 128MB/texture in 2.0.0, so there's no much need until 8k gaming is standard & there's a need for a 16k texture pack lol.
@@ -179,6 +180,7 @@ namespace
         }
         MG1_LinkVarBuf::Initialize();
         MG1_Gamefuncs::HookDllGameFuncs();
+        LooseAudioOverrides::Initialize();
         MG1_DoorCards::Initialize();
         MG1_TelescopeHudFix::Apply();
     }
@@ -192,6 +194,7 @@ namespace
         }
         MG2_LinkVarBuf::Initialize();
         MG2_Gamefuncs::HookDllGameFuncs();
+        LooseAudioOverrides::Initialize();
     }
 
 }

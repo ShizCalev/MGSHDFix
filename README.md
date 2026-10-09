@@ -61,6 +61,7 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 #### MG / MG2 Specific Features
 - Option to crop overscan borders on the top/bottom of the screen.
 - Option to correct the game to a 4:3 aspect ratio. (The game was using the MSX2's raw output aspect ratio of 64:53.)
+- `.flac`, `.wav`, `.mp3`, and `.ogg` audio replacement support. (See [audio_replacements](features/audio_replacements.md) for setup info.)
 
 #### MGS2 Specific Features:
 - Option to enable Bluepoint's cancelled Subsistence style Third Person view camera.
@@ -94,6 +95,19 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 
 
 ## Bug Fixes
+
+
+A comprehensive list of all our bugfixes across MG1 / MG2:SS / MGS2 / MGS3.
+
+This list will typically be updated right before new releases. Nightly builds may (and likely do) contain more fixes. ♥
+
+
+<br />
+
+
+There's definitely a lot of fixes that we've made over the years that are missing from this list - so if you notice something that we've forgot, give us a shout!
+
+
 #### Shared Engine Bugs:
 - Fixes hundreds of typos across both MGS2 & MGS3.
 - Fixes idle wait issue, dramatically reducing CPU usage - increasing game performance. [PR#225]
@@ -199,6 +213,7 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 - Fixes MGS3's broken lighting system.
 - Fixes light emitting textures not working.
 - Fixed godrays not blending properly.
+
 
 <br />
 
@@ -401,7 +416,8 @@ With more amazing features and fixes contributed by [@emoose](https://github.com
 [inipp](https://github.com/mcmtroffaes/inipp) for ini reading. <br />
 [spdlog](https://github.com/gabime/spdlog) for logging. <br />
 [safetyhook](https://github.com/cursey/safetyhook) for hooking.  <br />
-[stb](https://github.com/nothings/stb) for png decoding. <br />
+[stb](https://github.com/nothings/stb) for .png decoding & .ogg support. <br />
+[dr_libs](https://github.com/mackron/dr_libs) for .wav, .mp3, and .flac support. <br />
 Gamma correction based off [SweetFX Shader Suite by CeeJay.dk](https://github.com/CeeJayDK/SweetFX). <br />
 SMAA made by [Jorge Jimenez, Jose I. Echevarria, Belen Masia, Fernando Navarro, Diego Gutierrez](https://www.iryoku.com/smaa/). <br />
 Universal Config Tool (made by [@ShizCalev/Afevis](https://github.com/shizcalev). Powered by [SDL3](https://www.libsdl.org/).)

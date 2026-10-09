@@ -29,3 +29,6 @@
 [submodule "external/smaa"]
 	path = external/smaa
 	url = https://github.com/iryoku/smaa
+[submodule "external/dr_libs"]
+	path = external/dr_libs
+	url = https://github.com/mackron/dr_libs.git

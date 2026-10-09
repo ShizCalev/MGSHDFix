@@ -73,6 +73,13 @@ const std::vector<std::pair<wxString, std::vector<Field>>> kTabs = {
 
 
 
+        { (MG), ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioOverrides_Setting, ConfigKeys::LooseAudioOverrides_Help, ConfigKeys::LooseAudioOverrides_Tooltip,
+            std::nullopt, false, Field::Bool, true },
+
+
+        { (MG), ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioLoudness_Setting, "", ConfigKeys::LooseAudioLoudness_Tooltip, std::nullopt,
+            false, Field::Choice, 0, 0, 0, ConfigKeys::LooseAudioLoudness_Limiter, {ConfigKeys::LooseAudioLoudness_Off, ConfigKeys::LooseAudioLoudness_Gain, ConfigKeys::LooseAudioLoudness_Limiter} },
+
                 { (MG), ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, ConfigKeys::MG1_Door_Cards_Enabled_Help, ConfigKeys::MG1_Door_Cards_Enabled_Tooltip,
           std::nullopt, false, Field::Bool, false },
 
@@ -651,6 +658,8 @@ std::nullopt, false, Field::Int, 100, 1, 100},
 
         { (MG|MGS2|MGS3), ConfigKeys::VerboseLogging_Section, ConfigKeys::VerboseLogging_Setting, ConfigKeys::VerboseLogging_Help, ConfigKeys::VerboseLogging_Tooltip,
           std::nullopt, false, Field::Bool, false },
+
+        { (MG), ConfigKeys::LooseAudioDebugLogging_Section, ConfigKeys::LooseAudioDebugLogging_Setting, ConfigKeys::LooseAudioDebugLogging_Help, ConfigKeys::LooseAudioDebugLogging_Tooltip, std::nullopt, false, Field::Choice, 0, 0, 0, ConfigKeys::LooseAudioDebugLogging_Disabled, {ConfigKeys::LooseAudioDebugLogging_Disabled, ConfigKeys::LooseAudioDebugLogging_Trims, ConfigKeys::LooseAudioDebugLogging_Full} },
 
         { (MGS2|MGS3), ConfigKeys::Debugging_Start_In_Dev_Menu_Section, ConfigKeys::Debugging_Start_In_Dev_Menu_Setting, ConfigKeys::Debugging_Start_In_Dev_Menu_Help, ConfigKeys::Debugging_Start_In_Dev_Menu_Tooltip,
           std::nullopt, false, Field::Bool, false },
