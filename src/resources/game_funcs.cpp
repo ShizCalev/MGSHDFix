@@ -277,12 +277,22 @@ void MG1_Gamefuncs::HookGameFuncs()
 
 void MG1_Gamefuncs::HookDllGameFuncs()
 {
+    pfnDrawTextSlot = reinterpret_cast<DrawTextSlot_t>(Memory::PatternScan(mg1Module, "40 53 55 56 57 41 55", "MG1: DrawTextSlot()"));
+    pfnComposeTextLayer = reinterpret_cast<ComposeTextLayer_t>(Memory::PatternScan(mg1Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 8B F1", "MG1: ComposeFrame()"));
+    pfnMeasureTextFont = reinterpret_cast<MeasureTextFont_t>(Memory::PatternScan(mg1Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC ?? 4D 63 F1", "MG1: MeasureTextFont()"));
+    pfnUploadTexture = reinterpret_cast<UploadTexture_t>(Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 33 C0 4C 8D 44 24", "MG1: sub_140025F80() : upload texture"));
+
     TestFlag = reinterpret_cast<TestFlag_t>(Memory::PatternScan(mg1Module, "40 53 48 83 EC ?? 48 63 D9 E8 ?? ?? ?? ?? 4C 8B C3", "MG1: TestFlag()"));
 }
 
 
 void MG2_Gamefuncs::HookDllGameFuncs()
 {
+    pfnDrawTextItem = reinterpret_cast<DrawTextItem_t>(Memory::PatternScan(mg2Module, "40 53 55 56 57 41 55 48 81 EC", "MG2: DrawTextItem()"));
+    pfnComposeTextLayer = reinterpret_cast<ComposeTextLayer_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 8B F1", "MG2: sub_180024460() : compose text layer"));
+    pfnMeasureTextFont = reinterpret_cast<MeasureTextFont_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC ?? 4D 63 F1", "MG2: sub_1800242F0() : measure text"));
+    pfnUploadTexture = reinterpret_cast<UploadTexture_t>(Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 33 C0 4C 8D 44 24", "MG2: sub_140025F80() : upload texture"));
+
     pfnAVS_GetLocalizedString = reinterpret_cast<AVS_GetLocalizedString_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 8B FA", "MG2: AVS_GetLocalizedString()"));
     pfnScriptCommand = reinterpret_cast<ScriptCommand_t>(Memory::PatternScan(mg2Module, "40 55 53 56", "MG2: ScriptCommand()"));
 

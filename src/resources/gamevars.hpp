@@ -6,6 +6,14 @@
 #include "game_stages.hpp"
 #include "mgs2_status_flags.hpp"
 
+// MG1/MG2 text upload CTexture fields
+struct MGHostTexture
+{
+    uint8_t anPadding[0x88];
+    ID3D11ShaderResourceView* pShaderResourceView;
+};
+static_assert(offsetof(MGHostTexture, pShaderResourceView) == 0x88);
+
 struct alignas(16) FVECTOR { float x, y, z, w; };
 
 struct alignas(16) FMATRIX { float m[4][4]; };

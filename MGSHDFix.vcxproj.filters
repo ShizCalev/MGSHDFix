@@ -398,6 +398,9 @@
     <ClCompile Include="src\features\mg1_door_cards.cpp">
       <Filter>Features</Filter>
     </ClCompile>
+    <ClCompile Include="src\features\mg_vector_font.cpp">
+      <Filter>Features</Filter>
+    </ClCompile>
     <ClCompile Include="src\features\mgs2_area_prefetch.cpp">
       <Filter>Features</Filter>
     </ClCompile>
@@ -962,6 +965,12 @@
     <ClInclude Include="external\dr_libs\dr_mp3.h" />
     <ClInclude Include="external\dr_libs\dr_wav.h" />
     <ClInclude Include="src\features\loose_audio_overrides_data.hpp">
+      <Filter>Features</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mg_vector_font.hpp">
+      <Filter>Features</Filter>
+    </ClInclude>
+    <ClInclude Include="src\features\mg_font_bundle.hpp">
       <Filter>Features</Filter>
     </ClInclude>
     <ClInclude Include="src\features\mgs2_area_prefetch.hpp">

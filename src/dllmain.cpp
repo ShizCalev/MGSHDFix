@@ -149,6 +149,7 @@
 #include "game_funcs.hpp"
 #include "mg1_door_cards.hpp"
 #include "mg1_telescope_hud_fix.hpp"
+#include "mg_vector_font.hpp"
 #include "mg2_linkvarbuf.hpp"
 #include "loose_audio_overrides.hpp"
 #include "screenspace_fixes.hpp"
@@ -183,6 +184,7 @@ namespace
         LooseAudioOverrides::Initialize();
         MG1_DoorCards::Initialize();
         MG1_TelescopeHudFix::Apply();
+        MG_VectorFont::InitializeMG1();
     }
 
     void InitMG2()
@@ -195,6 +197,7 @@ namespace
         MG2_LinkVarBuf::Initialize();
         MG2_Gamefuncs::HookDllGameFuncs();
         LooseAudioOverrides::Initialize();
+        MG_VectorFont::InitializeMG2();
     }
 
 }
