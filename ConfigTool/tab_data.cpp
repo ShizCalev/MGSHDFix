@@ -80,6 +80,9 @@ const std::vector<std::pair<wxString, std::vector<Field>>> kTabs = {
         { (MG), ConfigKeys::LooseAudioOverrides_Section, ConfigKeys::LooseAudioLoudness_Setting, "", ConfigKeys::LooseAudioLoudness_Tooltip, std::nullopt,
             false, Field::Choice, 0, 0, 0, ConfigKeys::LooseAudioLoudness_Limiter, {ConfigKeys::LooseAudioLoudness_Off, ConfigKeys::LooseAudioLoudness_Gain, ConfigKeys::LooseAudioLoudness_Limiter} },
 
+        { (MG), ConfigKeys::pszMG_Vector_Font_Enabled_Section, ConfigKeys::pszMG_Vector_Font_Enabled_Setting, ConfigKeys::pszMG_Vector_Font_Enabled_Help, ConfigKeys::pszMG_Vector_Font_Enabled_Tooltip,
+          std::nullopt, false, Field::Bool, true },
+
                 { (MG), ConfigKeys::MG1_Door_Cards_Enabled_Section, ConfigKeys::MG1_Door_Cards_Enabled_Setting, ConfigKeys::MG1_Door_Cards_Enabled_Help, ConfigKeys::MG1_Door_Cards_Enabled_Tooltip,
           std::nullopt, false, Field::Bool, false },
 

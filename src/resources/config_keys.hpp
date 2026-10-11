@@ -133,6 +133,13 @@ namespace ConfigKeys
         "\n"
         "This is obviously significantly faster (and safer in gas areas) than doing manual inventory management, so check if your speedrunning category's rules allow it.";
 
+
+
+    constexpr const char* pszMG_Vector_Font_Enabled_Section = "Tweaks and Restoration";
+    constexpr const char* pszMG_Vector_Font_Enabled_Setting = "High Resolution Font";
+    constexpr const char* pszMG_Vector_Font_Enabled_Help = "";
+    constexpr const char* pszMG_Vector_Font_Enabled_Tooltip = "Replaces all of the game's low-resolution font glyphs with the higher resolution font file that's included in the launcher.";
+
     constexpr const char* Caption_Scale_Section = "Caption Settings";
     constexpr const char* Caption_Scale_Setting = "Caption Size (%)";
     constexpr const char* Caption_Scale_Help = "";

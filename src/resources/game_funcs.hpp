@@ -76,8 +76,25 @@ namespace MGS2_GameFuncs
 
 
 
+namespace MG_Gamefuncs
+{
+    using DrawText_t = void(__fastcall*)(uint32_t* pFrame, int* pText);
+    using ComposeTextLayer_t = void(__fastcall*)(int nDrawText);
+    using MeasureTextFont_t = unsigned int(__fastcall*)(char* pszText, int nStart, int nLength, int nFont);
+    using UploadTexture_t = int64_t(__fastcall*)(void* pTexture, uint32_t* pPixels);
+}
+
 namespace MG1_Gamefuncs
 {
+    using DrawTextSlot_t = MG_Gamefuncs::DrawText_t;
+    inline DrawTextSlot_t pfnDrawTextSlot = nullptr;
+    using ComposeTextLayer_t = MG_Gamefuncs::ComposeTextLayer_t;
+    inline ComposeTextLayer_t pfnComposeTextLayer = nullptr;
+    using MeasureTextFont_t = MG_Gamefuncs::MeasureTextFont_t;
+    inline MeasureTextFont_t pfnMeasureTextFont = nullptr;
+    using UploadTexture_t = MG_Gamefuncs::UploadTexture_t;
+    inline UploadTexture_t pfnUploadTexture = nullptr;
+
     using TestFlag_t = int(__fastcall*)(int flag);
     inline TestFlag_t TestFlag = nullptr;   // equiv of gcl varbuf
 
@@ -90,6 +107,18 @@ namespace MG1_Gamefuncs
 
 namespace MG2_Gamefuncs
 {
+    using DrawTextItem_t = MG_Gamefuncs::DrawText_t;
+    inline DrawTextItem_t pfnDrawTextItem = nullptr;
+
+    using ComposeTextLayer_t = MG_Gamefuncs::ComposeTextLayer_t;
+    inline ComposeTextLayer_t pfnComposeTextLayer = nullptr;
+
+    using MeasureTextFont_t = MG_Gamefuncs::MeasureTextFont_t;
+    inline MeasureTextFont_t pfnMeasureTextFont = nullptr;
+
+    using UploadTexture_t = MG_Gamefuncs::UploadTexture_t;
+    inline UploadTexture_t pfnUploadTexture = nullptr;
+
     using AVS_GetLocalizedString_t = const char* (__fastcall*)(unsigned int nBlock, int nIndex, int* pLength);
     inline AVS_GetLocalizedString_t pfnAVS_GetLocalizedString = nullptr;
 
