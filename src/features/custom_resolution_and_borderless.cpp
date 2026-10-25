@@ -10,6 +10,58 @@
 
 namespace
 {
+    BOOL CALLBACK FindLauncherWindow(HWND hWnd, LPARAM nParam)
+    {
+        DWORD nProcessId = 0;
+        GetWindowThreadProcessId(hWnd, &nProcessId);
+        if (nProcessId != GetCurrentProcessId() || !IsWindowVisible(hWnd))
+        {
+            return TRUE;
+        }
+
+        wchar_t wszClassName[64] {};
+        if (GetClassNameW(hWnd, wszClassName, ARRAYSIZE(wszClassName)) && lstrcmpW(wszClassName, L"UnityWndClass") == 0)
+        {
+            *reinterpret_cast<HWND*>(nParam) = hWnd;
+            return FALSE;
+        }
+        return TRUE;
+    }
+
+    void SetLauncherFullscreenResolution(SafetyHookContext& ctx)
+    {
+        constexpr uint32_t nFullScreenWindow = 1;
+        if (static_cast<uint32_t>(ctx.r8) != nFullScreenWindow)
+        {
+            return;
+        }
+
+        HWND hWnd = nullptr;
+        EnumWindows(FindLauncherWindow, reinterpret_cast<LPARAM>(&hWnd));
+        if (!hWnd)
+        {
+            return;
+        }
+
+        HMONITOR hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        MONITORINFOEXW stMonitor {};
+        stMonitor.cbSize = sizeof(stMonitor);
+        if (!GetMonitorInfoW(hMonitor, &stMonitor))
+        {
+            return;
+        }
+
+        DEVMODEW stMode {};
+        stMode.dmSize = sizeof(stMode);
+        if (!EnumDisplaySettingsW(stMonitor.szDevice, ENUM_CURRENT_SETTINGS, &stMode) || !stMode.dmPelsWidth || !stMode.dmPelsHeight)
+        {
+            return;
+        }
+
+        ctx.rcx = stMode.dmPelsWidth;
+        ctx.rdx = stMode.dmPelsHeight;
+    }
+
     float fAspectRatio;
 
     constexpr float fNativeAspect = 16.0f / 9.0f;
@@ -359,6 +411,15 @@ namespace CustomResolutionAndBorderless
 
     void Init_CustomResolution()
     {
+        if (eGameType & LAUNCHER)
+        {
+            //sub_18004CA40
+            MAKE_HOOK_MID(unityPlayer, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 41 8B D9 41 8B F8 8B F2", "MG | MGS 2 | MGS 3: Launcher fullscreen resolution: Observer.cs -> SetWindowResolution() -> UnityEngine.Screen::SetResolution(): ", {
+                SetLauncherFullscreenResolution(ctx);
+            });
+            return;
+        }
+
         if (eGameType & (MG | MGS2 | MGS3) && bOutputResolution)
         {
             // MGS 2 | MGS 3: Custom Resolution
