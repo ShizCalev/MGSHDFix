@@ -36,6 +36,7 @@
 #include <wx/choice.h>
 #include <wx/stdpaths.h>
 #include <wx/mstream.h>
+#include <wx/tooltip.h>
 #include <SDL3/SDL.h>
 
 #include "helper.hpp"
@@ -50,6 +51,7 @@
 
 constexpr int iWindowSizeX = 716;
 constexpr int iWindowSizeY = 730;
+constexpr long nTooltipDurationMs = 30000;
 constexpr const char* sSettingsFileName = "MGSHDFix.settings";
 constexpr bool bFullLengthFields = false; //if you want the boxes to span half the window's width.
 
@@ -2585,6 +2587,7 @@ public:
 
         wxImage::AddHandler(new wxPNGHandler);
         ConfigFrame* frame = new ConfigFrame();
+        wxToolTip::SetAutoPop(nTooltipDurationMs);
         frame->Show();
 
         frame->CallAfter([frame]()
