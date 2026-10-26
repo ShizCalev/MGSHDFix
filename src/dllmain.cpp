@@ -68,6 +68,7 @@
 #include "mgs2_demo_ocelot_lips.hpp"
 #include "mgs2_demo_patches.hpp"
 #include "mgs2_item_toss_fix.hpp"
+#include "shutdown_fix.hpp"
 #include "mgs2_radar_fixes.hpp"
 #include "cpu_core_limit.hpp"
 #include "aiming_after_equip.hpp"
@@ -695,6 +696,7 @@ static void InitializeSubsystems()
     INITIALIZE(CustomResolutionAndBorderless::Init_CalculateScreenSize());        //9
     INITIALIZE(CustomResolutionAndBorderless::Init_CustomResolution());           //10
 
+    INITIALIZE(ShutdownFix::Initialize());
     INITIALIZE(CustomResolutionAndBorderless::Init_ScaleEffects());               
     INITIALIZE(CustomResolutionAndBorderless::Init_AspectFOVFix());
     INITIALIZE(CustomResolutionAndBorderless::Init_HUDFix());

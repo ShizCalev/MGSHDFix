@@ -539,6 +539,9 @@
     <ClCompile Include="src\fixes\mgs2_item_toss_fix.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
+    <ClCompile Include="src\fixes\shutdown_fix.cpp">
+      <Filter>Fixes</Filter>
+    </ClCompile>
     <ClCompile Include="src\fixes\mgs2_radar_fixes.cpp">
       <Filter>Fixes</Filter>
     </ClCompile>
@@ -1041,6 +1044,9 @@
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_item_toss_fix.hpp">
+      <Filter>Fixes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fixes\shutdown_fix.hpp">
       <Filter>Fixes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="src\fixes\mgs2_radar_fixes.hpp">
