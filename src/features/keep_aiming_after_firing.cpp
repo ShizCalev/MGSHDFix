@@ -61,36 +61,27 @@ void KeepAimingAfterFiring::Initialize()
             }
             if (g_KeepAimingAfterFiring.bAlwaysKeepAiming)
             {
-                ctx.r12 = g_GameVars.GetAimingState();
+                ctx.rip += 7;
                 return;
             }
             //spdlog::info("MGS 2: Keep Aiming After Firing: is_first_person_vr {}, bKeepAimingInFirstPerson {}, PL_Status {:X}", is_first_person_vr, g_KeepAimingAfterFiring.bKeepAimingInFirstPerson, g_GameVars.Get_PL_Status());
             if (g_KeepAimingAfterFiring.bKeepAimingInFirstPerson && (g_GameVars.Get_PL_Status() & (PLAYER_INTRUDE | PLAYER_WATCH)))
             {
-                ctx.r12 = g_GameVars.GetAimingState();
+                ctx.rip += 7;
                 return;
             }
             if (g_KeepAimingAfterFiring.bKeepAimingInFPSMode && (MGS2_First_Person_View::IsActive() || is_first_person_vr))
             {
-                ctx.r12 = g_GameVars.GetAimingState();
+                ctx.rip += 7;
                 //spdlog::info("MGS 2: Keep Aiming After Firing: keeping aiming in FPS mode");
                 return;
             }
             if (g_KeepAimingAfterFiring.bKeepAimingOnLockOn && g_GameVars.MGS2IsHoldingLockOn())
             {
-                ctx.r12 = g_GameVars.GetAimingState();
+                ctx.rip += 7;
                 return;
             }
         });
-        /*
-            MAKE_HOOK_MID(baseModule, "66 44 89 B8 ?? ?? ?? ?? 8B 15", "crouch fix", {
-                if (ctx.r15 == 2 && ctx.rdx == 0xDC)
-                {
-                    ctx.r15 = 1;
-                    spdlog::info("MGS 2: Keep Aiming After Firing - forced");
-                }
-            });
-            */
     }
     else if (eGameType & MGS3)
     {
