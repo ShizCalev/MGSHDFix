@@ -59,6 +59,7 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 - Speedrunner In-Game Timer / statistics overlay
 - Option to restore PS2 memory card strings / messages / captions.
 - Option to restore several flashing effects (ie explosion flashes) which were censored in the Master Collection for photosensitivity reasons.
+- Raw mouse input for MGS2's Bluepoint third person camera (including mouse-wheel zoom) and MGS3's third person camera. (First person is still a work in progress.)
 ##### Translation file loading support!
  - This allows replacement of all .SDT & .GCX text for all languages without having to directly modify any game files.
  - All games support loading a dif.json translation file from the game's /translations folder.
@@ -68,6 +69,7 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 
 #### MG / MG2 Specific Features
 - Custom Developer Menu (stage select, item / equipment modification).
+- Option to disable health loss while cigarettes are equipped. (On by default to match the original MSX2 behavior.)
 - Option to crop overscan borders on the top/bottom of the screen.
 - Option to correct the game to a 4:3 aspect ratio. (The game was using the MSX2's raw output aspect ratio of 64:53.)
 - `.flac`, `.wav`, `.mp3`, and `.ogg` audio replacement support. (See [audio_replacements](features/audio_replacements.md) for setup info.)
@@ -108,6 +110,10 @@ This is a fix that adds custom resolutions, ultrawide support and much more to t
 - Option to make punches count as non-lethal damage against Vamp instead of doing lethal damage.
 - Option to force all NPCs to always use their highest quality polygon/LOD model.
 - Option to use the High Frequency blade anywhere.
+- Load time reductions! A prefetch system loads the assets of every room connected to your current stage ahead of time. (Speedrunner tab -> Load Optimizations)
+  - Preload Only (default): prefetches asset lists only, doesn't affect IGT.
+  - Full (opt in): additionally shortens the fade to black / music fade between levels and skips the first area namecard. Affects IGT.
+- Options to make Olga's bossfight taunt, Stillman's coolant tutorial, Raiden's sword training, and the ending skippable (with correctly adjusted IGT.)
 
 <br />
 
@@ -151,6 +157,8 @@ There's definitely a lot of fixes that we've made over the years that are missin
 - Fixes MGS2 & MGS3's audio reverb being nearly inaudible; volume is now boosted and user-adjustable.
 - Fixes MGS2 & MGS3's blind rendering (lines on Codec portraits / nightvision / thermal goggles) not scaling with resolution.
 - Rewrites some game functions to speed up processing. ♥
+- Fixes blurry text in the launchers when running in fullscreen.
+- Fixes the games hanging in the background when closing / alt-f4'ing. Games now close cleanly.
 
 
 <br />
@@ -161,6 +169,7 @@ There's definitely a lot of fixes that we've made over the years that are missin
 - MG1: Fixes TELESCOPE MODE not properly hiding the rest of the game's UI.
 - MG1: Fixes scorpion pathfinding getting stuck in the bottom right corner of the screen.
 - MG1: Fixes guards always skipping one of their valid alert spawnpoints in every room.
+- MG1: Restores Snake's mouth movements when making outbound transceiver calls.
 - MG1: Fixes multiple music tracks which do not properly loop. (Requires [MG1 / MG2 Restored Audio mod](https://www.nexusmods.com/metalgearandmetalgear2mc/mods/15).)
 - MG2: Fixes outbound transciever calls showing the person who you're calling before you've said the "This is Snake, come in" message.
 - MG2: Fixes several missing doors.
@@ -179,6 +188,9 @@ There's definitely a lot of fixes that we've made over the years that are missin
 - MG2: Restored Bridge of Sorrow cutscene timings, positoning, photosensitive effects, and radio call portrait timings.
 - MG2: Fixes Evasion music using the standard Alert song. (Requires [MG1 / MG2 Restored Audio mod](https://www.nexusmods.com/metalgearandmetalgear2mc/mods/15).)
 - MG2: Restored a missing song variant before Campbell's initial radar explanation. (Requires [MG1 / MG2 Restored Audio mod](https://www.nexusmods.com/metalgearandmetalgear2mc/mods/15).)
+- MG2: Fixes over 180 typos across all languages.
+- MG2: Fixes incorrect colors & flicker timings for the radio's scanline effect.
+- MG1 / MG2: Fixes the in-game timer counting up while idle on the pause and save/load data screens.
 
 
 <br />
@@ -259,6 +271,20 @@ There's definitely a lot of fixes that we've made over the years that are missin
 - Restored the codec's coming-into-focus depth of field effects at the start & end of codec calls. [2011 HDC]
 - Restored the screen after-image / blur effect after firing the stinger. [2011 HDC]
 - Fixed dogtag / items that are dropped from guards having a wider than intended arc - which would sometimes cause the dogtags/item to fall off ledges. [2023 MC]
+- Restored the missing PS2 GS overbright inversion on Snake / Raiden's face when triggering the L1 flash effect on the main title screen. [Example](https://fixupx.com/HEITAIs/status/2102417803911594427)
+- Fixed incorrect texture UVs on the Tanker's opening credits breaking its fade effect.
+- Restored the missing clouds / haze behind the Manhattan skyline during the Tanker exterior cutscenes. (Substance accidentally scaled the model 10x too large.)
+- Fixed sparks, Solidus's tentacle arm effects, & other temporary lighting systems leaving walls lit up after they ended.
+- Fixed a Marine on the top level during the Tanker overview cutscene (T02a1D) who would stop walking & hover in place.
+- Fixed two Marines during Seizure of Metal Gear Ray (T12a1D) who were spawned in early.
+- Fixed Ocelot's opening "Show's over!" lines having incorrectly scaled lipsync animations.
+- Adjusted the shading on the Shell 1 - Shell 2 Connecting Bridge's pipe to make Solidus's dent easier to see.
+- Fixed the ALERT / EVASION indicator not showing up when the radar is turned off.
+- Fixed the radar type not being saved properly. (This caused the radar to randomly reset when loading saves.)
+- Fixed a number of models having incorrect heat signatures when using the thermal goggles.
+- Fixed the thermal goggles using an incorrect color palette.
+- Fixed some double speed lights in the Tanker opening cutscenes.
+- Fixed the M9's hammer not being visible during cutscenes.
 
 <br />
 
