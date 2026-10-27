@@ -102,7 +102,7 @@ namespace Util
     
     std::string GetCommandLineArgs();
 
-    bool IsProcessRunning(const std::filesystem::path& fullPath);
+    //bool IsProcessRunning(const std::filesystem::path& fullPath);
 
     int findStringInVector(const std::string& str, const std::initializer_list<std::string>& search);
 

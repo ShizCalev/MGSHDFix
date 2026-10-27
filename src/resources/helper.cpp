@@ -608,6 +608,7 @@ namespace Util
         return WideToUTF8(cmdLineW);
     }
 
+    /*
     bool IsProcessRunning(const std::filesystem::path& fullPath)
     {
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -646,6 +647,7 @@ namespace Util
         CloseHandle(snapshot);
         return found;
     }
+    */
 
 
     int findStringInVector(const std::string& str, const std::initializer_list<std::string>& search)

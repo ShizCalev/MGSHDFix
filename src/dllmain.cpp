@@ -435,19 +435,6 @@ static void Init_LauncherConfigOverride()
                 }
 
             }
-            else //hasJumpstart && bLauncherConfigSkipLauncher -> we reentered the launcher from the main game. lets terminate once the game finishes closing.
-            {
-                spdlog::info("MG/MG2 | MGS 2 | MGS 3: Launcher jumpstart detected on commandline.");
-                spdlog::info("MG/MG2 | MGS 2 | MGS 3: Waiting for companion game to exit before terminating launcher.");
-                while (Util::IsProcessRunning(sExePath / game->ExeName))
-                {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-                spdlog::info("MG/MG2 | MGS 2 | MGS 3: Companion game exited, exiting launcher.");
-                forcedLauncherShutdown = true;
-                spdlog::shutdown();
-                ExitProcess(EXIT_SUCCESS);
-            }
         }
         else if (bLauncherJumpStart)
         {
@@ -484,6 +471,21 @@ static void Init_LauncherConfigOverride()
         return;
     }
 
+
+    if (bLauncherConfigSkipLauncher && (eGameType & (MG | MGS2 | MGS3)))
+    {
+        const char* pszLabel = "MG | MGS 2 | MGS 3: Skip Launcher: BP_Shutdown_StartLauncher()";
+        //BP_Shutdown_StartLauncher+0
+        if (uint8_t* pStartLauncher = Memory::PatternScan(baseModule, (eGameType & MGS2) ? "40 55 48 8D 6C 24" : "48 89 5C 24 ?? 55 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8D 15", pszLabel))
+        {
+            static SafetyHookInline hSkipLauncher {};
+            hSkipLauncher = safetyhook::create_inline(pStartLauncher, +[]()
+                {
+                    // Shutdown cleanup already completed by this point
+                });
+            LOG_HOOK(hSkipLauncher, pszLabel)
+        }
+    }
 
     // Certain config such as language/button style is normally passed from launcher to game via arguments
     // When game EXE gets ran directly this config is left at default (english game, xbox buttons)
