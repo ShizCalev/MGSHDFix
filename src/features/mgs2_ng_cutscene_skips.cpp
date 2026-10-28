@@ -3,6 +3,7 @@
 
 #include "common.hpp"
 #include "game_stages.hpp"
+#include "gamevars.hpp"
 #include "helper.hpp"
 #include "logging.hpp"
 #include "mgs2_linkvarbuf.hpp"
@@ -126,7 +127,15 @@ void MGS2NGCutsceneSkips::Initialize()
     }
     if (bSwordTraining)   // the 45 second wait after the first swing becomes one frame
     {
-        MGS2_ScriptPatches::Add(MGS2Stages::W43A, { 0x54, 0x74, 0x01, 0x8C, 0x0A, 0x5D }, 3, { 0x01, 0x00 });
+        //_NewDelay+DF
+        MAKE_HOOK_MID(baseModule, "89 46 ?? 44 89 76 ?? C7 86", "MGS 2: NG Cutscene Skips: user\\uehara\\util\\delay.c -> NewDelay() -> UTL_DelayedExecCommand() | @l126: ", {
+            constexpr int nSwordTrainingFrames = 2700;
+            if (static_cast<int>(ctx.rax) == nSwordTrainingFrames && g_GameVars.IsStage(MGS2Stages::W43A))
+            {
+                PayClock(nSwordTrainingFrames - 1, "sword training");
+                ctx.rax = 1;
+            }
+        });
     }
     if (!bEnding)
     {
