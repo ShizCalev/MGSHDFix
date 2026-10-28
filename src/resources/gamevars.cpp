@@ -245,6 +245,30 @@ bool GameVars::MGIsSaveLoadVisible() const
     return *reinterpret_cast<const uintptr_t*>(pDisplay + nActorHandleOffset) == hDisplay && *reinterpret_cast<const float*>(pDisplay + nDisplayBrightnessOffset) <= 0.0f;
 }
 
+int GameVars::MGScreenX() const
+{
+    constexpr int nCentreX = 256;
+    const auto* pActor = pp_MGWrapperActor ? *pp_MGWrapperActor : nullptr;
+    if (!pActor)
+    {
+        return nCentreX;
+    }
+    constexpr size_t nDisplayHandleOffset = 0x90;
+    constexpr size_t nActorHandleOffset = 0x28;
+    constexpr size_t nScreenXOffset = 0x1918;
+    const auto hDisplay = *reinterpret_cast<const uintptr_t*>(pActor + nDisplayHandleOffset);
+    if (!hDisplay)
+    {
+        return nCentreX;
+    }
+    const auto* pDisplay = reinterpret_cast<const uint8_t*>(hDisplay * 16);
+    if (*reinterpret_cast<const uintptr_t*>(pDisplay + nActorHandleOffset) != hDisplay)
+    {
+        return nCentreX;
+    }
+    return *reinterpret_cast<const int*>(pDisplay + nScreenXOffset);
+}
+
 bool GameVars::InCutscene() const //does not count pad demos or FMVs, only full cutscenes.
 {
     return cutsceneFlag == nullptr ? false : (*cutsceneFlag == 1);

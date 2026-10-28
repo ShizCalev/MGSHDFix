@@ -234,6 +234,7 @@ namespace
     SafetyHookMid s_hMessageState {};
     SafetyHookMid s_hPortraitDraw {};
     SafetyHookMid s_hPresent {};
+    uintptr_t s_pSkipSpriteDraw = 0;
     bool s_bRightShown = false;
     bool s_bRightRevealComplete = false;
     Character s_eRightCharacter = CHARACTER_NONE;
@@ -684,11 +685,42 @@ namespace
         }
     }
 
+    [[nodiscard]] bool IsGameScanline(const MG2_LinkVarBuf::Sprite* pSprite)
+    {
+        return pSprite && pSprite->nShown && pSprite->nSheet == MG2_SPRITE_SHEET_TRANSCEIVER && pSprite->nAnim == MG2_TRANSCEIVER_ANIMATION_SCANLINE && pSprite == MG2_LinkVarBuf::GetSprite(MG2_SPRITE_LIST_TRANSCEIVER, MG2_TRANSCEIVER_SLOT_SCANLINE);
+    }
+
+
+    void DrawVanillaScanline(uint32_t* pFrame, int nMilliseconds)
+    {
+        const auto& stSprite = s_stRightPortrait.stSprite;
+        if (!stSprite.nShown || !s_stRightPortrait.bRadio || stSprite.nTime < MG2_PORTRAIT_BIG_BOSS || stSprite.nTime > MG2_PORTRAIT_JACOBSEN || !IsGameScanline(MG2_LinkVarBuf::GetSprite(MG2_SPRITE_LIST_TRANSCEIVER, MG2_TRANSCEIVER_SLOT_SCANLINE)))
+        {
+            s_bRightShown = false;
+            return;
+        }
+        if (!s_bRightShown)
+        {
+            s_bRightShown = true;
+            s_nRightShownMilliseconds = nMilliseconds;
+        }
+        DrawScanline(pFrame, nMilliseconds - s_nRightShownMilliseconds, stSprite.nX + nRightOffsetX, stSprite.nY + nOffsetY, 0);
+    }
+
     void Composite(uint32_t* pFrame)
     {
         const int nMilliseconds = GameMilliseconds();
         const int nTick = nMilliseconds / nTickMilliseconds;
         s_bRightRevealComplete = false;
+
+        if (!MG2_PortraitOverlay::bEnabled)
+        {
+            DrawVanillaScanline(pFrame, nMilliseconds);
+            s_stLeftPortrait = {};
+            s_stRightPortrait = {};
+            s_bMessageTyping = false;
+            return;
+        }
 
         if (s_stRightPortrait.stSprite.nShown)
         {
@@ -760,12 +792,8 @@ bool MG2_PortraitOverlay::IsContactRevealPending()
 
 void MG2_PortraitOverlay::Initialize()
 {
-    if (!bEnabled)
-    {
-        return;
-    }
 
-    if (MG2_SpritePatcher::bAllowReplacements)
+    if (bEnabled && MG2_SpritePatcher::bAllowReplacements)
     {
         for (const mg2_original_sprites::PaletteColour& stColour : mg2_original_sprites::astColours)
         {
@@ -785,18 +813,21 @@ void MG2_PortraitOverlay::Initialize()
         }
     }
 
-    if (MG2_SpritePatcher::bAllowReplacements)
+    if (bEnabled && MG2_SpritePatcher::bAllowReplacements)
     {
         spdlog::info("MG2: Original Sprites : Image and palette patches registered.");
     }
 
-    if (LoadSheet() == 0)
+    if (bEnabled && LoadSheet() == 0)
     {
         spdlog::error("MG2: Portrait Overlay : No usable portraits in the compiled-in sheet. Skipping.");
-        return;
+        bEnabled = false;
     }
 
-    LoadIntroSheet();
+    if (bEnabled)
+    {
+        LoadIntroSheet();
+    }
 
     //DrawMessageText+234
     uint8_t* pMessageState = Memory::PatternScan(mg2Module, "48 63 3D", "MG2: Portrait Overlay : DrawMessageText()+0x234 : completion");
@@ -821,8 +852,24 @@ void MG2_PortraitOverlay::Initialize()
 
         // rsi = visible sprite, before animation advances.
         // [rsp+0x38] is draw mode: zero draws into Present's game layer.
+        constexpr ptrdiff_t nHiddenJumpOffset = -0x55;
+        constexpr uint8_t anHiddenJump[] = { 0x44, 0x39, 0x7E, 0x20, 0x0F, 0x84 };
+        if (std::memcmp(pPortraitDraw + nHiddenJumpOffset, anHiddenJump, sizeof(anHiddenJump)) == 0)
+        {
+            s_pSkipSpriteDraw = Memory::GetRipRelativeAddress(pPortraitDraw + nHiddenJumpOffset + 4, 2, 6);
+        }
+        else
+        {
+            spdlog::warn("MG2: Portrait Overlay : DrawSprite()'s hidden-sprite branch not found. Original scanline effect is still visible.");
+        }
+
         s_hPortraitDraw = safetyhook::create_mid(pPortraitDraw, [](SafetyHookContext& stContext)
         {
+            if (!MG2_PortraitOverlay::bEnabled && s_pSkipSpriteDraw && IsGameScanline(reinterpret_cast<const MG2_LinkVarBuf::Sprite*>(stContext.rsi)))
+            {
+                stContext.rip = s_pSkipSpriteDraw;
+                return;
+            }
             if (*reinterpret_cast<const int*>(stContext.rsp + 0x38) == 0)
             {
                 CapturePortrait(*reinterpret_cast<const MG2_LinkVarBuf::Sprite*>(stContext.rsi));

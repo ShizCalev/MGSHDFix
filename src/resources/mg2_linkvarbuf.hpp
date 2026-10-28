@@ -295,6 +295,7 @@ namespace MG2_LinkVarBuf
     inline ScriptGlobalValue<144>  GM_FrameCounter;
     inline ScriptGlobalValue<227>  GM_SnakePortraitFrame;
     inline ScriptGlobalValue<228>  GM_ContactPortraitFrame;
+    inline ScriptGlobalValue<230>  GM_ContactReveal;
     inline ScriptGlobalValue<231>  GM_SpeakerIsSnake;
 
     [[nodiscard]] inline int GetMasterCardForLevel(int nLevel)

@@ -136,6 +136,7 @@ namespace
         }
         if (GM_Scene == MG2_SCENE_TRANSCEIVER && nCommand == MG2_COMMAND_SPRITE_SET && IsRadioSprite(pArgs, nCount, MG2_TRANSCEIVER_SLOT_CONNECTION, MG2_TRANSCEIVER_ANIMATION_CONNECT, 0))
         {
+            GM_ContactReveal = MG2_CONTACT_REVEAL_HIDDEN; //this doesn't get 0 initialized at startup, so script 114 accidentally flashes the reciever portrait at the start of our fade in anim during the session's first radio call.
             int anContact[] = { MG2_SPRITE_LIST_TRANSCEIVER, MG2_TRANSCEIVER_SLOT_CONTACT, MG2_SPRITE_SHEET_PORTRAITS, MG2_PORTRAIT_ANIMATION_STATIC, GM_ContactPortraitFrame, 0, 1 };
             s_hScriptCommand.call<int>(pScript, MG2_COMMAND_SPRITE_SET, anContact, pStrings, 7);
         }

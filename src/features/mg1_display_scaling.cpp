@@ -21,7 +21,8 @@ namespace
     //4:3 fullscreened = 1.25f x 1.13207547f
     float scaleX = 1.0f;
     float scaleY = 1.0f;
-    constexpr float posX = 0.5f;
+    constexpr float fAlignRangeX = 1280.0f - 768.0f;
+    int s_nDrawnScreenX = -1;
     constexpr float posY = 0.49953704f;
 
     const char* kDisplayModShader = R"(
@@ -121,7 +122,11 @@ namespace
         auto* d        = static_cast<CBLayout*>(m.pData);
         d->scaleX      = scaleX;
         d->scaleY      = scaleY;
-        d->posX        = posX;
+
+        const int nScreenX = g_GameVars.MGScreenX();
+        const float fAnchorX = static_cast<float>(s_nDrawnScreenX < 0 ? nScreenX : s_nDrawnScreenX) / fAlignRangeX;
+        s_nDrawnScreenX = nScreenX;
+        d->posX        = fAnchorX * (1.0f - scaleX) + 0.5f * scaleX;
         d->posY        = posY;
         d->bufferWidth  = w;
         d->bufferHeight = h;

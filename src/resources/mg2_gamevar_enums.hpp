@@ -7,6 +7,11 @@ enum MG2ContactSlot : int
     MG2_CONTACT_SLOT_LAST = 11,
 };
 
+enum MG2ContactReveal : int
+{
+    MG2_CONTACT_REVEAL_HIDDEN = 25,
+};
+
 enum MG2DialogueBlock : int
 {
     MG2_DIALOGUE_BLOCK_CONTACT_BASE = 2,
@@ -278,6 +283,7 @@ enum MG2TransceiverSlot : int
     MG2_TRANSCEIVER_SLOT_STATUS = 1,
     MG2_TRANSCEIVER_SLOT_SNAKE = 2,
     MG2_TRANSCEIVER_SLOT_CONTACT = 3,
+    MG2_TRANSCEIVER_SLOT_SCANLINE = 4,
     MG2_TRANSCEIVER_SLOT_CONNECTION = 5,
 };
 
@@ -286,6 +292,7 @@ enum MG2TransceiverAnimation : int
 {
     MG2_TRANSCEIVER_ANIMATION_STATIC = 0,
     MG2_TRANSCEIVER_ANIMATION_CONNECT = 3,
+    MG2_TRANSCEIVER_ANIMATION_SCANLINE = 6,
 };
 
 enum MG2TransceiverFrame : int
