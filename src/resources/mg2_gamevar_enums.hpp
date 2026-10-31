@@ -25,7 +25,7 @@ enum MG2CampbellDialogue : int
 
 enum MG2StoryFlag : int
 {
-    MG2_FLAG_A15_R4_BRIDGE_OF_SORROW_NASTACHA_DEATH = 43,
+    MG2_FLAG_A15_R4_BRIDGE_OF_SORROW_NATASHA_DEATH = 43,
 };
 
 enum MG2RoomCellFlags : uint16_t
@@ -183,6 +183,7 @@ enum MG2ScriptId : int
     MG2_SCRIPT_CIGARETTES = 133,
     MG2_SCRIPT_ELEVATORS = 135,
     MG2_SCRIPT_GAMEPLAY = 136,
+    MG2_SCRIPT_ENDING_CAST = 142,
 };
 
 enum MG2AlertMode : uint8_t

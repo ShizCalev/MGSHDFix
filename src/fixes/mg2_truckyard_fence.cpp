@@ -88,7 +88,7 @@ void MG2_TruckyardFence::HandleLevelTransition()
         }
     }
 
-    const bool bClosed = MG2_Gamefuncs::pfnTestFlag(MG2_FLAG_A15_R4_BRIDGE_OF_SORROW_NASTACHA_DEATH) == 0;
+    const bool bClosed = MG2_Gamefuncs::pfnTestFlag(MG2_FLAG_A15_R4_BRIDGE_OF_SORROW_NATASHA_DEATH) == 0;
     for (int nY = 0; nY < nBlockedHeight; nY++)
     {
         for (int nX = 0; nX < nBlockedWidth; nX++)
