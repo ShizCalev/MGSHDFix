@@ -25,6 +25,7 @@ namespace
         MG_Gamefuncs::ComposeTextLayer_t pfnComposeTextLayer;
         MG_Gamefuncs::MeasureTextFont_t pfnMeasureTextFont;
         MG_Gamefuncs::UploadTexture_t pfnUploadTexture;
+        MG_Gamefuncs::MeasureText_t pfnMeasureText;
     };
 
     constexpr std::array<int, 4> anFontHeights = { 20, 12, 18, 24 };
@@ -48,6 +49,8 @@ namespace
         SafetyHookInline hSetFont;
         SafetyHookInline hDrawText;
         SafetyHookInline hCompose;
+        SafetyHookInline hMeasureText;
+        SafetyHookInline hMeasureTextFont;
         std::mutex stFontMutex;
         std::array<std::vector<Letter>, MGFont::nCount> avLetters;
         uint64_t nFontRevision = 0;
@@ -61,9 +64,27 @@ namespace
     SafetyHookInline s_hSetResources;
     std::vector<uint8_t> s_vFontData;
     stbtt_fontinfo s_stFont {};
-    std::vector<uint8_t> s_vFallbackFontData;
-    stbtt_fontinfo s_stFallbackFont {};
-    bool s_bFallbackFontReady = false;
+
+    // Tried in order for characters Rodin lacks; all but Arial load on first use.
+    struct FallbackFont
+    {
+        const wchar_t* pwszFile;
+        const char* pszName;
+        bool bTried = false;
+        bool bReady = false;
+        std::vector<uint8_t> vData;
+        stbtt_fontinfo stInfo {};
+    };
+
+    std::array<FallbackFont, 6> s_astFallbackFonts =
+    {{
+        { L"arial.ttf", "Arial" },
+        { L"segoeui.ttf", "Segoe UI" },
+        { L"msyh.ttc", "Microsoft YaHei" },
+        { L"msjh.ttc", "Microsoft JhengHei" },
+        { L"malgun.ttf", "Malgun Gothic" },
+        { L"YuGothR.ttc", "Yu Gothic" }
+    }};
 
     struct Glyph
     {
@@ -274,19 +295,71 @@ namespace
         return true;
     }
 
+    void LoadFallbackFont(FallbackFont& stFallback)
+    {
+        stFallback.bTried = true;
+        wchar_t awWindowsPath[MAX_PATH] {};
+        const UINT nLength = GetWindowsDirectoryW(awWindowsPath, MAX_PATH);
+        if (!nLength || nLength >= MAX_PATH)
+        {
+            return;
+        }
+        const auto stPath = std::filesystem::path(awWindowsPath) / L"Fonts" / stFallback.pwszFile;
+        std::ifstream stFile(stPath, std::ios::binary | std::ios::ate);
+        if (!stFile)
+        {
+            spdlog::warn("MG1/MG2: Vector Font : {} fallback unavailable.", stFallback.pszName);
+            return;
+        }
+        const auto nSize = stFile.tellg();
+        if (nSize <= 0 || static_cast<uint64_t>(nSize) > MG_FontData::nMaximumBytes)
+        {
+            return;
+        }
+        stFallback.vData.resize(static_cast<size_t>(nSize));
+        stFile.seekg(0);
+        const int nOffset = stFile.read(reinterpret_cast<char*>(stFallback.vData.data()), nSize) ? stbtt_GetFontOffsetForIndex(stFallback.vData.data(), 0) : -1;
+        stFallback.bReady = nOffset >= 0 && stbtt_InitFont(&stFallback.stInfo, stFallback.vData.data(), nOffset);
+        if (stFallback.bReady)
+        {
+            spdlog::info("MG1/MG2: Vector Font : {} fallback initialized.", stFallback.pszName);
+        }
+        else
+        {
+            stFallback.vData.clear();
+            stFallback.vData.shrink_to_fit();
+        }
+    }
+
     const stbtt_fontinfo* GetCharacterFont(int nCodepoint)
     {
         if (stbtt_FindGlyphIndex(&s_stFont, nCodepoint))
         {
             return &s_stFont;
         }
-        return s_bFallbackFontReady && stbtt_FindGlyphIndex(&s_stFallbackFont, nCodepoint) ? &s_stFallbackFont : nullptr;
+        for (auto& stFallback : s_astFallbackFonts)
+        {
+            if (!stFallback.bTried)
+            {
+                LoadFallbackFont(stFallback);
+            }
+            if (stFallback.bReady && stbtt_FindGlyphIndex(&stFallback.stInfo, nCodepoint))
+            {
+                return &stFallback.stInfo;
+            }
+        }
+        return nullptr;
     }
 
     wchar_t DecodeCharacter(const GameRenderer& stGame, const char* pszText, int nBytes)
     {
         if (nBytes == 2)
         {
+            const wchar_t wExtended = MGTextExtended::Lookup(static_cast<uint16_t>((static_cast<uint8_t>(pszText[0]) << 8) | static_cast<uint8_t>(pszText[1])));
+            if (wExtended)
+            {
+                return wExtended;
+            }
             wchar_t wCharacter = 0;
             return MultiByteToWideChar(932, MB_ERR_INVALID_CHARS, pszText, nBytes, &wCharacter, 1) == 1 ? wCharacter : 0;
         }
@@ -318,12 +391,24 @@ namespace
         return itCharacter->nUnicode == 0xFF6D ? 0x201E : itCharacter->nUnicode;
     }
 
+    int s_nLoggedRejects = 0;
+
+    bool Reject(const char* pszReason, size_t nIndex, int nValue)
+    {
+        constexpr int nMaximumLoggedRejects = 20;
+        if (s_nLoggedRejects++ < nMaximumLoggedRejects)
+        {
+            spdlog::warn("MG1/MG2: Vector Font : Text drawn by the game instead: {} (byte {}, value {:#x}).", pszReason, nIndex, nValue);
+        }
+        return false;
+    }
+
     bool DecodeLetters(char* pszText, int nFont, int nX, std::vector<Letter>& vLetters)
     {
         const size_t nLength = strnlen(pszText, nMaximumTextBytes);
         if (nLength == nMaximumTextBytes)
         {
-            return false;
+            return Reject("text too long", 0, 0);
         }
         for (size_t nIndex = 0; nIndex < nLength;)
         {
@@ -341,28 +426,42 @@ namespace
             const bool bWide = nFont == 0 && nChar >= 0x80 && static_cast<uint8_t>(nChar + 0x60) > 0x3F;
             if (nFont != 0 && nChar >= 0x80 && static_cast<uint8_t>(nChar + 0x60) > 0x3F)
             {
-                return false; // these slots use a different byte-to-glyph mapping.
+                return Reject("wide char in non-zero font", nIndex, nChar);
             }
             const int nBytes = bWide ? 2 : 1;
             if (nIndex + nBytes > nLength)
             {
-                return false;
+                return Reject("truncated two-byte char", nIndex, nChar);
             }
             const wchar_t wCodepoint = DecodeCharacter(*s_pGame, pszText + nIndex, nBytes);
             if (!wCodepoint || !GetCharacterFont(wCodepoint))
             {
-                return false;
+                return Reject(wCodepoint ? "no font" : "undecodable", nIndex, wCodepoint ? wCodepoint : (nChar << 8) | static_cast<uint8_t>(pszText[nIndex + (bWide ? 1 : 0)]));
             }
-            const int nAdvance = bWide ? 24 : static_cast<int>(s_pGame->stSettings.pfnMeasureTextFont(pszText, static_cast<int>(nIndex), nBytes, nFont));
+            const int nAdvance = bWide && !MGTextExtended::Contains(wCodepoint) ? 24 : static_cast<int>(s_pGame->stSettings.pfnMeasureTextFont(pszText, static_cast<int>(nIndex), nBytes, nFont));
             if (nAdvance < 0 || nAdvance > 64)
             {
-                return false;
+                return Reject("bad advance", nIndex, nAdvance);
             }
             vLetters.push_back({ wCodepoint, nX, nAdvance });
             nX += nAdvance;
             nIndex += nBytes;
         }
         return true;
+    }
+
+    // Match Rodin's x-height.
+    float GetGlyphScaleY(const stbtt_fontinfo* pFont, float fScaleY)
+    {
+        if (pFont == &s_stFont)
+        {
+            return fScaleY;
+        }
+        int nRodinTop = 0;
+        int nFallbackTop = 0;
+        stbtt_GetCodepointBox(&s_stFont, 'x', nullptr, nullptr, nullptr, &nRodinTop);
+        stbtt_GetCodepointBox(pFont, 'x', nullptr, nullptr, nullptr, &nFallbackTop);
+        return nRodinTop > 0 && nFallbackTop > 0 ? fScaleY * float(nRodinTop) / nFallbackTop : fScaleY;
     }
 
     const Glyph& GetGlyph(const Letter& stLetter, int nFont, bool bOutline = false)
@@ -390,22 +489,16 @@ namespace
         stbtt_GetCodepointHMetrics(pFont, stLetter.nCodepoint, &nAdvance, &nBearing);
         stbtt_GetFontVMetrics(&s_stFont, &nAscent, &nDescent, &nLineGap);
         const float fScaleY = stbtt_ScaleForPixelHeight(&s_stFont, float(anFontHeights[nFont] * s_nScale));
-        float fGlyphScaleY = fScaleY;
-        if (pFont != &s_stFont)
-        {
-            int nRodinTop = 0;
-            int nFallbackTop = 0;
-            stbtt_GetCodepointBox(&s_stFont, 'x', nullptr, nullptr, nullptr, &nRodinTop);
-            stbtt_GetCodepointBox(pFont, 'x', nullptr, nullptr, nullptr, &nFallbackTop);
-            if (nRodinTop > 0 && nFallbackTop > 0)
-            {
-                fGlyphScaleY *= float(nRodinTop) / nFallbackTop;
-            }
-        }
-        const float fScaleX = nAdvance > 0 ? float(stLetter.nAdvance * s_nScale) / nAdvance : fGlyphScaleY;
+        const float fGlyphScaleY = GetGlyphScaleY(pFont, fScaleY);
+        const bool bExtended = MGTextExtended::Contains(static_cast<wchar_t>(stLetter.nCodepoint));
+        const float fScaleX = nAdvance > 0 && !bExtended ? float(stLetter.nAdvance * s_nScale) / nAdvance : fGlyphScaleY;
         unsigned char* pBitmap = stbtt_GetCodepointBitmap(pFont, fScaleX, fGlyphScaleY, stLetter.nCodepoint,
             &stGlyph.nWidth, &stGlyph.nHeight, &stGlyph.nX, &stGlyph.nY);
         stGlyph.nY += static_cast<int>(std::round(nAscent * fScaleY));
+        if (bExtended)
+        {
+            stGlyph.nX += static_cast<int>(std::round((stLetter.nAdvance * s_nScale - nAdvance * fScaleX) / 2));
+        }
         if (pBitmap)
         {
             std::vector<uint8_t> vOutline;
@@ -449,6 +542,10 @@ namespace
         else if (stGlyph.nWidth > 0 && stGlyph.nHeight > 0)
         {
             stGlyph.bReady = false;
+        }
+        if (!stGlyph.bReady)
+        {
+            Reject("glyph not ready", 0, stLetter.nCodepoint);
         }
         s_bRasterFailed |= !stGlyph.bReady;
         return s_stGlyphs.emplace(nKey, std::move(stGlyph)).first->second;
@@ -752,34 +849,6 @@ namespace
         s_pGame = nullptr;
     }
 
-    void LoadFallbackFont()
-    {
-        wchar_t awWindowsPath[MAX_PATH] {};
-        const UINT nLength = GetWindowsDirectoryW(awWindowsPath, MAX_PATH);
-        if (!nLength || nLength >= MAX_PATH)
-        {
-            return;
-        }
-        const auto stPath = std::filesystem::path(awWindowsPath) / L"Fonts" / L"arial.ttf";
-        std::ifstream stFile(stPath, std::ios::binary | std::ios::ate);
-        if (!stFile)
-        {
-            return;
-        }
-        const auto nSize = stFile.tellg();
-        if (nSize <= 0 || static_cast<uint64_t>(nSize) > MG_FontData::nMaximumBytes)
-        {
-            return;
-        }
-        s_vFallbackFontData.resize(static_cast<size_t>(nSize));
-        stFile.seekg(0);
-        s_bFallbackFontReady = stFile.read(reinterpret_cast<char*>(s_vFallbackFontData.data()), nSize) && stbtt_InitFont(&s_stFallbackFont, s_vFallbackFontData.data(), 0);
-        if (s_bFallbackFontReady)
-        {
-            spdlog::info("MG1/MG2: Vector Font : Arial fallback initialized.");
-        }
-    }
-
     bool LoadFont()
     {
         const auto stPath = sExePath / "launcher_Data/StreamingAssets/aa/StandaloneWindows64/defaultlocalgroup_assets_launcher/fonts/mg-rodinpron-m.otf.bundle";
@@ -803,12 +872,75 @@ namespace
         {
             return false;
         }
-        LoadFallbackFont();
-        if (!s_bFallbackFontReady)
-        {
-            spdlog::warn("MG1/MG2: Vector Font : Arial fallback unavailable.");
-        }
+        LoadFallbackFont(s_astFallbackFonts[0]);
         return true;
+    }
+
+    int GetExtendedWidth(wchar_t wCharacter, int nFont)
+    {
+        const stbtt_fontinfo* pFont = GetCharacterFont(wCharacter);
+        if (!pFont)
+        {
+            return 24;
+        }
+        int nAdvance = 0;
+        int nBearing = 0;
+        stbtt_GetCodepointHMetrics(pFont, wCharacter, &nAdvance, &nBearing);
+        const float fScaleY = stbtt_ScaleForPixelHeight(&s_stFont, float(anFontHeights[nFont]));
+        return (std::max)(1, static_cast<int>(std::lround(nAdvance * GetGlyphScaleY(pFont, fScaleY))));
+    }
+
+    // the game uses fixed glyph widths when gm_lang == japanese. calculate the correct positioning for all our cjk fallbacks.
+    template <typename Original>
+    unsigned int MeasureExtended(char* pszText, int nStart, int nLength, int nFont, Original fnOriginal)
+    {
+        if (MGTextExtended::vCharacters.empty() || nLength <= 0 || nFont != 0 || !Shared_Gamefuncs::pfnGetLanguage || Shared_Gamefuncs::pfnGetLanguage() == static_cast<int>(MGLanguage::Japanese))
+        {
+            return fnOriginal(nStart, nLength);
+        }
+        unsigned int nWidth = 0;
+        const int nEnd = nStart + nLength;
+        int nRun = nStart;
+        int nIndex = nStart;
+        while (nIndex < nEnd)
+        {
+            const auto nByte = static_cast<uint8_t>(pszText[nIndex]);
+            if ((nByte & 0x80) == 0 || static_cast<uint8_t>(nByte + 0x60) <= 0x3F)
+            {
+                ++nIndex;
+                continue;
+            }
+            const wchar_t wExtended = nIndex + 1 < nEnd ? MGTextExtended::Lookup(static_cast<uint16_t>((nByte << 8) | static_cast<uint8_t>(pszText[nIndex + 1]))) : 0;
+            if (wExtended)
+            {
+                if (nIndex > nRun)
+                {
+                    nWidth += fnOriginal(nRun, nIndex - nRun);
+                }
+                nWidth += GetExtendedWidth(wExtended, nFont);
+                nRun = nIndex + 2;
+            }
+            nIndex += 2;
+        }
+        if (nEnd > nRun)
+        {
+            nWidth += fnOriginal(nRun, nEnd - nRun);
+        }
+        return nWidth;
+    }
+
+    template <size_t nGame>
+    unsigned int MeasureText_hook(char* pszText, int nStart, int nLength)
+    {
+        GameRenderer& stGame = s_astGames[nGame];
+        return MeasureExtended(pszText, nStart, nLength, 0, [&](int nFrom, int nCount) { return stGame.hMeasureText.call<unsigned int>(pszText, nFrom, nCount); });
+    }
+
+    template <size_t nGame>
+    unsigned int MeasureTextFont_hook(char* pszText, int nStart, int nLength, int nFont)
+    {
+        GameRenderer& stGame = s_astGames[nGame];
+        return MeasureExtended(pszText, nStart, nLength, nFont, [&](int nFrom, int nCount) { return stGame.hMeasureTextFont.call<unsigned int>(pszText, nFrom, nCount, nFont); });
     }
 
     void Initialize(size_t nGame, const Settings& stSettings)
@@ -822,6 +954,13 @@ namespace
             s_vFontData.clear();
             spdlog::error("{}: Vector Font : Unable to parse font file from the unity launcher's files. Aborting setup!", stSettings.pszGame);
             return;
+        }
+        for (const wchar_t wCharacter : MGTextExtended::vCharacters)
+        {
+            if (!GetCharacterFont(wCharacter))
+            {
+                spdlog::warn("{}: Vector Font : No font has U+{:04X}.", stSettings.pszGame, static_cast<unsigned>(wCharacter));
+            }
         }
         if (!Shared_Gamefuncs::pfnGetLanguage || !stSettings.pfnSetFont || !stSettings.pfnDrawText || !stSettings.pfnComposeTextLayer || !stSettings.pfnMeasureTextFont || !stSettings.pfnUploadTexture || !stSettings.pTextFade)
         {
@@ -842,6 +981,16 @@ namespace
             LOG_HOOK(stGame.hDrawText, std::string(stSettings.pszGame) + ": Vector Font : draw text")
             stGame.hCompose = safetyhook::create_inline(stSettings.pfnComposeTextLayer, nGame == 0 ? Compose_hook<0> : Compose_hook<1>);
             LOG_HOOK(stGame.hCompose, std::string(stSettings.pszGame) + ": Vector Font : compose")
+            if (!MGTextExtended::vCharacters.empty())
+            {
+                if (stSettings.pfnMeasureText)
+                {
+                    stGame.hMeasureText = safetyhook::create_inline(stSettings.pfnMeasureText, nGame == 0 ? MeasureText_hook<0> : MeasureText_hook<1>);
+                    LOG_HOOK(stGame.hMeasureText, std::string(stSettings.pszGame) + ": Vector Font : measure text")
+                }
+                stGame.hMeasureTextFont = safetyhook::create_inline(stSettings.pfnMeasureTextFont, nGame == 0 ? MeasureTextFont_hook<0> : MeasureTextFont_hook<1>);
+                LOG_HOOK(stGame.hMeasureTextFont, std::string(stSettings.pszGame) + ": Vector Font : measure text (font)")
+            }
             if (!stGame.hSetFont || !stGame.hDrawText || !s_hUpload || !stGame.hCompose)
             {
                 stGame.hSetFont.reset();
@@ -880,10 +1029,10 @@ void MG_VectorFont::OnPresent()
 
 void MG_VectorFont::InitializeMG1()
 {
-    Initialize(0, { "MG1", MG1_LinkVarBuf::pTextFade, MG1_Gamefuncs::pfnSetFont, MG1_Gamefuncs::pfnDrawTextSlot, MG1_Gamefuncs::pfnComposeTextLayer, MG1_Gamefuncs::pfnMeasureTextFont, MG1_Gamefuncs::pfnUploadTexture });
+    Initialize(0, { "MG1", MG1_LinkVarBuf::pTextFade, MG1_Gamefuncs::pfnSetFont, MG1_Gamefuncs::pfnDrawTextSlot, MG1_Gamefuncs::pfnComposeTextLayer, MG1_Gamefuncs::pfnMeasureTextFont, MG1_Gamefuncs::pfnUploadTexture, MG1_Gamefuncs::pfnMeasureText });
 }
 
 void MG_VectorFont::InitializeMG2()
 {
-    Initialize(1, { "MG2", MG2_LinkVarBuf::pTextFade, MG2_Gamefuncs::pfnSetFont, MG2_Gamefuncs::pfnDrawTextItem, MG2_Gamefuncs::pfnComposeTextLayer, MG2_Gamefuncs::pfnMeasureTextFont, MG2_Gamefuncs::pfnUploadTexture });
+    Initialize(1, { "MG2", MG2_LinkVarBuf::pTextFade, MG2_Gamefuncs::pfnSetFont, MG2_Gamefuncs::pfnDrawTextItem, MG2_Gamefuncs::pfnComposeTextLayer, MG2_Gamefuncs::pfnMeasureTextFont, MG2_Gamefuncs::pfnUploadTexture, MG2_Gamefuncs::pfnMeasureText });
 }

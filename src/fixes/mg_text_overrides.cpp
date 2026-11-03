@@ -10,6 +10,7 @@
 #include "mg2_sprite_patcher.hpp"
 #include "mg_text_encoding.hpp"
 #include "mg_text_overrides.hpp"
+#include "mg_vector_font.hpp"
 #include "translation_diffs.hpp"
 
 namespace
@@ -87,7 +88,14 @@ namespace
                 const int nBytes = WideCharToMultiByte(932, WC_NO_BEST_FIT_CHARS, sWide.data() + nIndex, nCharacters, achEncoded, sizeof(achEncoded), nullptr, &bDefault);
                 if (nBytes <= 0 || bDefault)
                 {
-                    return false;
+                    const uint16_t nCode = nCharacters == 1 && MG_VectorFont::bEnabled ? MGTextExtended::Allocate(sWide[nIndex], true) : 0;
+                    if (!nCode)
+                    {
+                        return false;
+                    }
+                    sEncoded.push_back(static_cast<char>(nCode >> 8));
+                    sEncoded.push_back(static_cast<char>(nCode & 0xFF));
+                    continue;
                 }
                 sEncoded.append(achEncoded, nBytes);
                 nIndex += nCharacters - 1;
@@ -105,7 +113,14 @@ namespace
             const auto itCharacter = std::ranges::find(stCharacters, nCharacter, &MGTextCharacter::nUnicode);
             if (itCharacter == stCharacters.end())
             {
-                return false;
+                const uint16_t nCode = MG_VectorFont::bEnabled ? MGTextExtended::Allocate(nCharacter, false) : 0;
+                if (!nCode)
+                {
+                    return false;
+                }
+                sEncoded.push_back(static_cast<char>(nCode >> 8));
+                sEncoded.push_back(static_cast<char>(nCode & 0xFF));
+                continue;
             }
             sEncoded.push_back(static_cast<char>(itCharacter->nByte));
         }
@@ -125,6 +140,138 @@ namespace
             }
             mTables[nLanguage][{ stEntry.nBlock, stEntry.nIndex }] = std::move(sText);
         }
+    }
+
+    struct RowSite
+    {
+        uint8_t* pInstruction;
+        int nRow;
+        std::array<uint8_t, 3> aPrefix;
+    };
+
+    struct ByteEdit
+    {
+        uint8_t* pAddress;
+        std::vector<uint8_t> vExpected;
+        std::vector<uint8_t> vReplacement;
+    };
+
+    // Expanded glpyhs use 2 bytes instead of 1 when gm_lang != japanese, which can cause messages with a lot of fancy accents to push past the vanilla text buffer size. increases the buffer size from 48 bytes to 96 bytes
+    bool WidenMG2MessageRows()
+    {
+        constexpr int nRows = 10;
+        constexpr int nOldStride = 48;
+        constexpr int nNewStride = 96;
+        constexpr int nStoreLength = 7;
+        uint8_t* pMessage = reinterpret_cast<uint8_t*>(MG2_Gamefuncs::pfnDrawMessageText);
+        uint8_t* pStory = reinterpret_cast<uint8_t*>(MG2_Gamefuncs::pfnDrawStoryText);
+        uint8_t* pFrameBuffers = reinterpret_cast<uint8_t*>(MG2_Gamefuncs::pfnInitFrameBuffers);
+        if (!pMessage || !pStory || !pFrameBuffers)
+        {
+            return false;
+        }
+        std::vector<RowSite> vSites;
+        const auto AddClear = [&](uint8_t* pFirst, uint8_t nRegister)
+        {
+            for (int nIndex = 0; nIndex < nRows; ++nIndex)
+            {
+                vSites.push_back({ pFirst + nIndex * nStoreLength, nRows - 1 - nIndex, { 0x40, 0x88, nRegister } });
+            }
+        };
+        //DrawMessageText+8E
+        AddClear(pMessage + 0x8E, 0x2D);
+        //DrawMessageText+6AE
+        AddClear(pMessage + 0x6AE, 0x2D);
+        //DrawStoryText+52
+        AddClear(pStory + 0x52, 0x35);
+        //DrawMessageText+E5
+        vSites.push_back({ pMessage + 0xE5, -1, { 0x4C, 0x8D, 0x2D } });
+        //DrawStoryText+A8
+        vSites.push_back({ pStory + 0xA8, -1, { 0x48, 0x8D, 0x2D } });
+
+        std::vector<ByteEdit> vEdits;
+        const auto AddShift = [&](uint8_t* pInstruction, uint8_t nRegister)
+        {
+            vEdits.push_back({ pInstruction, { 0x48, 0xC1, nRegister, 0x04 }, { 0x48, 0xC1, nRegister, 0x05 } });
+        };
+        const auto AddSubtract = [&](uint8_t* pInstruction, uint8_t nRegister)
+        {
+            vEdits.push_back({ pInstruction, { 0x48, 0x83, nRegister, 0x30 }, { 0x48, 0x83, nRegister, 0x60 } });
+        };
+        //DrawMessageText+1B7
+        AddShift(pMessage + 0x1B7, 0xE1);
+        //DrawMessageText+26A
+        AddShift(pMessage + 0x26A, 0xE3);
+        //DrawMessageText+56C
+        AddShift(pMessage + 0x56C, 0xE1);
+        //DrawMessageText+5A1
+        AddShift(pMessage + 0x5A1, 0xE1);
+        //DrawStoryText+150
+        AddShift(pStory + 0x150, 0xE1);
+        //DrawStoryText+175
+        AddShift(pStory + 0x175, 0xE1);
+        //DrawStoryText+1E4
+        AddShift(pStory + 0x1E4, 0xE7);
+        //DrawMessageText+29A
+        AddSubtract(pMessage + 0x29A, 0xEB);
+        //DrawStoryText+237
+        AddSubtract(pStory + 0x237, 0xEF);
+        //InitFrameBuffers+36 : text item size 0x44 becomes 0x7C
+        vEdits.push_back({ pFrameBuffers + 0x36, { 0x41, 0x8D, 0x50, 0x44 }, { 0x41, 0x8D, 0x50, 0x7C } });
+        //DrawMessageText+30C : row * 6 * 8 becomes row * 12 * 8
+        vEdits.push_back({ pMessage + 0x30C, { 0x4C, 0x8D, 0x04, 0x40 }, { 0x4C, 0x6B, 0xC0, 0x0C } });
+        vEdits.push_back({ pMessage + 0x310, { 0x4D, 0x03, 0xC0 }, { 0x0F, 0x1F, 0x00 } });
+
+        const uint8_t* pOldRows = nullptr;
+        for (const RowSite& stSite : vSites)
+        {
+            if (!std::equal(stSite.aPrefix.begin(), stSite.aPrefix.end(), stSite.pInstruction))
+            {
+                return false;
+            }
+            const uint8_t* pTarget = stSite.pInstruction + nStoreLength + *reinterpret_cast<const int32_t*>(stSite.pInstruction + 3);
+            const uint8_t* pBase = pTarget - (stSite.nRow < 0 ? 0 : stSite.nRow * nOldStride);
+            if (pOldRows && pBase != pOldRows)
+            {
+                return false;
+            }
+            pOldRows = pBase;
+        }
+        for (const ByteEdit& stEdit : vEdits)
+        {
+            if (!std::equal(stEdit.vExpected.begin(), stEdit.vExpected.end(), stEdit.pAddress))
+            {
+                return false;
+            }
+        }
+        //InitFrameBuffers+1E
+        const uint8_t* pItemPool = pFrameBuffers + 0x1E;
+        if (pItemPool[0] != 0x48 || pItemPool[1] != 0x8D || pItemPool[2] != 0x1D || *reinterpret_cast<const uint64_t*>(pItemPool + 7 + *reinterpret_cast<const int32_t*>(pItemPool + 3)) != 0)
+        {
+            return false;
+        }
+        uint8_t* pNewRows = nullptr;
+        for (uintptr_t nOffset = 0x01000000; nOffset < 0x70000000 && !pNewRows; nOffset += 0x01000000)
+        {
+            pNewRows = static_cast<uint8_t*>(VirtualAlloc(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(pMessage) + nOffset), nRows * nNewStride, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+        }
+        if (!pNewRows)
+        {
+            return false;
+        }
+        for (const RowSite& stSite : vSites)
+        {
+            const uint8_t* pTarget = pNewRows + (stSite.nRow < 0 ? 0 : stSite.nRow * nNewStride);
+            Memory::Write<int32_t>(reinterpret_cast<uintptr_t>(stSite.pInstruction + 3), static_cast<int32_t>(pTarget - (stSite.pInstruction + nStoreLength)));
+        }
+        for (const ByteEdit& stEdit : vEdits)
+        {
+            for (size_t nIndex = 0; nIndex < stEdit.vReplacement.size(); ++nIndex)
+            {
+                Memory::Write<uint8_t>(reinterpret_cast<uintptr_t>(stEdit.pAddress + nIndex), stEdit.vReplacement[nIndex]);
+            }
+        }
+        return true;
     }
 
     uint32_t ReadSize(const uint8_t* pData)
@@ -332,6 +479,17 @@ void MG_TextOverrides::InitializeMG2()
     {
         const MGTextOverride stOverride { stEntry.nBlock, stEntry.nIndex, stEntry.sLanguage.c_str(), stEntry.sText.c_str() };
         Load(std::span<const MGTextOverride>(&stOverride, 1), true, s_mMG2Text);
+    }
+    if (!MGTextExtended::vCharacters.empty())
+    {
+        if (WidenMG2MessageRows())
+        {
+            spdlog::info("MG2: Text Overrides : Message rows and text items widened.");
+        }
+        else
+        {
+            spdlog::error("MG2: Text Overrides : Could not widen the message rows and text items. Long rows with many extra characters will be corrupted.");
+        }
     }
     if (s_mMG2Text.empty())
     {
