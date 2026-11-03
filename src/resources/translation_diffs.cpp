@@ -118,7 +118,6 @@ std::vector<TranslationDiffs::Entry> TranslationDiffs::Parse(const nlohmann::jso
             {
                 throw std::runtime_error("Unknown MG language");
             }
-            Hash(stChange.at("beforeCrc32"));
             stEntry.sText = Text(stChange.at("after"));
             vEntries.push_back(std::move(stEntry));
         }
