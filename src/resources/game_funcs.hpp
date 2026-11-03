@@ -94,6 +94,7 @@ namespace MG_Gamefuncs
     using SetFont_t = void(__fastcall*)(int nFont, uintptr_t hGlyphs, uintptr_t hKanji, int nHeight);
     using DrawText_t = void(__fastcall*)(uint32_t* pFrame, int* pText);
     using ComposeTextLayer_t = void(__fastcall*)(int nDrawText);
+    using MeasureText_t = unsigned int(__fastcall*)(char* pszText, int nStart, int nLength);
     using MeasureTextFont_t = unsigned int(__fastcall*)(char* pszText, int nStart, int nLength, int nFont);
     using UploadTexture_t = int64_t(__fastcall*)(void* pTexture, uint32_t* pPixels);
 }
@@ -127,6 +128,8 @@ namespace MG1_Gamefuncs
     inline DrawTextSlot_t pfnDrawTextSlot = nullptr;
     using ComposeTextLayer_t = MG_Gamefuncs::ComposeTextLayer_t;
     inline ComposeTextLayer_t pfnComposeTextLayer = nullptr;
+    using MeasureText_t = MG_Gamefuncs::MeasureText_t;
+    inline MeasureText_t pfnMeasureText = nullptr;
     using MeasureTextFont_t = MG_Gamefuncs::MeasureTextFont_t;
     inline MeasureTextFont_t pfnMeasureTextFont = nullptr;
     using UploadTexture_t = MG_Gamefuncs::UploadTexture_t;
@@ -195,6 +198,9 @@ namespace MG2_Gamefuncs
     using ComposeTextLayer_t = MG_Gamefuncs::ComposeTextLayer_t;
     inline ComposeTextLayer_t pfnComposeTextLayer = nullptr;
 
+    using MeasureText_t = MG_Gamefuncs::MeasureText_t;
+    inline MeasureText_t pfnMeasureText = nullptr;
+
     using MeasureTextFont_t = MG_Gamefuncs::MeasureTextFont_t;
     inline MeasureTextFont_t pfnMeasureTextFont = nullptr;
 
@@ -207,6 +213,10 @@ namespace MG2_Gamefuncs
     // Message typewriter: pArgs[0] = block, pArgs[1] = index.
     using DrawMessageText_t = void(__fastcall*)(unsigned int* pArgs, int nMode);
     inline DrawMessageText_t pfnDrawMessageText = nullptr;
+    using DrawStoryText_t = void(__fastcall*)(unsigned int* pArgs, int nMode);
+    inline DrawStoryText_t pfnDrawStoryText = nullptr;
+    using InitFrameBuffers_t = int(__fastcall*)();
+    inline InitFrameBuffers_t pfnInitFrameBuffers = nullptr;
 
     using ScriptRun_t = void(__fastcall*)(int* pScript);
     inline ScriptRun_t pfnScriptRun = nullptr;

@@ -299,6 +299,8 @@
     <ClInclude Include="src\fixes\mg1_opening_sprites.hpp" />
     <ClInclude Include="src\fixes\mg1_portrait_sprites.hpp" />
     <ClInclude Include="src\fixes\mg2_portrait_overlay.hpp" />
+    <ClInclude Include="src\fixes\mg2_cast_portraits.hpp" />
+    <ClInclude Include="src\fixes\mg2_ending_timing.hpp" />
     <ClInclude Include="src\fixes\mg2_portrait_sprites.hpp" />
     <ClInclude Include="src\fixes\mg2_original_sprites.hpp" />
     <ClInclude Include="src\resources\mg2_sprite_patches.hpp" />

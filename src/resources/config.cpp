@@ -117,6 +117,7 @@
 #include "mg1_portrait_overlay.hpp"
 #include "mg1_opening.hpp"
 #include "mg2_portrait_overlay.hpp"
+#include "mg2_ending_timing.hpp"
 #include "mg_vector_font.hpp"
 #include "mg_cigarette_damage.hpp"
 #include "mg_developer_menu.hpp"
@@ -1473,6 +1474,9 @@ void Config::Read()
 
     ConfigHelper::getValue(ini, ConfigKeys::MG2_Portrait_Overlay_Enabled_Section, ConfigKeys::MG2_Portrait_Overlay_Enabled_Setting, MG2_PortraitOverlay::bEnabled);
     LOG_CONFIG(ConfigKeys::MG2_Portrait_Overlay_Enabled_Section, ConfigKeys::MG2_Portrait_Overlay_Enabled_Setting, MG2_PortraitOverlay::bEnabled);
+
+    ConfigHelper::getValue(ini, ConfigKeys::MG2_Ending_Timing_Section, ConfigKeys::MG2_Ending_Timing_Setting, MG2_EndingTiming::bEnabled);
+    LOG_CONFIG(ConfigKeys::MG2_Ending_Timing_Section, ConfigKeys::MG2_Ending_Timing_Setting, MG2_EndingTiming::bEnabled);
 
     ConfigHelper::getValue(ini, ConfigKeys::MG_Vector_Font_Enabled_Section, ConfigKeys::MG_Vector_Font_Enabled_Setting, MG_VectorFont::bEnabled);
     LOG_CONFIG(ConfigKeys::MG_Vector_Font_Enabled_Section, ConfigKeys::MG_Vector_Font_Enabled_Setting, MG_VectorFont::bEnabled);

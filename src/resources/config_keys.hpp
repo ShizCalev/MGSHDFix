@@ -302,6 +302,11 @@ namespace ConfigKeys
     constexpr const char* MG2_Portrait_Overlay_Enabled_Help = "";
     constexpr const char* MG2_Portrait_Overlay_Enabled_Tooltip = "Restores the original MSX2 character sprites, including blinking, glancing around, and mouth movements.";
 
+    constexpr const char* MG2_Ending_Timing_Section = "Metal Gear 2 - (Affects Speedruns)";
+    constexpr const char* MG2_Ending_Timing_Setting = "Restore Ending Timings";
+    constexpr const char* MG2_Ending_Timing_Help = "";
+    constexpr const char* MG2_Ending_Timing_Tooltip = "Corrects the ending cast sequence back to the original MSX2 timings. Ends roughly 6.6 seconds faster than MC's timings.";
+
     constexpr const char* MG_Vector_Font_Enabled_Section = "Enhancements and Tweaks";
     constexpr const char* MG_Vector_Font_Enabled_Setting = "High Resolution Font";
     constexpr const char* MG_Vector_Font_Enabled_Help = "";

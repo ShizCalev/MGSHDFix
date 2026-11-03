@@ -5,6 +5,8 @@
 #include "common.hpp"
 #include "mg2_linkvarbuf.hpp"
 #include "mg2_portrait_sprites.hpp"
+#include "mg2_cast_portraits.hpp"
+#include "mg2_ending_timing.hpp"
 #include "mg2_original_sprites.hpp"
 #include "mg2_sprite_patcher.hpp"
 #include "stb_image.h"
@@ -220,6 +222,30 @@ namespace
     std::array<uint32_t, nFrameWidth * nFrameHeight> s_anIntroPixels {};
     bool s_bIntroDrawn = false;
     SafetyHookMid s_hIntroDraw {};
+
+
+    constexpr size_t nCastPortraitCount = std::size(MG2_CastPortraits::astPortraits);
+    constexpr int nCastFrameRate = 60;
+    constexpr int nCastRestartMilliseconds = 250;
+
+    struct CastDraw
+    {
+        size_t nPortrait = 0;
+        int nX = 0;
+        int nY = 0;
+    };
+
+    struct CastClock
+    {
+        bool bSeen = false;
+        int nFirstMilliseconds = 0;
+        int nLastMilliseconds = 0;
+    };
+
+    std::array<CastDraw, nCastPortraitCount> s_astCastDraws {};
+    size_t s_nCastDraws = 0;
+    std::array<CastClock, nCastPortraitCount> s_astCastClocks {};
+
     struct DrawnPortrait
     {
         MG2_LinkVarBuf::Sprite stSprite {};
@@ -665,6 +691,93 @@ namespace
         s_bIntroDrawn = false;
     }
 
+    void CaptureCastPortrait(const int* pSource, int nX, int nY)
+    {
+        if (pSource[2] != MG2_CastPortraits::nWidth || pSource[3] != MG2_CastPortraits::nHeight || s_nCastDraws >= s_astCastDraws.size())
+        {
+            return;
+        }
+        for (size_t nPortrait = 0; nPortrait < nCastPortraitCount; nPortrait++)
+        {
+            const auto& stPortrait = MG2_CastPortraits::astPortraits[nPortrait];
+            if (pSource[0] == stPortrait.nSourceX && pSource[1] == stPortrait.nSourceY)
+            {
+                s_astCastDraws[s_nCastDraws++] = { nPortrait, nX, nY };
+                return;
+            }
+        }
+    }
+
+    void CompositeCastPortraits(uint32_t* pFrame)
+    {
+        const int nMilliseconds = GameMilliseconds();
+        for (size_t nDraw = 0; nDraw < s_nCastDraws; nDraw++)
+        {
+            const CastDraw& stDraw = s_astCastDraws[nDraw];
+            const auto& stPortrait = MG2_CastPortraits::astPortraits[stDraw.nPortrait];
+            CastClock& stClock = s_astCastClocks[stDraw.nPortrait];
+            if (!stClock.bSeen || nMilliseconds - stClock.nLastMilliseconds > nCastRestartMilliseconds)
+            {
+                stClock.bSeen = true;
+                stClock.nFirstMilliseconds = nMilliseconds;
+            }
+            stClock.nLastMilliseconds = nMilliseconds;
+            int nFrame = (nMilliseconds - stClock.nFirstMilliseconds) * nCastFrameRate / 1000;
+
+
+            int nLength = 0;
+            for (int nRun = 0; nRun < stPortrait.nRuns; nRun++)
+            {
+                nLength += stPortrait.pRuns[nRun].nFrames;
+            }
+            const int nStartTick = MG2_EndingTiming::bEnabled ? MG2_EndingTiming::RetimeTick(stPortrait.nStartTick) : stPortrait.nStartTick;
+            const int nEndTick = MG2_EndingTiming::bEnabled ? MG2_EndingTiming::RetimeTick(stPortrait.nEndTick) : stPortrait.nEndTick;
+            const int nHold = (nEndTick - nStartTick) * MG2_EndingTiming::nVideoFramesPerTick - nLength;
+            if (nHold > 0 && nFrame >= stPortrait.nHoldFrame)
+            {
+                nFrame = nFrame < stPortrait.nHoldFrame + nHold ? stPortrait.nHoldFrame - 1 : nFrame - nHold;
+            }
+
+
+            int nState = stPortrait.pRuns[stPortrait.nRuns - 1].nState;
+            for (int nRun = 0, nStart = 0; nRun < stPortrait.nRuns; nStart += stPortrait.pRuns[nRun++].nFrames)
+            {
+                if (nFrame < nStart + stPortrait.pRuns[nRun].nFrames)
+                {
+                    nState = stPortrait.pRuns[nRun].nState;
+                    break;
+                }
+            }
+            const uint32_t* pColours = stPortrait.pPalettes[0].anColours;
+            for (int nStep = 0; nStep < stPortrait.nPalettes && stPortrait.pPalettes[nStep].nFrame <= nFrame; nStep++)
+            {
+                pColours = stPortrait.pPalettes[nStep].anColours;
+            }
+
+            const uint8_t* pPixels = stPortrait.pStates + nState * MG2_CastPortraits::nStateBytes;
+            for (int nRow = 0; nRow < MG2_CastPortraits::nHeight; nRow++)
+            {
+                const int nDestY = stDraw.nY + nRow;
+                if (nDestY < 0 || nDestY >= nFrameHeight)
+                {
+                    continue;
+                }
+                for (int nColumn = 0; nColumn < MG2_CastPortraits::nWidth; nColumn++)
+                {
+                    const int nDestX = stDraw.nX + nColumn;
+                    if (nDestX < 0 || nDestX >= nFrameWidth)
+                    {
+                        continue;
+                    }
+                    const int nSource = nRow * MG2_CastPortraits::nWidth + nColumn;
+                    const uint8_t nPair = pPixels[nSource / 2];
+                    pFrame[nDestY * nFrameWidth + nDestX] = pColours[(nSource & 1) ? nPair & 0x0F : nPair >> 4];
+                }
+            }
+        }
+        s_nCastDraws = 0;
+    }
+
     void CapturePortrait(const MG2_LinkVarBuf::Sprite& stSprite)
     {
         if (stSprite.nSheet != MG2_SPRITE_SHEET_PORTRAITS || stSprite.nAnim != MG2_PORTRAIT_ANIMATION_STATIC)
@@ -834,7 +947,7 @@ void MG2_PortraitOverlay::Initialize()
     //DrawSprite+EE
     uint8_t* pPortraitDraw = Memory::PatternScan(mg2Module, "44 8B 56 ?? 45 33 C0", "MG2: Portrait Overlay : DrawSprite()+0xEE : visible sprite");
     //DrawSprite+412
-    uint8_t* pIntroDraw = Memory::PatternScan(mg2Module, "41 2B 7D ?? ?? ?? ?? ?? ?? ?? ?? EB", "MG2: Portrait Overlay : DrawSprite()+0x412 : intro portrait track");
+    uint8_t* pIntroDraw = Memory::PatternScan(mg2Module, "41 2B 7D ?? ?? ?? ?? ?? ?? ?? ?? EB", "MG2: Portrait Overlay : DrawSprite()+0x412 : intro / cast portrait track");
     //PresentIndexedFrame+95
     uint8_t* pPresent = Memory::PatternScan(mg2Module, "48 8B 05 ?? ?? ?? ?? 48 8D 8F", "MG2: Portrait Overlay : PresentIndexedFrame()+0x95 : upload");
     if (!pMessageState || !pPortraitDraw || !pIntroDraw || !pPresent || !MG2_Gamefuncs::pfnGetLayerImage || !MG2_Gamefuncs::pfnSetDrawColor || !MG2_Gamefuncs::pfnLayerFillRect)
@@ -880,23 +993,36 @@ void MG2_PortraitOverlay::Initialize()
         s_hIntroDraw = safetyhook::create_mid(pIntroDraw, [](SafetyHookContext& stContext)
         {
             const auto* pSprite = reinterpret_cast<const MG2_LinkVarBuf::Sprite*>(stContext.rsi);
-            if (*reinterpret_cast<const int*>(stContext.rsp + 0x38) != 0 || stContext.r13 != reinterpret_cast<uintptr_t>(&pSprite->nFirstTrackFrame) || pSprite->nSheet != MG2_SPRITE_SHEET_INTRO || pSprite->nAnim != MG2_INTRO_ANIMATION_MOVIE || pSprite->nFirstTrackFrame != MG2_INTRO_FRAME_RED_PORTRAITS)
+            if (*reinterpret_cast<const int*>(stContext.rsp + 0x38) != 0 || stContext.r13 != reinterpret_cast<uintptr_t>(&pSprite->nFirstTrackFrame))
             {
                 return;
             }
             const int* pSource = reinterpret_cast<const int*>(stContext.rsp + 0x68);
             const int nX = static_cast<int>(stContext.rbx);
             const int nY = *reinterpret_cast<const int*>(stContext.rsp + 0x20);
+            if (pSprite->nSheet == MG2_SPRITE_SHEET_ENDING_CAST)
+            {
+                if (MG2_PortraitOverlay::bEnabled)
+                {
+                    CaptureCastPortrait(pSource, nX, nY);
+                }
+                return;
+            }
+            if (pSprite->nSheet != MG2_SPRITE_SHEET_INTRO || pSprite->nAnim != MG2_INTRO_ANIMATION_MOVIE || pSprite->nFirstTrackFrame != MG2_INTRO_FRAME_RED_PORTRAITS)
+            {
+                return;
+            }
             const int anClip[] = { nX, nY, pSource[2], pSource[3] };
             DrawIntroPortraits(nX - (pSource[0] - nIntroSourceX), nY - (pSource[1] - nIntroSourceY), anClip);
         });
-        LOG_HOOK(s_hIntroDraw, "MG2: Portrait Overlay : DrawSprite()+0x412 : intro portrait track")
+        LOG_HOOK(s_hIntroDraw, "MG2: Portrait Overlay : DrawSprite()+0x412 : intro / cast portrait track")
 
         // rdi = end of the 256 x 256 texture
         s_hPresent = safetyhook::create_mid(pPresent, [](SafetyHookContext& stContext)
         {
             uint32_t* pFrame = reinterpret_cast<uint32_t*>(stContext.rdi - nFrameBytes);
             CompositeIntroPortraits(pFrame, reinterpret_cast<const uint8_t*>(stContext.rsi), reinterpret_cast<const uint32_t*>(stContext.rdx));
+            CompositeCastPortraits(pFrame);
             Composite(pFrame);
         });
         LOG_HOOK(s_hPresent, "MG2: Portrait Overlay : PresentIndexedFrame()+0x95 : upload")

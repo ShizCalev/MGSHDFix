@@ -306,6 +306,7 @@ void MG1_Gamefuncs::HookDllGameFuncs()
     pfnSetFont = reinterpret_cast<SetFont_t>(Memory::PatternScan(mg1Module, "48 89 5C 24 ?? 4C 89 44 24", "MG1: SetFont()"));
     pfnDrawTextSlot = reinterpret_cast<DrawTextSlot_t>(Memory::PatternScan(mg1Module, "40 53 55 56 57 41 55", "MG1: DrawTextSlot()"));
     pfnComposeTextLayer = reinterpret_cast<ComposeTextLayer_t>(Memory::PatternScan(mg1Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 8B F1", "MG1: ComposeFrame()"));
+    pfnMeasureText = reinterpret_cast<MeasureText_t>(Memory::PatternScan(mg1Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 48 8B E9", "MG1: MeasureText()"));
     pfnMeasureTextFont = reinterpret_cast<MeasureTextFont_t>(Memory::PatternScan(mg1Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC ?? 4D 63 F1", "MG1: MeasureTextFont()"));
     pfnUploadTexture = reinterpret_cast<UploadTexture_t>(Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 33 C0 4C 8D 44 24", "MG1: sub_140025F80() : upload texture"));
 
@@ -365,11 +366,14 @@ void MG2_Gamefuncs::HookDllGameFuncs()
     pfnSetFont = reinterpret_cast<SetFont_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 4C 89 44 24", "MG2: RegisterFont()"));
     pfnDrawTextItem = reinterpret_cast<DrawTextItem_t>(Memory::PatternScan(mg2Module, "40 53 55 56 57 41 55 48 81 EC", "MG2: DrawTextItem()"));
     pfnComposeTextLayer = reinterpret_cast<ComposeTextLayer_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC ?? 8B F1", "MG2: sub_180024460() : compose text layer"));
+    pfnMeasureText = reinterpret_cast<MeasureText_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 48 8B E9 48 63 DA", "MG2: MeasureText()"));
     pfnMeasureTextFont = reinterpret_cast<MeasureTextFont_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC ?? 4D 63 F1", "MG2: sub_1800242F0() : measure text"));
     pfnUploadTexture = reinterpret_cast<UploadTexture_t>(Memory::PatternScan(baseModule, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 33 C0 4C 8D 44 24", "MG2: sub_140025F80() : upload texture"));
 
     pfnAVS_GetLocalizedString = reinterpret_cast<AVS_GetLocalizedString_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 8B FA", "MG2: AVS_GetLocalizedString()"));
     pfnDrawMessageText = reinterpret_cast<DrawMessageText_t>(Memory::PatternScan(mg2Module, "4C 8B DC 53 57 41 55", "MG2: DrawMessageText()"));
+    pfnDrawStoryText = reinterpret_cast<DrawStoryText_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 56 57 41 56", "MG2: DrawStoryText()"));
+    pfnInitFrameBuffers = reinterpret_cast<InitFrameBuffers_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 57 48 83 EC ?? 45 33 C0", "MG2: InitFrameBuffers()"));
     pfnRandom = reinterpret_cast<Random_t>(Memory::PatternScan(mg2Module, "40 53 48 83 EC ?? 8B D9 FF 15", "MG2: Random()"));
     pfnScriptRun = reinterpret_cast<ScriptRun_t>(Memory::PatternScan(mg2Module, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC ?? 48 8B D9", "MG2: ScriptRun()"));
     uint8_t* pGetObjectSprite = Memory::PatternScan(mg2Module, "E8 ?? ?? ?? ?? 83 BD ?? ?? ?? ?? 00 4C 8B F8", "MG2: TickDoorTrigger()+0x40 : GetObjectSprite() call");

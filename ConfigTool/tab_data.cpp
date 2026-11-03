@@ -412,6 +412,7 @@ std::nullopt, false, Field::Int, 100, 1, 100},
         { (MG), ConfigKeys::MG2_Wind_Section, ConfigKeys::MG2_Wind_Setting, ConfigKeys::MG2_Wind_Help, ConfigKeys::MG2_Wind_Tooltip, std::nullopt, false, Field::Bool, true },
         { (MG), ConfigKeys::MG2_Elevator_Timings_Section, ConfigKeys::MG2_Elevator_Timings_Setting, ConfigKeys::MG2_Elevator_Timings_Help, ConfigKeys::MG2_Elevator_Timings_Tooltip, std::nullopt, false, Field::Bool, true },
         { (MG), ConfigKeys::MG2_Call_Sequence_Enabled_Section, ConfigKeys::MG2_Call_Sequence_Enabled_Setting, ConfigKeys::MG2_Call_Sequence_Enabled_Help, ConfigKeys::MG2_Call_Sequence_Enabled_Tooltip, std::nullopt, false, Field::Bool, true },
+        { (MG), ConfigKeys::MG2_Ending_Timing_Section, ConfigKeys::MG2_Ending_Timing_Setting, ConfigKeys::MG2_Ending_Timing_Help, ConfigKeys::MG2_Ending_Timing_Tooltip, std::nullopt, false, Field::Bool, true },
 
         { (MG), ConfigKeys::MG_Cigarettes_Section, ConfigKeys::MG_Cigarettes_Setting, ConfigKeys::MG_Cigarettes_Help, ConfigKeys::MG_Cigarettes_Tooltip, std::nullopt, false, Field::Bool, true },
 
