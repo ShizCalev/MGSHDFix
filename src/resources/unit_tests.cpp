@@ -49,6 +49,25 @@ namespace
         spdlog::info("Unit Test: compareSemVersion completed successfully.");
     }
 
+    void testResolveApplicableVersion()
+    {
+        std::string sVersion;
+
+        assert(VersionCheck::ResolveApplicableVersion("2.0.0", "MGS2", sVersion) == true && sVersion == "2.0.0");
+        assert(VersionCheck::ResolveApplicableVersion("v2.0.0", "MSX", sVersion) == true && sVersion == "2.0.0");
+
+        assert(VersionCheck::ResolveApplicableVersion("MGS2-1.0.0", "MGS2", sVersion) == true && sVersion == "1.0.0");
+        assert(VersionCheck::ResolveApplicableVersion("mgs3-1.0.0", "MGS3", sVersion) == true && sVersion == "1.0.0");
+        assert(VersionCheck::ResolveApplicableVersion("MSX-MGS3-1.2.3", "MSX", sVersion) == true && sVersion == "1.2.3");
+        assert(VersionCheck::ResolveApplicableVersion("MSX-MGS3-1.2.3", "MGS3", sVersion) == true && sVersion == "1.2.3");
+
+        assert(VersionCheck::ResolveApplicableVersion("MSX-MGS3-1.2.3", "MGS2", sVersion) == false);
+        assert(VersionCheck::ResolveApplicableVersion("MGS2-1.0.0", "MSX", sVersion) == false);
+        assert(VersionCheck::ResolveApplicableVersion("MGS2-1.0.0", "", sVersion) == false);
+
+        spdlog::info("Unit Test: testResolveApplicableVersion completed successfully.");
+    }
+
     void testLanguagePairs()
     {
 // ==========================================================
@@ -122,6 +141,8 @@ namespace
 void UnitTests::runAllTests()
 {
     testCompareSemVer();
+
+    testResolveApplicableVersion();
 
     testLanguagePairs();
 

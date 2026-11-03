@@ -23,6 +23,8 @@ namespace VersionCheck
     // Compare two semantic-style version strings (e.g. "32.0.15.8130" vs "32.0.15.9000")
     CompareResult CompareSemanticVersion(const std::string& currentVersion, const std::string& targetVersion);
 
+    bool ResolveApplicableVersion(const std::string& sRawTag, const std::string& sGamePrefix, std::string& sVersionOut);
+
 }
 
 class LatestVersionChecker

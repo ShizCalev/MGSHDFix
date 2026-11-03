@@ -109,6 +109,23 @@ namespace
 
         g_ShownUpdateContactError = true;
     }
+
+    std::string GetCurrentGameTagPrefix()
+    {
+        if (iTargetGame == TARGET_GAME_MG1)
+        {
+            return "MSX";
+        }
+        if (iTargetGame == TARGET_GAME_MGS2)
+        {
+            return "MGS2";
+        }
+        if (iTargetGame == TARGET_GAME_MGS3)
+        {
+            return "MGS3";
+        }
+        return std::string();
+    }
 }
 
 bool LatestVersionChecker::checkForUpdates()
@@ -333,14 +350,14 @@ LatestVersionChecker::RepoInfo LatestVersionChecker::parseRepoUrl(const std::str
         info.displayName = "GitHub.com";
         info.apiHost = L"api.github.com";
         info.apiPath = L"/repos/" + std::wstring(owner.begin(), owner.end()) +
-            L"/" + std::wstring(repo.begin(), repo.end()) + L"/releases/latest";
+            L"/" + std::wstring(repo.begin(), repo.end()) + L"/releases?per_page=100";
     }
     else if (host == "codeberg.org")
     {
         info.displayName = "Codeberg.org";
         info.apiHost = L"codeberg.org";
         info.apiPath = L"/api/v1/repos/" + std::wstring(owner.begin(), owner.end()) +
-            L"/" + std::wstring(repo.begin(), repo.end()) + L"/releases/latest";
+            L"/" + std::wstring(repo.begin(), repo.end()) + L"/releases?limit=50";
     }
     else if (host == "gitlab.com")
     {
@@ -348,7 +365,7 @@ LatestVersionChecker::RepoInfo LatestVersionChecker::parseRepoUrl(const std::str
         info.apiHost = L"gitlab.com";
         info.apiPath = L"/api/v4/projects/" +
             std::wstring(owner.begin(), owner.end()) + L"%2F" +
-            std::wstring(repo.begin(), repo.end()) + L"/releases";
+            std::wstring(repo.begin(), repo.end()) + L"/releases?per_page=100";
     }
     else
     {
@@ -497,33 +514,54 @@ bool LatestVersionChecker::queryLatestVersion(const RepoInfo& repoInfo, std::str
         return false;
     }
 
-    // Try common patterns
+    const std::string sGamePrefix = GetCurrentGameTagPrefix();
+
+    std::vector<std::pair<size_t, std::string>> vTagMatches;
     {
-        std::smatch m;
-        std::regex re(R"delim("tag_name"\s*:\s*"\s*v?([^"]+)")delim");
-        if (std::regex_search(response, m, re) && m.size() > 1)
+        static const std::regex reTagName(R"delim("tag_name"\s*:\s*"([^"]*)")delim");
+        for (std::sregex_iterator it(response.begin(), response.end(), reTagName), end; it != end; ++it)
         {
-            latestVersion = m[1];
-            return true;
-        }
-    }
-    {
-        std::smatch m;
-        std::regex reTag(R"delim("tag_name"\s*:\s*"\s*v?([^"]+)")delim");
-        std::regex reName(R"delim("name"\s*:\s*"\s*v?(\d+\.\d+\.\d+)")delim");
-        if (std::regex_search(response, m, reTag) && m.size() > 1)
-        {
-            latestVersion = m[1];
-            return true;
-        }
-        if (std::regex_search(response, m, reName) && m.size() > 1)
-        {
-            latestVersion = m[1];
-            return true;
+            vTagMatches.emplace_back(static_cast<size_t>(it->position(1)), (*it)[1].str());
         }
     }
 
-    return false;
+    static const std::regex reDraftOrPrerelease(R"delim("(?:draft|prerelease)"\s*:\s*true)delim");
+
+    std::string sBestVersion;
+    bool bFoundApplicable = false;
+
+    for (size_t i = 0; i < vTagMatches.size(); ++i)
+    {
+        const std::string& sRawTag = vTagMatches[i].second;
+        const size_t nWindowStart = vTagMatches[i].first;
+        const size_t nWindowEnd = (i + 1 < vTagMatches.size()) ? vTagMatches[i + 1].first : response.size();
+        const std::string sWindow = response.substr(nWindowStart, nWindowEnd - nWindowStart);
+
+        if (std::regex_search(sWindow, reDraftOrPrerelease))
+        {
+            continue;
+        }
+
+        std::string sCandidateVersion;
+        if (!Helper::ResolveApplicableVersion(sRawTag, sGamePrefix, sCandidateVersion))
+        {
+            continue;
+        }
+
+        if (!bFoundApplicable || Helper::CompareSemanticVersion(sBestVersion, sCandidateVersion) == Helper::VersionCompareResult::Older)
+        {
+            sBestVersion = sCandidateVersion;
+            bFoundApplicable = true;
+        }
+    }
+
+    if (!bFoundApplicable)
+    {
+        return false;
+    }
+
+    latestVersion = sBestVersion;
+    return true;
 }
 
 std::string LatestVersionChecker::currentTimeISO8601()

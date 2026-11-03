@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "helper.hpp"
+#include <regex>
 #include <wx/app.h>
 #include <wx/filefn.h>
 #include <wx/log.h>
@@ -351,6 +352,41 @@ namespace Helper
             }
         }
         return VersionCompareResult::Equal;
+    }
+
+    bool ResolveApplicableVersion(const std::string& sRawTag, const std::string& sGamePrefix, std::string& sVersionOut)
+    {
+        auto fnStripLeadingV = [](const std::string& s)
+        {
+            if (s.size() > 1 && (s[0] == 'v' || s[0] == 'V') && std::isdigit(static_cast<unsigned char>(s[1])))
+            {
+                return s.substr(1);
+            }
+            return s;
+        };
+
+        // Tags are either a plain version (all games) or GAME[-GAME...]-version, e.g. MSX-MGS3-1.2.3
+        static const std::regex rePrefix(R"(^((?:MSX|MGS2|MGS3)(?:-(?:MSX|MGS2|MGS3))*)-(.+)$)", std::regex::icase);
+        std::smatch stMatch;
+        if (std::regex_match(sRawTag, stMatch, rePrefix))
+        {
+            std::string sTagGames = stMatch[1].str();
+            for (char& c : sTagGames)
+            {
+                c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+            }
+
+            if (("-" + sTagGames + "-").find("-" + sGamePrefix + "-") == std::string::npos)
+            {
+                return false;
+            }
+
+            sVersionOut = fnStripLeadingV(stMatch[2].str());
+            return true;
+        }
+
+        sVersionOut = fnStripLeadingV(sRawTag);
+        return true;
     }
 
     std::string GetFileDescription(const std::string& filePath)

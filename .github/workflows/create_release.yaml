@@ -5,6 +5,22 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      msx:
+        description: "MSX"
+        required: false
+        type: boolean
+        default: true
+      mgs2:
+        description: "MGS2"
+        required: false
+        type: boolean
+        default: true
+      mgs3:
+        description: "MGS3"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -58,30 +74,54 @@ jobs:
 
         echo "version=$version" >> $GITHUB_OUTPUT
 
+    - name: Build release tag
+      id: tag
+      shell: bash
+      run: |
+        version="${{ steps.extract_version.outputs.version }}"
+
+        prefix=""
+        count=0
+        if [ "${{ inputs.msx }}" = "true" ]; then prefix="${prefix}MSX-"; count=$((count+1)); fi
+        if [ "${{ inputs.mgs2 }}" = "true" ]; then prefix="${prefix}MGS2-"; count=$((count+1)); fi
+        if [ "${{ inputs.mgs3 }}" = "true" ]; then prefix="${prefix}MGS3-"; count=$((count+1)); fi
+
+        if [ "$count" -eq 0 ]; then
+          echo "::error::No games selected. Tick at least one of MSX, MGS2 or MGS3."
+          exit 1
+        fi
+        if [ "$count" -eq 3 ]; then
+          prefix=""
+        fi
+
+        tag="${prefix}${version}"
+        echo "Resolved release tag: $tag"
+        echo "tag=$tag" >> $GITHUB_OUTPUT
+
     - name: Verify release does not already exist
       shell: pwsh
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        $version = "${{ steps.extract_version.outputs.version }}"
+        $tag = "${{ steps.tag.outputs.tag }}"
 
-        Write-Host "Checking whether release/tag already exists for version $version..."
+        Write-Host "Checking whether a release/tag already exists for $tag..."
 
-        $releaseExists = gh release view $version --repo "${{ github.repository }}" 2>$null
+        $releaseExists = gh release view $tag --repo "${{ github.repository }}" 2>$null
 
         if ($LASTEXITCODE -eq 0) {
-          Write-Error "Release posting already exists for version $version. Bump version.h before creating a new release."
+          Write-Error "A release already exists for $tag. Bump version.h before creating a new release."
           exit 1
         }
 
-        $tagExists = git ls-remote --tags origin "refs/tags/$version"
+        $tagExists = git ls-remote --tags origin "refs/tags/$tag"
 
         if ($tagExists) {
-          Write-Error "Git tag already exists for version $version. Bump version.h before creating a new release."
+          Write-Error "Git tag $tag already exists. Bump version.h before creating a new release."
           exit 1
         }
 
-        Write-Host "No existing release or tag found for version $version."
+        Write-Host "No existing release or tag found for $tag."
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -210,6 +250,7 @@ jobs:
       run: 7z a -tzip "../${{ github.event.repository.name }}_${{ steps.extract_version.outputs.version }}.zip" *
 
     - name: Create MG1 + MG2 Nexus zip
+      if: ${{ inputs.msx }}
       run: |
         Copy-Item dist dist_variant1 -Recurse
 
@@ -221,6 +262,7 @@ jobs:
         Remove-Item dist_variant1 -Recurse -Force
 
     - name: Create MGS3 Nexus zip
+      if: ${{ inputs.mgs3 }}
       run: |
         Copy-Item dist dist_variant3 -Recurse
 
@@ -235,13 +277,14 @@ jobs:
       with:
         artifacts: "${{ github.event.repository.name }}_${{ steps.extract_version.outputs.version }}.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ steps.extract_version.outputs.version }}
-        name: "${{ steps.extract_version.outputs.version }}"
+        tag: ${{ steps.tag.outputs.tag }}
+        name: "${{ steps.tag.outputs.tag }}"
         draft: true
         generateReleaseNotes: true
         artifactErrorsFailBuild: true
 
     - name: Upload to NexusMods - MG1 + MG2
+      if: ${{ inputs.msx }}
       uses: Nexus-Mods/upload-action@v1.0.0-beta.9
       with:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
@@ -256,6 +299,7 @@ jobs:
         description: Set both Internal Resolution & Internal Upscaling to Default / Original in the game's launcher. (Resolution is entirely handled by MGSHDFix.)
             
     - name: Upload to NexusMods - MGS2
+      if: ${{ inputs.mgs2 }}
       uses: Nexus-Mods/upload-action@v1.0.0-beta.9
       with:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
@@ -273,7 +317,8 @@ jobs:
             Texture / Movie resolution is not affected / can be set however desired.
 
 
-    - name: Upload to NexusMods - Upload to NexusMods - MGS3
+    - name: Upload to NexusMods - MGS3
+      if: ${{ inputs.mgs3 }}
       uses: Nexus-Mods/upload-action@v1.0.0-beta.9
       with:
         api_key: ${{ secrets.NEXUSMODS_API_KEY }}
