@@ -186,23 +186,23 @@ namespace VersionCheck
             return s;
         };
 
-        // Tags are either a plain version (all games) or GAME[-GAME...]-version, e.g. MSX-MGS3-1.2.3
-        static const std::regex rePrefix(R"(^((?:MSX|MGS2|MGS3)(?:-(?:MSX|MGS2|MGS3))*)-(.+)$)", std::regex::icase);
+        // Tags are either a plain version (all games) or version-GAME[-GAME...], e.g. 1.2.3-MSX-MGS3
+        static const std::regex reSuffix(R"(^(.+?)((?:-(?:MSX|MGS2|MGS3))+)$)", std::regex::icase);
         std::smatch stMatch;
-        if (std::regex_match(sRawTag, stMatch, rePrefix))
+        if (std::regex_match(sRawTag, stMatch, reSuffix))
         {
-            std::string sTagGames = stMatch[1].str();
+            std::string sTagGames = stMatch[2].str();
             for (char& c : sTagGames)
             {
                 c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
             }
 
-            if (("-" + sTagGames + "-").find("-" + sGamePrefix + "-") == std::string::npos)
+            if ((sTagGames + "-").find("-" + sGamePrefix + "-") == std::string::npos)
             {
                 return false;
             }
 
-            sVersionOut = fnStripLeadingV(stMatch[2].str());
+            sVersionOut = fnStripLeadingV(stMatch[1].str());
             return true;
         }
 

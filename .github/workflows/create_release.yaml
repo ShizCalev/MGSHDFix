@@ -80,21 +80,21 @@ jobs:
       run: |
         version="${{ steps.extract_version.outputs.version }}"
 
-        prefix=""
+        suffix=""
         count=0
-        if [ "${{ inputs.msx }}" = "true" ]; then prefix="${prefix}MSX-"; count=$((count+1)); fi
-        if [ "${{ inputs.mgs2 }}" = "true" ]; then prefix="${prefix}MGS2-"; count=$((count+1)); fi
-        if [ "${{ inputs.mgs3 }}" = "true" ]; then prefix="${prefix}MGS3-"; count=$((count+1)); fi
+        if [ "${{ inputs.msx }}" = "true" ]; then suffix="${suffix}-MSX"; count=$((count+1)); fi
+        if [ "${{ inputs.mgs2 }}" = "true" ]; then suffix="${suffix}-MGS2"; count=$((count+1)); fi
+        if [ "${{ inputs.mgs3 }}" = "true" ]; then suffix="${suffix}-MGS3"; count=$((count+1)); fi
 
         if [ "$count" -eq 0 ]; then
           echo "::error::No games selected. Tick at least one of MSX, MGS2 or MGS3."
           exit 1
         fi
         if [ "$count" -eq 3 ]; then
-          prefix=""
+          suffix=""
         fi
 
-        tag="${prefix}${version}"
+        tag="${version}${suffix}"
         echo "Resolved release tag: $tag"
         echo "tag=$tag" >> $GITHUB_OUTPUT
 
