@@ -347,8 +347,11 @@ namespace
         return true;
     }
 
+    constexpr uint32_t kChunkSizeMask = 0x3FFFFFFF;
+
     TextChunk* GetTextChunk(const uint8_t* pSource, uint32_t nSize)
     {
+        nSize &= kChunkSizeMask;
         const int nLanguage = Shared_Gamefuncs::pfnGetLanguage();
         const auto itTable = s_mMG1Text.find(nLanguage);
         if (itTable == s_mMG1Text.end() || !pSource || nSize > 16 * 1024 * 1024)
@@ -393,7 +396,7 @@ namespace
             return nSize;
         }
         TextChunk* pChunk = GetTextChunk(s_hMG1ChunkData.call<const uint8_t*>(hChunk, nEntry), nSize);
-        return pChunk ? static_cast<uint32_t>(pChunk->vReplacement.size()) : nSize;
+        return pChunk ? static_cast<uint32_t>(pChunk->vReplacement.size()) | (nSize & ~kChunkSizeMask) : nSize;
     }
 
     const char* __fastcall GetLocalizedString(uint32_t nBlock, int32_t nIndex, int* pLength)
