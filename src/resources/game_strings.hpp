@@ -169,28 +169,6 @@ constexpr CaptionOverride kMGS2CaptionTypoFixes[] =
     { 0x842c1881, "Cardboard Box 5\nCardboard box to transport\ngame software. The eye design\nis \"eye-catching.\"\nEquip to wear." },
 
 
-};
-
-constexpr CaptionOverride kMGS3CaptionTypoFixes[] =
-{
-    { 0x108508f7, "... hay uno entre nosotros..." },
-    { 0x3ce2c9cf, "Cardboard Box B:\nEquip to wear.\nSays \"To the Weapons Lab:\nHangar\" on the side.\n" },
-    { 0x3cc3812d, "der gro\303\237en Festung in Groznyj Grad, trifft," },
-    { 0x1284b292, "Eine echte Patriotin." },
-    { 0xc67314f3, "Enviando una unidad de\napoyo. Extremad la cautela." },
-    { 0xd38ec246, "Estoy bien. Solo con estes dos doble\npapeles," },
-    { 0xf2b1d7e7, "Hmm ... Nur ein Frosch." },
-    { 0x0db65894, "H\303\266r auf, auf mich zu\nschie\303\237en!" },
-    { 0xfa36c122, "Ihr Leben lag in deinen H\303\244nden ..." },
-    { 0x26f99527, "Ja. Aus irgendeinem Grund f\303\274hlt sich\nso ... nostalgisch an.\n" },
-    { 0x2efbd9f7, "Los viajes espaciales son s\303\263lo otra forma\nde participar en la carrera por el poder" },
-    { 0x40e3dd35, "Mein Kriegsgl\303\274ck scheint sich endlich\ngewendet zu haben." },
-    { 0xf8271dfa, "Not as a soldier," },
-    { 0x0591814c, "OK, let's go." },
-    { 0x9c8e98fc, "Shagohod bedeutet ..." },
-    { 0x91dd8cd9, "\302\241Es m\303\255o!" },
-    { 0x062690cd, "\302\277\302\241Qu\303\251 ha sido ese\nruido!?" },
-
 
     { 0xd2591180, "Both of them are at the bottom of\nthe harbor. Looks like your new\nhosts have a Harrier II.\n" },
     { 0x3385f4a0, "Cet Harrier II est \303\251quip\303\251 de bombes\n\303\240 dispersion. Chaque bombe est remplie\nde petites bombes.\n" },
@@ -241,6 +219,28 @@ constexpr CaptionOverride kMGS3CaptionTypoFixes[] =
     { 0xc623a602, "\351\233\267\351\233\273#T{}\343\200\201\343\201\235\343\201\223\343\201\253\343\201\202\343\202\213\343\201\256\343\201\214\343\203\217\343\203\252\343\202\242\343\203\274II\343\201\240#T{}\343\200\202\n" },
     { 0x59c03d4e, "\351\247\220\346\251\237\343\201\227\343\201\246\343\201\204\343\201\237\343\203\217\343\203\252\343\202\242\343\203\274II\343\201\253\n\344\273\225\346\216\233\343\201\221\343\201\246\343\201\202#T{}\343\201\243\343\201\237#T{}\343\200\202\n" },
 
+
+};
+
+constexpr CaptionOverride kMGS3CaptionTypoFixes[] =
+{
+    { 0x108508f7, "... hay uno entre nosotros..." },
+    { 0x3ce2c9cf, "Cardboard Box B:\nEquip to wear.\nSays \"To the Weapons Lab:\nHangar\" on the side.\n" },
+    { 0x3cc3812d, "der gro\303\237en Festung in Groznyj Grad, trifft," },
+    { 0x1284b292, "Eine echte Patriotin." },
+    { 0xc67314f3, "Enviando una unidad de\napoyo. Extremad la cautela." },
+    { 0xd38ec246, "Estoy bien. Solo con estes dos doble\npapeles," },
+    { 0xf2b1d7e7, "Hmm ... Nur ein Frosch." },
+    { 0x0db65894, "H\303\266r auf, auf mich zu\nschie\303\237en!" },
+    { 0xfa36c122, "Ihr Leben lag in deinen H\303\244nden ..." },
+    { 0x26f99527, "Ja. Aus irgendeinem Grund f\303\274hlt sich\nso ... nostalgisch an.\n" },
+    { 0x2efbd9f7, "Los viajes espaciales son s\303\263lo otra forma\nde participar en la carrera por el poder" },
+    { 0x40e3dd35, "Mein Kriegsgl\303\274ck scheint sich endlich\ngewendet zu haben." },
+    { 0xf8271dfa, "Not as a soldier," },
+    { 0x0591814c, "OK, let's go." },
+    { 0x9c8e98fc, "Shagohod bedeutet ..." },
+    { 0x91dd8cd9, "\302\241Es m\303\255o!" },
+    { 0x062690cd, "\302\277\302\241Qu\303\251 ha sido ese\nruido!?" },
 
 };
 
