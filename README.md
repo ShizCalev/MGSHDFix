@@ -4,7 +4,15 @@
 [![Discord](https://img.shields.io/discord/1116856754920226876?logo=discord&logoColor=white&label=Metal%20Gear%20Network%20-%20%23HDFix&color=7289DA)](https://discord.gg/bFv9bZmWDV)
 
 
-[MG1 / MG2 Nexus Page](https://www.nexusmods.com/metalgearandmetalgear2mc/mods/9) | [MGS2 Nexus Page](https://www.nexusmods.com/metalgearsolid2mc/mods/49) | [MGS3 Nexus Page](https://www.nexusmods.com/metalgearsolid3mc/mods/139) | **GitHub Repo (You're already here!)** | [GitLab Repo Mirror](https://gitlab.com/ShizCalev/MGSHDFix/) | [Media / Screenshot Repo](https://github.com/dotlessone/MGSHDFix-Media)<br />
+[MG1 / MG2 Nexus Page](https://www.nexusmods.com/metalgearandmetalgear2mc/mods/9) | [MGS2 Nexus Page](https://www.nexusmods.com/metalgearsolid2mc/mods/49) | [MGS3 Nexus Page](https://www.nexusmods.com/metalgearsolid3mc/mods/139) | **GitHub Repo (You're already here!)** | [GitLab Repo Mirror](https://gitlab.com/ShizCalev/MGSHDFix/) | [Media / Screenshot Repo](https://github.com/dotlessone/MGSHDFix-Media)
+
+* Webpage Notice: The above links are our **ONLY** webpages. Any other websites claiming to be affiliated with MGSHDFix (such as MGSHDFix.com) are controlled by third-parties and are not maintained by any members of our project. Please use caution when downloading MGSHDFix from any sources outside of our official GitHub.com & NexusMods.com pages.
+
+<br />
+
+<br />
+
+
 
 This is a fix that adds custom resolutions, ultrawide support and much more to the Metal Gear Solid Master Collection.<br />
 
