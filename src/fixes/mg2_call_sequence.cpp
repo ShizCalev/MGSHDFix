@@ -3,6 +3,7 @@
 #include "mg2_portrait_overlay.hpp"
 
 #include "common.hpp"
+#include "game_funcs.hpp"
 #include "mg2_linkvarbuf.hpp"
 
 // Fixes outgoing transciever calls showing the right side portrait before Snake's initial outbound message.
@@ -26,20 +27,48 @@ namespace
     OpeningMessage s_stOpening {};
     bool s_bDrawingOpening = false;
 
-    int FindOpeningEnd(const char* pText, int nLength)
+    int FindOpeningEnd(const char* pText, int nLength, bool bTranslating)
     {
+        const bool bJapanese = Shared_Gamefuncs::pfnGetLanguage && Shared_Gamefuncs::pfnGetLanguage() == static_cast<int>(MGLanguage::Japanese);
+        constexpr uint16_t anSnakeName[] = { 0x8358, 0x836C, 0x815B, 0x834E };
+        constexpr uint16_t anGustavaName[] = { 0x834F, 0x8358, 0x835E, 0x8394, 0x8340 };
+        const std::span<const uint16_t> anLeftName = bTranslating ? std::span<const uint16_t>(anGustavaName) : std::span<const uint16_t>(anSnakeName);
         bool bSnake = false;
+        bool bExplicitSnake = false;
+        bool bDialogue = false;
+        bool bLeftName = true;
+        size_t nNameLength = 0;
         int nPageStart = 0;
         for (int nIndex = 0; nIndex < nLength; nIndex++)
         {
-            const auto nChar = static_cast<unsigned char>(pText[nIndex]);
+            unsigned int nChar = static_cast<unsigned char>(pText[nIndex]);
             if ((nChar >= 0x81 && nChar <= 0x9F) || nChar >= 0xE0)
             {
-                nIndex++;
-                continue;
+                if (++nIndex >= nLength)
+                {
+                    break;
+                }
+                nChar = (nChar << 8) | static_cast<unsigned char>(pText[nIndex]);
             }
             if (nChar != '\\' || nIndex + 1 >= nLength)
             {
+                if (bJapanese && !bDialogue)
+                {
+                    if (nChar == 0x8177) // Japanese opening dialogue bracket.
+                    {
+                        if (!bExplicitSnake && !(bLeftName && nNameLength == anLeftName.size()))
+                        {
+                            return bSnake ? nPageStart : 0;
+                        }
+                        bSnake = true;
+                        bDialogue = true;
+                    }
+                    else if (nChar != ' ' && nChar != '\r' && nChar != '\n' && nChar != 0x8140)
+                    {
+                        bLeftName = bLeftName && nNameLength < anLeftName.size() && nChar == anLeftName[nNameLength];
+                        nNameLength++;
+                    }
+                }
                 continue;
             }
 
@@ -47,6 +76,7 @@ namespace
             if (cEscape == 's')
             {
                 bSnake = true;
+                bExplicitSnake = true;
             }
             else if (cEscape == 'r')
             {
@@ -55,6 +85,14 @@ namespace
             else if (cEscape == 'w' || cEscape == 'W')
             {
                 nPageStart = nIndex + 1;
+                bExplicitSnake = false;
+                bDialogue = false;
+                bLeftName = true;
+                nNameLength = 0;
+            }
+            else if (cEscape == 'B' || cEscape == 'S')
+            {
+                nIndex += std::min(2, nLength - nIndex - 1);
             }
         }
         return 0;
@@ -83,7 +121,9 @@ namespace
         }
         s_stOpening.nBlock = nBlock;
         s_stOpening.nIndex = GM_ReplyIndex;
-        s_stOpening.nEnd = FindOpeningEnd(pText, nLength);
+        constexpr int nMarvMessageBlock = 8;
+        constexpr int nTranslationMessageIndex = 1;
+        s_stOpening.nEnd = FindOpeningEnd(pText, nLength, nBlock == nMarvMessageBlock && GM_ReplyIndex == nTranslationMessageIndex);
     }
 
     int __fastcall ScriptCommand_hook(int* pScript, uint8_t nCommand, int* pArgs, char* pStrings, int nCount)

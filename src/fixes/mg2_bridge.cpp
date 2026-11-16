@@ -88,6 +88,13 @@ namespace
         PositionCompanion(GetCompanion(2), stFrame.nMadnarX, stFrame.nMadnarY);
     }
 
+    bool IsDyingMessage()
+    {
+        constexpr int nDyingMessageBlock = 13;
+        constexpr int nDyingMessageIndex = 2;
+        return GM_Scene == MG2_SCENE_FACE_TO_FACE && GM_MessageId == nDyingMessageBlock && GM_MessageSub == nDyingMessageIndex;
+    }
+
     bool IsDyingCall()
     {
         return s_bActive && s_bRoom && s_nSequence == 7 && GM_Scene == MG2_SCENE_FACE_TO_FACE;
@@ -359,7 +366,7 @@ namespace
 
 void MG2_Bridge::CaptureDyingMessage(const char* pText, int nLength)
 {
-    if (!IsDyingCall() || !pText || nLength <= 0)
+    if (!IsDyingMessage() || !pText || nLength <= 0)
     {
         s_pDyingMessage = nullptr;
         s_nForcedEyes = -1;
@@ -431,7 +438,7 @@ int MG2_Bridge::GetDyingEyeState()
 
 bool MG2_Bridge::IsDyingDialogueFinished()
 {
-    return IsDyingCall() && s_nForcedEyes == 1;
+    return IsDyingMessage() && s_nForcedEyes == 1;
 }
 
 void MG2_Bridge::HandleLevelTransition()

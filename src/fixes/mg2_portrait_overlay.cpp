@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "mg2_portrait_overlay.hpp"
 #include "mg2_bridge.hpp"
+#include "mg2_call_sequence.hpp"
 
 #include "common.hpp"
+#include "game_funcs.hpp"
 #include "mg2_linkvarbuf.hpp"
 #include "mg2_portrait_sprites.hpp"
 #include "mg2_cast_portraits.hpp"
@@ -256,6 +258,7 @@ namespace
     DrawnPortrait s_stLeftPortrait;
     DrawnPortrait s_stRightPortrait;
     bool s_bMessageTyping = false;
+    bool s_bSnakeSpeaking = false;
 
     SafetyHookMid s_hMessageState {};
     SafetyHookMid s_hPortraitDraw {};
@@ -591,18 +594,103 @@ namespace
         }
     }
 
+    void CaptureJapaneseSpeaker(const char* pText, int nPos)
+    {
+        // Shift-JIS speaker labels and dialogue brackets
+        constexpr uint16_t anSnakeName[] = { 0x8358, 0x836C, 0x815B, 0x834E };
+        constexpr uint16_t anGustavaName[] = { 0x834F, 0x8358, 0x835E, 0x8394, 0x8340 };
+        const auto* pLeft = MG2_LinkVarBuf::GetSprite(MG2_SPRITE_LIST_TRANSCEIVER, MG2_TRANSCEIVER_SLOT_SNAKE);
+        const bool bTranslating = pLeft && pLeft->nSheet == MG2_SPRITE_SHEET_PORTRAITS && pLeft->nTime == MG2_PORTRAIT_GUSTAVA_TRANSLATING;
+        const std::span<const uint16_t> anLeftName = bTranslating ? std::span<const uint16_t>(anGustavaName) : std::span<const uint16_t>(anSnakeName);
+        constexpr uint16_t nDialogueOpen = 0x8177;
+        constexpr uint16_t nDialogueClose = 0x8178;
+        size_t nNameLength = 0;
+        bool bLeftName = true;
+        bool bHasDialogue = false;
+        bool bExplicitSpeaker = false;
+        int nDialogueDepth = 0;
+        for (int nOffset = 0; nOffset < nPos;)
+        {
+            unsigned int nCharacter = static_cast<uint8_t>(pText[nOffset++]);
+            if ((nCharacter >= 0x81 && nCharacter <= 0x9F) || nCharacter >= 0xE0)
+            {
+                if (nOffset >= nPos)
+                {
+                    break;
+                }
+                nCharacter = (nCharacter << 8) | static_cast<uint8_t>(pText[nOffset++]);
+            }
+            if (nCharacter == '\\' && nOffset < nPos)
+            {
+                const char nCode = pText[nOffset++];
+                if (nCode == 's' || nCode == 'r')
+                {
+                    s_bSnakeSpeaking = nCode == 's';
+                    bExplicitSpeaker = true;
+                }
+                else if (nCode == 'w' || nCode == 'W')
+                {
+                    bExplicitSpeaker = false;
+                    nNameLength = 0;
+                    bLeftName = true;
+                    nDialogueDepth = 0;
+                }
+                else if (nCode == 'B' || nCode == 'S')
+                {
+                    nOffset += std::min(2, nPos - nOffset);
+                }
+                continue;
+            }
+            if (nCharacter == nDialogueOpen)
+            {
+                if (nDialogueDepth == 0 && !bExplicitSpeaker)
+                {
+                    s_bSnakeSpeaking = bLeftName && nNameLength == anLeftName.size();
+                }
+                bHasDialogue = true;
+                nDialogueDepth++;
+            }
+            else if (nCharacter == nDialogueClose && nDialogueDepth != 0)
+            {
+                nDialogueDepth--;
+            }
+            else if (nDialogueDepth == 0 && nCharacter != ' ' && nCharacter != '\r' && nCharacter != '\n' && nCharacter != 0x8140)
+            {
+                bLeftName = bLeftName && nNameLength < anLeftName.size() && nCharacter == anLeftName[nNameLength];
+                nNameLength++;
+            }
+        }
+        if (bHasDialogue && nDialogueDepth == 0)
+        {
+            s_bMessageTyping = false;
+        }
+    }
+
     void CaptureMessageState(const char* pText, int nLength)
     {
+        MG2_Bridge::CaptureDyingMessage(pText, nLength);
         s_bMessageTyping = false;
+        s_bSnakeSpeaking = MG2_LinkVarBuf::GM_SpeakerIsSnake != 0;
         const int nPos = MG2_LinkVarBuf::GM_MessagePos;
-        if (!pText || nPos < 0 || nPos >= nLength || MG2_LinkVarBuf::GM_MessageSpeed == 0)
+        if (!pText || nPos < 0 || nLength <= 0)
         {
             return;
         }
 
         // MessageDone misses page waits (\w / \W); stop talking there too.
         const bool bPageWait = nLength - nPos >= 2 && pText[nPos] == '\\' && (pText[nPos + 1] == 'w' || pText[nPos + 1] == 'W');
-        s_bMessageTyping = !bPageWait;
+        s_bMessageTyping = nPos < nLength && MG2_LinkVarBuf::GM_MessageSpeed != 0 && !bPageWait;
+        if (Shared_Gamefuncs::pfnGetLanguage && Shared_Gamefuncs::pfnGetLanguage() == static_cast<int>(MGLanguage::Japanese))
+        {
+            // pause typewriter on opening bracket
+            const bool bOpeningDialogue = nLength - nPos >= 2 && static_cast<uint8_t>(pText[nPos]) == 0x81 && static_cast<uint8_t>(pText[nPos + 1]) == 0x77;
+            CaptureJapaneseSpeaker(pText, std::min(nPos, nLength) + (bOpeningDialogue ? 2 : 0));
+            if (MG2_PortraitOverlay::bEnabled || MG2_CallSequence::bEnabled)
+            {
+                // drive script 114's speaker flag for the send/recieve indicator
+                MG2_LinkVarBuf::GM_SpeakerIsSnake = s_bSnakeSpeaking ? 1 : 0;
+            }
+        }
     }
 
     void DrawIntroPortraits(int nPanelX, int nPanelY, const int* pClip)
@@ -787,14 +875,13 @@ namespace
 
         // Copy visible sprites before scene teardown releases their handles.
         const bool bTalking = s_bMessageTyping && !MG2_LinkVarBuf::GM_MessageDone;
-        const bool bSnakeSpeaking = MG2_LinkVarBuf::GM_SpeakerIsSnake != 0;
         if (&stSprite == MG2_LinkVarBuf::GetSprite(MG2_SPRITE_LIST_TRANSCEIVER, MG2_TRANSCEIVER_SLOT_SNAKE))
         {
-            s_stLeftPortrait = { stSprite, bTalking && bSnakeSpeaking };
+            s_stLeftPortrait = { stSprite, bTalking && s_bSnakeSpeaking };
         }
         else if (&stSprite == MG2_LinkVarBuf::GetSprite(MG2_SPRITE_LIST_TRANSCEIVER, MG2_TRANSCEIVER_SLOT_CONTACT))
         {
-            s_stRightPortrait = { stSprite, bTalking && !bSnakeSpeaking, MG2_LinkVarBuf::GM_Scene == MG2_SCENE_TRANSCEIVER };
+            s_stRightPortrait = { stSprite, bTalking && !s_bSnakeSpeaking, MG2_LinkVarBuf::GM_Scene == MG2_SCENE_TRANSCEIVER };
         }
     }
 
